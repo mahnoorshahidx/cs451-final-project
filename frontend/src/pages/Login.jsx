@@ -1,6 +1,14 @@
 import "../styles/Login.css";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
+    const navigate = useNavigate();
+
+    const handleLogin = (e) => {
+    e.preventDefault();
+    navigate("/dashboard");
+
+};
   return (
     <div className="login-page">
 
@@ -18,7 +26,7 @@ function Login() {
             Continue planning your next unforgettable adventure.
             </p>
 
-            <form className="login-form">
+            <form className="login-form" onSubmit={handleLogin}>
 
             <label htmlFor="email">Email address</label>
             <input

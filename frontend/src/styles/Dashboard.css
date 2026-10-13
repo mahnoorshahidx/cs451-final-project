@@ -1,0 +1,128 @@
+/* Entire Dashboard */
+.dashboard-page {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #e7f5f7;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* Sidebar */
+.dashboard-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  min-height: 100vh;
+  background-color: #d9eef0;
+}
+
+/* Main Dashboard */
+.dashboard-main {
+  flex: 1;
+  min-width: 0;
+  padding: 20px 25px 40px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Profile Header */
+.dashboard-header {
+  width: 100%;
+  height: 50px;
+}
+
+/* Welcome Banner */
+.dashboard-banner {
+  display: flex;
+  align-items: center;
+  padding: 35px;
+  background-color: #b9e0ed;
+  border-radius: 16px;
+}
+.dashboard-banner h1 {
+  font-size: 32px;
+  color: #172b43;
+  margin: 0 0 10px;
+}
+.dashboard-banner p {
+  font-size: 16px;
+  color: #344b63;
+  max-width: 350px;
+  margin: 0;
+}
+
+/* Main Content Grid */
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 2.5fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Left Column */
+.dashboard-left {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Plan a New Trip */
+.dashboard-plan {
+  min-height: 170px;
+  padding: 25px;
+  background-color: white;
+  border-radius: 18px;
+}
+
+/* My Trips */
+.dashboard-trips {
+  min-height: 270px;
+  background-color: white;
+  border-radius: 18px;
+}
+
+/* Right Card */
+.dashboard-card {
+  min-height: 170px;
+  background-color: white;
+  border-radius: 18px;
+}
+
+/* Temporary Create Trip Button */
+.dashboard-plan button {
+  padding: 12px 25px;
+  background-color: #285c73;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .dashboard-sidebar {
+    width: 160px;
+  }
+
+  .dashboard-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .dashboard-page {
+    flex-direction: column;
+  }
+
+  .dashboard-sidebar {
+    width: 100%;
+    min-height: 70px;
+  }
+
+  .dashboard-main {
+    padding: 16px;
+  }
+}
