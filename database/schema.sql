@@ -20,3 +20,16 @@ CREATE TABLE IF NOT EXISTS users (
     address VARCHAR(255),
     created_at DATETIME(6) NOT NULL
 );
+
+-- Creates the trips table based on the backend's Trip.java file.
+-- Each trip belongs to one user.
+CREATE TABLE IF NOT EXISTS trips (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    destination VARCHAR(255) NOT NULL,
+    end_date DATE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    number_of_travelers INT NOT NULL,
+    start_date DATE NOT NULL,
+    user_id BIGINT NOT NULL,
+    CONSTRAINT fk_trips_user FOREIGN KEY (user_id) REFERENCES users (id)
+);
