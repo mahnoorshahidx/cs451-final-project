@@ -8,6 +8,7 @@ import com.tripbudgetplanner.backend.auth.dto.LoginRequest;
 import com.tripbudgetplanner.backend.auth.dto.RegisterRequest;
 import com.tripbudgetplanner.backend.auth.exception.EmailAlreadyExistsException;
 import com.tripbudgetplanner.backend.auth.exception.InvalidCredentialsException;
+import com.tripbudgetplanner.backend.common.security.JwtService;
 import com.tripbudgetplanner.backend.user.User;
 import com.tripbudgetplanner.backend.user.UserRepository;
 
@@ -16,11 +17,14 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
+        
 
     public void register(RegisterRequest req) {
         String email = req.email().trim().toLowerCase();
@@ -44,6 +48,7 @@ public class AuthService {
         if (!passwordEncoder.matches(req.password(), user.getPasswordHash())) {
             throw new InvalidCredentialsException();
         }
-        return new AuthResponse(user.getName(), user.getEmail());
+        return new AuthResponse(jwtService.generateToken(user.getId(), user.getEmail()),
+        user.getName(), user.getEmail());
     }
 }
