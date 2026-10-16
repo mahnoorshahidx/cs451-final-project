@@ -16,23 +16,57 @@
 --          happens in schema.sql
 USE trip_budget_planner;
 
--- TODO #2: PENDING
--- Test users will be created through the Spring Boot
--- registration endpoint so the backend handles BCrypt
--- password hashing.
--- Fictional trip data will be added once the trips table exists.
+
+-- TODO #2: PARTIALLY COMPLETE
+-- Test users are created through the Spring Boot registration
+-- endpoint so the backend handles BCrypt password hashing.
+--
+-- Adds a fictional Denver trip for testuser@example.com.
+-- The user must already exist before this script runs.
+-- The trip will not be inserted if the user is missing.
+--
+-- Retrieves the user's ID by email rather than assuming
+-- every database assigns the same user ID.
+-- Prevents inserting the same trip twice for that user.
+
+INSERT INTO trips (
+    destination,
+    end_date,
+    name,
+    number_of_travelers,
+    start_date,
+    user_id
+)
+SELECT
+    'Denver, Colorado',
+    '2027-06-14',
+    'Denver Vacation',
+    2,
+    '2027-06-07',
+    users.id
+FROM users
+WHERE users.email = 'testuser@example.com'
+AND NOT EXISTS (
+    SELECT 1
+    FROM trips
+    WHERE trips.user_id = users.id
+      AND trips.name = 'Denver Vacation'
+);
 
 
 -- TODO #3: PENDING
--- Add fictional budgets, savings goals, and expenses
--- after their tables are created.
+-- Add sample budgets, savings goals, and expenses
+-- after their database tables are defined.
 
 
--- TODO #4: PENDING
--- Add fictional bank accounts and transactions
--- after their tables are created.
+-- TODO #4: PARTIALLY READY
+-- The bank_accounts table exists, but no bank account
+-- sample data has been inserted yet.
+-- The transactions table is still pending.
+-- Account fingerprints must follow the backend's method.
 
 
--- TODO #5: PENDING
--- Verify that foreign keys reference existing records
--- once related tables and sample data have been added.
+-- TODO #5: PARTIALLY COMPLETE
+-- The trips table has a foreign key referencing users(id).
+-- The Denver trip uses an existing user's ID.
+-- Remaining foreign key relationships still need verification.
