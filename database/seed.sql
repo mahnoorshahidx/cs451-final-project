@@ -58,6 +58,17 @@ AND NOT EXISTS (
       AND trips.name = 'Denver Vacation'
 );
 
+-- TODO #3: Estimated trip budget ($2,600 total).
+INSERT INTO budgets (trip_id, flights, hotel, rental_car, food, activities, shopping)
+SELECT t.id, 400.00, 900.00, 350.00, 450.00, 300.00, 200.00
+FROM trips t
+JOIN users u ON u.id = t.user_id
+WHERE u.email = 'testuser@example.com'
+  AND t.name = 'Denver Vacation'
+  AND NOT EXISTS (SELECT 1 FROM budgets b WHERE b.trip_id = t.id);
+
+-- TODO #3: One savings goal for Denver Vacation.
+INSERT INTO savings_goals
     (trip_id, target_amount, initial_saved_amount, target_date, planned_monthly_contribution)
 SELECT t.id, 2600.00, 500.00, '2027-05-31', 300.00
 FROM trips t
