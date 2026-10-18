@@ -13,6 +13,13 @@ const budgetCategories = [
 ];
 
 function CreateTrip() {
+  const [tripDetails, setTripDetails] = useState({
+  name: "",
+  destination: "",
+  startDate: "",
+  endDate: "",
+  numberOfTravelers: 2,
+});
   const [totalBudget, setTotalBudget] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [allocations, setAllocations] = useState({});
@@ -88,31 +95,97 @@ function CreateTrip() {
             </p>
           </div>
         </section>
-
+        
         {/* Trip details */}
         <section className="trip-details">
 
           <div className="trip-details-title">
             <h2>Your trip details</h2>
-            <p>New trip · Details not completed</p>
+            <p>Tell us a little about your upcoming trip.</p>
           </div>
 
-          <div className="trip-detail-item">
-            <span>⌖ Destination</span>
-            <p>Not selected</p>
-          </div>
+          <div className="trip-details-form">
 
-          <div className="trip-detail-item">
-            <span>▦ Travel Dates</span>
-            <p>Not selected</p>
-          </div>
+            <div className="trip-field">
+              <label htmlFor="tripName">Trip Name</label>
+              <input
+                id="tripName"
+                type="text"
+                placeholder="e.g. Morocco Vacation"
+                value={tripDetails.name}
+                onChange={(e) =>
+                  setTripDetails({
+                    ...tripDetails,
+                    name: e.target.value,
+                  })
+                }
+              />
+            </div>
 
-          <div className="trip-detail-item">
-            <span>♧ Travelers</span>
-            <p>2 travelers</p>
-          </div>
+            <div className="trip-field">
+              <label htmlFor="destination">Destination</label>
+              <input
+                id="destination"
+                type="text"
+                placeholder="e.g. Marrakech, Morocco"
+                value={tripDetails.destination}
+                onChange={(e) =>
+                  setTripDetails({
+                    ...tripDetails,
+                    destination: e.target.value,
+                  })
+                }
+              />
+            </div>
 
-          <button className="edit-details">Edit details</button>
+            <div className="trip-field">
+              <label htmlFor="startDate">Start Date</label>
+              <input
+                id="startDate"
+                type="date"
+                value={tripDetails.startDate}
+                onChange={(e) =>
+                  setTripDetails({
+                    ...tripDetails,
+                    startDate: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="trip-field">
+              <label htmlFor="endDate">End Date</label>
+              <input
+                id="endDate"
+                type="date"
+                min={tripDetails.startDate}
+                value={tripDetails.endDate}
+                onChange={(e) =>
+                  setTripDetails({
+                    ...tripDetails,
+                    endDate: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="trip-field">
+              <label htmlFor="travelers">Number of Travelers</label>
+              <input
+                id="travelers"
+                type="number"
+                min="1"
+                value={tripDetails.numberOfTravelers}
+                onChange={(e) =>
+                  setTripDetails({
+                    ...tripDetails,
+                    numberOfTravelers: Number(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+          </div>
 
         </section>
 
