@@ -20,3 +20,30 @@ CREATE TABLE IF NOT EXISTS users (
     address VARCHAR(255),
     created_at DATETIME(6) NOT NULL
 );
+
+-- Creates the trips table based on the backend's Trip.java file.
+-- Each trip belongs to one user.
+CREATE TABLE IF NOT EXISTS trips (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    destination VARCHAR(255) NOT NULL,
+    end_date DATE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    number_of_travelers INT NOT NULL,
+    start_date DATE NOT NULL,
+    user_id BIGINT NOT NULL,
+    CONSTRAINT fk_trips_user FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+-- Creates the bank_accounts table based on the backend's BankAccount.java file.
+-- The full account number is never stored: only the last 4 digits and a keyed hash used to detect duplicates.
+CREATE TABLE IF NOT EXISTS bank_accounts (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    account_type VARCHAR(20) NOT NULL,
+    routing_number VARCHAR(9) NOT NULL,
+    account_last4 VARCHAR(4) NOT NULL,
+    account_fingerprint VARCHAR(64) NOT NULL,
+    created_at DATETIME(6) NOT NULL,
+    CONSTRAINT fk_bank_accounts_user FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT uq_bank_accounts_user_fingerprint UNIQUE (user_id, account_fingerprint)
+);
