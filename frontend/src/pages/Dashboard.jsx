@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import "../styles/Dashboard.css";
+import Sidebar from "../components/Sidebar";
+import BankConnection from "./BankConnection";
 
 function Dashboard() {
   return (
@@ -7,6 +9,7 @@ function Dashboard() {
 
       {/* Left Sidebar */}
       <aside className="dashboard-sidebar">
+          <Sidebar />
       </aside>
 
       {/* Main Content */}
@@ -33,12 +36,12 @@ function Dashboard() {
           {/* Left Column */}
           <div className="dashboard-left">
 
-            {/* Plan New Trip */}
-            <section className="dashboard-plan">
-              <Link to="/create-trip">
-                <button>Create Trip</button>
-              </Link>
-            </section>
+          {/* Plan New Trip */}
+          <section className="dashboard-plan">
+            <Link to="/create-trip">
+              <button>Create Trip</button>
+            </Link>
+          </section>
 
             {/* My Trips */}
             <section className="dashboard-trips">
@@ -48,6 +51,7 @@ function Dashboard() {
 
           {/* Right Column */}
           <aside className="dashboard-card">
+            <BankConnection />
           </aside>
 
         </div>

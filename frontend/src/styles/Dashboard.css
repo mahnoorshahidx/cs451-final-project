@@ -6,6 +6,7 @@
   background-color: #e7f5f7;
   font-family: Arial, sans-serif;
   box-sizing: border-box;
+
 }
 
 /* Sidebar */
@@ -13,7 +14,6 @@
   width: 220px;
   flex-shrink: 0;
   min-height: 100vh;
-  background-color: #d9eef0;
 }
 
 /* Main Dashboard */
@@ -68,29 +68,12 @@
   gap: 24px;
 }
 
-/* Plan a New Trip */
-.dashboard-plan {
-  min-height: 170px;
-  padding: 25px;
-  background-color: white;
-  border-radius: 18px;
-}
+
 
 /* My Trips */
-.dashboard-trips {
-  min-height: 270px;
-  background-color: white;
-  border-radius: 18px;
-}
 
-/* Right Card */
-.dashboard-card {
-  min-height: 170px;
-  background-color: white;
-  border-radius: 18px;
-}
 
-/* Temporary Create Trip Button */
+/*  Create Trip Button */
 .dashboard-plan button {
   padding: 12px 25px;
   background-color: #285c73;
