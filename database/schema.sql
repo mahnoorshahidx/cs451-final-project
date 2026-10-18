@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS trips (
 
 -- Creates the bank_accounts table based on the backend's BankAccount.java file.
 -- The full account number is never stored: only the last 4 digits and a keyed hash used to detect duplicates.
+-- The backend generates the keyed fingerprint when an account is connected.
 CREATE TABLE IF NOT EXISTS bank_accounts (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -46,4 +47,45 @@ CREATE TABLE IF NOT EXISTS bank_accounts (
     created_at DATETIME(6) NOT NULL,
     CONSTRAINT fk_bank_accounts_user FOREIGN KEY (user_id) REFERENCES users (id),
     CONSTRAINT uq_bank_accounts_user_fingerprint UNIQUE (user_id, account_fingerprint)
+);
+
+CREATE TABLE IF NOT EXISTS savings_goals (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    trip_id BIGINT NOT NULL UNIQUE,
+    target_amount DECIMAL(12,2) NOT NULL,
+    initial_saved_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    target_date DATE NOT NULL,
+    planned_monthly_contribution DECIMAL(12,2),
+    CONSTRAINT chk_savings_amounts CHECK (
+        target_amount >= 0 AND initial_saved_amount >= 0
+        AND (planned_monthly_contribution IS NULL OR planned_monthly_contribution >= 0)
+    ),
+    CONSTRAINT fk_savings_goals_trip FOREIGN KEY (trip_id) REFERENCES trips (id)
+);
+
+-- TODO #1: A trip may have multiple actual expenses.
+CREATE TABLE IF NOT EXISTS expenses (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    trip_id BIGINT NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    amount DECIMAL(12,2) NOT NULL,
+    expense_date DATE NOT NULL,
+    description VARCHAR(255),
+    CONSTRAINT chk_expense_amount CHECK (amount > 0),
+    CONSTRAINT fk_expenses_trip FOREIGN KEY (trip_id) REFERENCES trips (id)
+);
+
+-- TODO #1: Simulated savings contributions; not actual bank transfers.
+-- bank_account_id is optional. Backend must ensure any linked bank account
+-- belongs to the owner of the associated trip/savings goal.
+CREATE TABLE IF NOT EXISTS transactions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    savings_goal_id BIGINT NOT NULL,
+    bank_account_id BIGINT,
+    amount DECIMAL(12,2) NOT NULL,
+    transaction_date DATE NOT NULL,
+    description VARCHAR(255),
+    CONSTRAINT chk_transaction_amount CHECK (amount > 0),
+    CONSTRAINT fk_transactions_goal FOREIGN KEY (savings_goal_id) REFERENCES savings_goals (id),
+    CONSTRAINT fk_transactions_account FOREIGN KEY (bank_account_id) REFERENCES bank_accounts (id)
 );
