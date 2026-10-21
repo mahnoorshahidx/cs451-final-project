@@ -80,33 +80,9 @@
   align-items: center;
 }
 
-.trip-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  color: #344E68;
-}
 
-.trip-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
 
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.95);
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: #344E68;
-  font-weight: bold;
-
-  box-shadow:
-    0 4px 12px rgba(52, 78, 104, 0.08),
-    inset 0 1px 1px rgba(255, 255, 255, 1);
-}
 
 /* ==========================================
    WELCOME BANNER

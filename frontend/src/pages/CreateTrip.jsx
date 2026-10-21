@@ -170,12 +170,6 @@ function CreateTrip() {
 
         {/* Top navigation */}
         <header className="trip-header">
-          {/* Logged-in user instead of the hard-coded "OhMay Ishar" (SCRUM-30) */}
-          <div className="trip-profile">
-            <div className="trip-avatar">{initials(user?.name)}</div>
-            <span>{user?.name}</span>
-            <span>⌄</span>
-          </div>
         </header>
 
         {/* Banner */}
