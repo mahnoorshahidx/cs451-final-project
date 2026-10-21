@@ -1,0 +1,107 @@
+/* Trip cards used on the Dashboard and My Trips pages */
+
+.my-trips {
+  padding: 24px 0;
+}
+
+.trips-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.trips-section-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.trips-section-header a {
+  font-size: 0.9rem;
+}
+
+.trips-new-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #1f6f5c;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.trips-message {
+  color: #666;
+  margin: 8px 0;
+}
+
+.trip-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.trip-card {
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.trip-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.trip-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.trip-card-destination,
+.trip-card-meta {
+  margin: 2px 0 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.trip-card-badge {
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #e5f3ee;
+  color: #1f6f5c;
+}
+
+.trip-card-badge.past {
+  background: #f0f0f0;
+  color: #777;
+}
+
+.trip-card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.trip-card-link {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1f6f5c;
+  text-decoration: none;
+}
+
+.trip-card-delete {
+  border: none;
+  background: none;
+  color: #c0392b;
+  cursor: pointer;
+  font-size: 0.9rem;
+}

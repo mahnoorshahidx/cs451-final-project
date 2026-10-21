@@ -1,37 +1,76 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../styles/BankConnection.css";
+import {
+  connectBankAccount,
+  disconnectBankAccount,
+  listBankAccounts,
+} from "../api/api";
+
+// Now connects through the backend instead of localStorage (SCRUM-34).
+// Demo banks. Each routing number is real and passes the backend's checksum.
+// The account numbers are made up. Balances are display-only (the backend doesn't track them).
+const banks = [
+  { name: "Chase", routingNumber: "021000021", accountNumber: "000004821", balance: 5284.2, initial: "C" },
+  { name: "Bank of America", routingNumber: "026009593", accountNumber: "000001934", balance: 3420.75, initial: "B" },
+  { name: "Wells Fargo", routingNumber: "121000248", accountNumber: "000006205", balance: 6750.0, initial: "W" },
+];
+
+// Match a saved account back to its demo bank for the name/logo
+const bankFor = (account) =>
+  banks.find((b) => b.routingNumber === account.routingNumber) ?? {
+    name: "Bank",
+    initial: "B",
+    balance: null,
+  };
 
 function BankConnection() {
-
-  // Demo bank accounts
-  const banks = [
-    { name: "Chase", balance: 5284.20, lastFour: "4821", initial: "C" },
-    { name: "Bank of America", balance: 3420.75, lastFour: "1934", initial: "B" },
-    { name: "Wells Fargo", balance: 6750.00, lastFour: "6205", initial: "W" }
-  ];
-
-  // Remember selected bank after refreshing
-  const [connectedBank, setConnectedBank] = useState(() => {
-    const savedBank = localStorage.getItem("demoBank");
-    return banks.find((bank) => bank.name === savedBank) || null;
-  });
-
-  // Show or hide bank options
+  const [account, setAccount] = useState(null); // the connected account from the backend
   const [showBankOptions, setShowBankOptions] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
-  // Connect a demo bank
-  function connectBank(bank) {
-    setConnectedBank(bank);
-    localStorage.setItem("demoBank", bank.name);
-    setShowBankOptions(false);
+  // Load the user's connected account from the backend, so it survives refreshes and other devices
+  useEffect(() => {
+    listBankAccounts()
+      .then((accounts) => setAccount(accounts[0] ?? null))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function connectBank(bank) {
+    setError("");
+    setBusy(true);
+    try {
+      const saved = await connectBankAccount({
+        accountType: "CHECKING",
+        routingNumber: bank.routingNumber,
+        accountNumber: bank.accountNumber,
+      });
+      setAccount(saved);
+      setShowBankOptions(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
-  // Disconnect bank
-  function disconnectBank() {
-    setConnectedBank(null);
-    localStorage.removeItem("demoBank");
+  async function disconnectBank() {
+    setError("");
+    setBusy(true);
+    try {
+      await disconnectBankAccount(account.id);
+      setAccount(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
   }
+
+  const bank = account ? bankFor(account) : null;
+  const typeLabel = account?.accountType === "SAVINGS" ? "Savings" : "Checking";
 
   return (
     <section className="bank-card">
@@ -40,34 +79,35 @@ function BankConnection() {
       <div className="bank-card-header">
         <h2>Connected account</h2>
 
-        <span className={`bank-status ${connectedBank ? "connected" : ""}`}>
-          {connectedBank ? "Connected · Demo" : "Not connected"}
+        <span className={`bank-status ${account ? "connected" : ""}`}>
+          {account ? "Connected · Demo" : "Not connected"}
         </span>
       </div>
 
-      {/* Connected account */}
-      {connectedBank ? (
+      {loading ? (
+        <p>Loading...</p>
+      ) : account ? (
         <>
           <div className="bank-account-info">
 
-            <div className="bank-logo">
-              {connectedBank.initial}
-            </div>
+            <div className="bank-logo">{bank.initial}</div>
 
             <div className="bank-name">
-              <h3>{connectedBank.name} Checking</h3>
-              <p>•••• {connectedBank.lastFour}</p>
+              <h3>{bank.name} {typeLabel}</h3>
+              <p>•••• {account.accountLast4}</p>
             </div>
 
-            <div className="bank-balance">
-              <p>Available</p>
-              <h3>
-                ${connectedBank.balance.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                })}
-              </h3>
-            </div>
+            {bank.balance !== null && (
+              <div className="bank-balance">
+                <p>Available</p>
+                <h3>
+                  ${bank.balance.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </h3>
+              </div>
+            )}
 
           </div>
 
@@ -76,11 +116,8 @@ function BankConnection() {
             <p>$125 moves to travel savings every Friday (simulated)</p>
           </div>
 
-          <button
-            className="bank-action-btn"
-            onClick={disconnectBank}
-          >
-            Disconnect demo account
+          <button className="bank-action-btn" onClick={disconnectBank} disabled={busy}>
+            {busy ? "Disconnecting..." : "Disconnect demo account"}
           </button>
         </>
       ) : showBankOptions ? (
@@ -90,18 +127,17 @@ function BankConnection() {
           <p>Choose a bank to connect for your demo.</p>
 
           <div className="bank-options">
-            {banks.map((bank) => (
+            {banks.map((b) => (
               <button
-                key={bank.name}
+                key={b.name}
                 className="bank-option"
-                onClick={() => connectBank(bank)}
+                onClick={() => connectBank(b)}
+                disabled={busy}
               >
-                <span className="bank-option-logo">
-                  {bank.initial}
-                </span>
+                <span className="bank-option-logo">{b.initial}</span>
 
                 <span className="bank-option-name">
-                  <strong>{bank.name}</strong>
+                  <strong>{b.name}</strong>
                   <small>Demo checking account</small>
                 </span>
 
@@ -110,10 +146,7 @@ function BankConnection() {
             ))}
           </div>
 
-          <button
-            className="bank-cancel-btn"
-            onClick={() => setShowBankOptions(false)}
-          >
+          <button className="bank-cancel-btn" onClick={() => setShowBankOptions(false)}>
             Cancel
           </button>
         </div>
@@ -132,15 +165,14 @@ function BankConnection() {
             and manage your travel savings.
           </p>
 
-          <button
-            className="bank-connect-btn"
-            onClick={() => setShowBankOptions(true)}
-          >
+          <button className="bank-connect-btn" onClick={() => setShowBankOptions(true)}>
             + Connect Bank
           </button>
 
         </div>
       )}
+
+      {error && <p className="error-text">{error}</p>}
 
       <p className="bank-demo-note">
         Demo only — no real banking information is accessed.
