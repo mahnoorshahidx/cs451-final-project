@@ -10,9 +10,6 @@ function Sidebar() {
     { name: "Dashboard", path: "/dashboard", icon: "⌂" },
     { name: "My Trips", path: "/my-trips", icon: "✈" },
     { name: "Savings", path: "/savings", icon: "$" },
-    { name: "Itinerary", path: "/itinerary", icon: "☷" },
-    { name: "Shared Trips", path: "/shared-trips", icon: "♧" },
-    { name: "Explore", path: "/explore", icon: "◎" },
     { name: "Settings", path: "/settings", icon: "⚙" },
   ];
 

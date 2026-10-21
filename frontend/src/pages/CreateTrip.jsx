@@ -7,28 +7,30 @@ const budgetCategories = [
   { name: "Flights", icon: "✈", description: "Round-trip tickets for all travelers" },
   { name: "Accommodation", icon: "▣", description: "Hotels, rentals and other stays" },
   { name: "Local transport", icon: "▤", description: "Transfers, public transport and car rentals" },
-  { name: "Food", icon: "♜", description: "Meals, drinks and snacks" },
-  { name: "Activities", icon: "◇", description: "Tours, attractions and experiences" },
-  { name: "Contingency", icon: "⬡", description: "A little extra for unexpected expenses" },
+  { name: "Food", icon: "♜", description: "Meals, drinks and snacks" }
 ];
 
 function CreateTrip() {
   const [tripDetails, setTripDetails] = useState({
-  name: "",
-  destination: "",
-  startDate: "",
-  endDate: "",
-  numberOfTravelers: 2,
-});
+    name: "",
+    destination: "",
+    startDate: "",
+    endDate: "",
+    numberOfTravelers: "",
+  });
   const [totalBudget, setTotalBudget] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [allocations, setAllocations] = useState({});
 
   const total = Number(totalBudget) || 0;
 
-  const allocated = Object.values(allocations).reduce(
-    (sum, value) => sum + (Number(value) || 0), 0
+
+  const allocated = budgetCategories.reduce(
+    (sum, category) =>
+      sum + (Number(allocations[category.name]) || 0),
+    0
   );
+
 
   const remaining = total - allocated;
   const percentage = total > 0 ? (allocated / total) * 100 : 0;
@@ -73,20 +75,12 @@ function CreateTrip() {
 
         {/* Top navigation */}
         <header className="trip-header">
-          <div className="trip-profile">
-            <div className="trip-avatar">OI</div>
-            <span>OhMay Ishar</span>
-            <span>⌄</span>
-          </div>
+
         </header>
 
         {/* Banner */}
         <section className="trip-banner">
           <div>
-            <p className="trip-breadcrumb">
-              My Trips / Plan a New Trip / Budget
-            </p>
-
             <h1>Create your trip budget</h1>
 
             <p>
@@ -171,15 +165,18 @@ function CreateTrip() {
 
             <div className="trip-field">
               <label htmlFor="travelers">Number of Travelers</label>
+
               <input
                 id="travelers"
                 type="number"
                 min="1"
+                placeholder="E.g 2"
                 value={tripDetails.numberOfTravelers}
                 onChange={(e) =>
                   setTripDetails({
                     ...tripDetails,
-                    numberOfTravelers: Number(e.target.value),
+                    numberOfTravelers:
+                      e.target.value === "" ? "" : Number(e.target.value),
                   })
                 }
               />
@@ -196,10 +193,17 @@ function CreateTrip() {
           <section className="trip-budget-form">
 
             <h2>Set your budget</h2>
+
             <p className="budget-description">
               Start with a total, then divide it across your trip.
-              All amounts are for 2 travelers.
+              {Number(tripDetails.numberOfTravelers) >= 1 &&
+                ` All amounts are for ${tripDetails.numberOfTravelers} ${
+                  Number(tripDetails.numberOfTravelers) === 1
+                    ? "traveler"
+                    : "travelers"
+                }.`}
             </p>
+
 
             <div className="budget-input-row">
 
@@ -233,7 +237,7 @@ function CreateTrip() {
 
             <div className="budget-divider"></div>
 
-            <h3>Allocate by category</h3>
+            <h3>Plan your spending</h3>
             <p className="budget-description">
               Enter your planned spending. You can adjust these amounts later.
             </p>
@@ -288,7 +292,7 @@ function CreateTrip() {
             </div>
 
             <div className="progress-labels">
-              <span>{percentage.toFixed(0)}% allocated</span>
+              <span>{percentage.toFixed(0)}% planned</span>
               <span>
                 {formatter.format(allocated)} of {formatter.format(total)}
               </span>
@@ -306,23 +310,25 @@ function CreateTrip() {
             </div>
 
             <div className="summary-allocated">
-              <span>Total allocated</span>
+              <span>Total planned spending</span>
               <strong>{formatter.format(allocated)}</strong>
             </div>
 
             <div className="remaining-budget">
               <div>
-                <span>Remaining to allocate</span>
+                <span>Remaining budget</span>
                 <h2>{formatter.format(remaining)}</h2>
               </div>
 
-              <p>
-                {remaining < 0
-                  ? "Your allocations exceed your total budget."
-                  : remaining === 0 && total > 0
-                  ? "Your entire budget has been allocated."
-                  : "Add a total budget to start allocating your spending."}
-              </p>
+            <p>
+              {remaining < 0
+                ? "Your planned spending exceeds your total budget."
+                : remaining === 0 && total > 0
+                ? "Your entire budget has been planned."
+                : total === 0
+                ? "Enter your total budget to get started."
+                : "You still have money available in your budget."}
+            </p>
             </div>
 
             <button className="save-budget-btn" onClick={handleSave}>

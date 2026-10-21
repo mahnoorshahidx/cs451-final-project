@@ -1,96 +1,351 @@
+
+/* ==================================
+   DASHBOARD - LIQUID GLASS THEME
+================================== */
+
 /* Entire Dashboard */
 .dashboard-page {
   display: flex;
   width: 100%;
   min-height: 100vh;
-  background-color: #e7f5f7;
+
+  background: linear-gradient(
+    135deg,
+    #F8FBFD 0%,
+    #DCE8F1 55%,
+    #EEF5FA 100%
+  );
+
   font-family: Arial, sans-serif;
   box-sizing: border-box;
-
+  position: relative;
+  isolation: isolate;
 }
 
-/* Sidebar */
+/* Soft Background Glow */
+.dashboard-page::before {
+  content: "";
+  position: fixed;
+  width: 550px;
+  height: 550px;
+  top: -200px;
+  right: -150px;
+
+  background: radial-gradient(
+    circle,
+    rgba(153, 190, 219, 0.24),
+    transparent 70%
+  );
+
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ==================================
+   SIDEBAR AREA
+================================== */
+
 .dashboard-sidebar {
-  width: 220px;
+  width: auto;
   flex-shrink: 0;
   min-height: 100vh;
+  position: relative;
+  z-index: 2;
 }
 
-/* Main Dashboard */
+/* The glass styling for the actual
+   sidebar is handled in Sidebar.css */
+
+/* ==================================
+   MAIN DASHBOARD
+================================== */
+
 .dashboard-main {
   flex: 1;
   min-width: 0;
-  padding: 20px 25px 40px;
+
+  padding: 25px 35px 40px;
 
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
+
+  position: relative;
+  z-index: 1;
 }
 
-/* Profile Header */
+/* Top Profile Header */
 .dashboard-header {
   width: 100%;
-  height: 50px;
+  min-height: 50px;
 }
 
-/* Welcome Banner */
+/* ==================================
+   WELCOME BANNER
+================================== */
+
 .dashboard-banner {
   display: flex;
   align-items: center;
-  padding: 35px;
-  background-color: #b9e0ed;
-  border-radius: 16px;
-}
-.dashboard-banner h1 {
-  font-size: 32px;
-  color: #172b43;
-  margin: 0 0 10px;
-}
-.dashboard-banner p {
-  font-size: 16px;
-  color: #344b63;
-  max-width: 350px;
-  margin: 0;
+
+  padding: 40px;
+  min-height: 130px;
+  box-sizing: border-box;
+
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.72),
+    rgba(220, 232, 241, 0.72)
+  );
+
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 28px;
+
+  box-shadow:
+    0 15px 40px rgba(52, 78, 104, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 1),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.5);
+
+  position: relative;
+  overflow: hidden;
 }
 
-/* Main Content Grid */
+/* Subtle Glass Reflection */
+.dashboard-banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  width: 76%;
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 1),
+    transparent
+  );
+
+  pointer-events: none;
+}
+
+.dashboard-banner h1 {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin: 0 0 12px;
+}
+
+.dashboard-banner p {
+  font-size: 16px;
+  color: #526779;
+  max-width: 450px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ==================================
+   DASHBOARD CONTENT
+================================== */
+
 .dashboard-content {
   display: grid;
-  grid-template-columns: 2.5fr 1fr;
+
+  grid-template-columns:
+    minmax(0, 1.4fr)
+    minmax(0, 1fr);
+
   gap: 24px;
   align-items: start;
 }
 
-/* Left Column */
-.dashboard-left {
+/* ==================================
+   SHARED LIQUID GLASS CARDS
+================================== */
+
+.dashboard-plan,
+.dashboard-card {
+  background: rgba(255, 255, 255, 0.82);
+
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+
+  box-shadow:
+    0 12px 35px rgba(52, 78, 104, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 1),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.4);
+
+  box-sizing: border-box;
+  min-width: 0;
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glass Reflection */
+.dashboard-plan::before,
+.dashboard-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  width: 76%;
+  height: 1px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 1),
+    transparent
+  );
+
+  pointer-events: none;
+}
+
+/* ==================================
+   CREATE TRIP - COMPACT CARD
+================================== */
+
+.dashboard-plan {
   display: flex;
-  flex-direction: column;
-  gap: 24px;
+  align-items: center;
+  gap: 18px;
+
+  padding: 24px;
+  min-height: 120px;
 }
 
+/* Plane Icon */
+.plan-icon {
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-/* My Trips */
+  background: linear-gradient(
+    145deg,
+    #DCE8F1,
+    #C6DAE9
+  );
 
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
 
-/*  Create Trip Button */
-.dashboard-plan button {
-  padding: 12px 25px;
-  background-color: #285c73;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
+  color: #344E68;
+  font-size: 25px;
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    0 5px 12px rgba(52, 78, 104, 0.08);
 }
 
-/* Tablet */
-@media (max-width: 900px) {
-  .dashboard-sidebar {
-    width: 160px;
+/* Trip Information */
+.plan-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.plan-info h2 {
+  font-size: 19px;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin: 0 0 8px;
+}
+
+.plan-info p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #526779;
+  margin: 0;
+}
+
+/* ==================================
+   CREATE TRIP BUTTON
+================================== */
+
+.plan-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  flex-shrink: 0;
+  padding: 14px 20px;
+
+  background: linear-gradient(
+    180deg,
+    #4A6989 0%,
+    #344E68 65%,
+    #2C435A 100%
+  );
+
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    0 8px 20px rgba(52, 78, 104, 0.18);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.plan-link:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    0 12px 24px rgba(52, 78, 104, 0.22);
+}
+
+.plan-link:active {
+  transform: translateY(0);
+}
+
+.plan-link:focus-visible {
+  outline: 3px solid #8EACC5;
+  outline-offset: 3px;
+}
+
+/* ==================================
+   BANK CONNECTION CARD
+================================== */
+
+.dashboard-card {
+  padding: 24px;
+}
+
+/* ==================================
+   RESPONSIVE DESIGN
+================================== */
+
+/* Smaller Desktop / Tablet */
+@media (max-width: 1200px) {
+  .dashboard-main {
+    padding: 24px;
   }
 
   .dashboard-content {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -102,10 +357,79 @@
 
   .dashboard-sidebar {
     width: 100%;
-    min-height: 70px;
+    min-height: auto;
   }
 
   .dashboard-main {
     padding: 16px;
+    gap: 18px;
+  }
+
+  .dashboard-header {
+    min-height: 30px;
+  }
+
+  .dashboard-banner {
+    padding: 26px;
+    min-height: auto;
+    border-radius: 22px;
+  }
+
+  .dashboard-banner h1 {
+    font-size: 26px;
+  }
+
+  .dashboard-banner p {
+    font-size: 14px;
+  }
+
+  .dashboard-content {
+    gap: 16px;
+  }
+
+  /* Compact Create Trip */
+  .dashboard-plan {
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .plan-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .plan-info {
+    flex: 1;
+    flex-basis: calc(100% - 75px);
+  }
+
+  .plan-info h2 {
+    font-size: 17px;
+  }
+
+  .plan-link {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .dashboard-card {
+    padding: 18px;
+    border-radius: 20px;
+  }
+}
+
+/* ==================================
+   REDUCED MOTION
+================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-link {
+    transition: none;
+  }
+
+  .plan-link:hover {
+    transform: none;
   }
 }

@@ -1,29 +1,80 @@
 
-/* Main page layout */
+/* ==========================================
+   CREATE TRIP - LIQUID GLASS THEME
+========================================== */
+
 .create-trip-page {
   display: flex;
+  width: 100%;
   min-height: 100vh;
-  background-color: #e7f5f7;
+
+  background: linear-gradient(
+    135deg,
+    #F8FBFD 0%,
+    #DCE8F1 55%,
+    #EEF5FA 100%
+  );
+
   font-family: Arial, sans-serif;
-  color: #111;
+  color: #1A1A1A;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
 }
 
-/* Sidebar */
+/* Soft background glow */
+.create-trip-page::before {
+  content: "";
+  position: fixed;
+  width: 550px;
+  height: 550px;
+  top: -200px;
+  right: -150px;
+
+  background: radial-gradient(
+    circle,
+    rgba(153, 190, 219, 0.24),
+    transparent 70%
+  );
+
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ==========================================
+   SIDEBAR
+========================================== */
+
 .trip-sidebar {
-  width: 230px;
+  width: auto;
   flex-shrink: 0;
+  min-height: 100vh;
+  position: relative;
+  z-index: 2;
 }
 
-/* Main content */
+/* Sidebar glass styling is in Sidebar.css */
+
+/* ==========================================
+   MAIN CONTENT
+========================================== */
+
 .trip-main {
   flex: 1;
   min-width: 0;
-  padding: 0 24px 34px;
+  padding: 0 35px 40px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
 }
 
-/* Top header */
+/* ==========================================
+   TOP HEADER
+========================================== */
+
 .trip-header {
-  height: 60px;
+  min-height: 85px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -34,90 +85,270 @@
   align-items: center;
   gap: 12px;
   font-size: 13px;
+  color: #344E68;
 }
 
 .trip-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #f7e8de;
+
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+
   display: flex;
   align-items: center;
   justify-content: center;
+
+  color: #344E68;
   font-weight: bold;
+
+  box-shadow:
+    0 4px 12px rgba(52, 78, 104, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
-/* Banner */
+/* ==========================================
+   WELCOME BANNER
+========================================== */
+
 .trip-banner {
   min-height: 165px;
-  padding: 25px 35px;
-  border-radius: 22px;
-  background-image: linear-gradient(
-    90deg,
-    rgba(210, 235, 244, 0.6),
-    rgba(255, 255, 255, 0)
-  ), url("../assets/trip-banner.jpg");
-  background-size: cover;
-  background-position: center;
+  padding: 35px 40px;
+  box-sizing: border-box;
+
   display: flex;
   align-items: center;
+
+  border-radius: 28px;
+
+  /* Image is intentionally faded */
+  background-image:
+    linear-gradient(
+      90deg,
+      rgba(248, 251, 253, 0.94) 0%,
+      rgba(220, 232, 241, 0.90) 60%,
+      rgba(220, 232, 241, 0.86) 100%
+    ),
+    url("../assets/trip-banner.jpg");
+
+  background-size: cover;
+  background-position: center;
+
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+
+  border: 1px solid rgba(255, 255, 255, 0.95);
+
+  box-shadow:
+    0 15px 40px rgba(52, 78, 104, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 1),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.5);
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glass reflection */
+.trip-banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  width: 76%;
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 1),
+    transparent
+  );
+
+  pointer-events: none;
 }
 
 .trip-breadcrumb {
-  color: #285d77;
+  color: #344E68;
   font-size: 13px;
+  font-weight: 600;
   margin-bottom: 12px;
 }
 
 .trip-banner h1 {
   font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -1px;
+  color: #1A1A1A;
   margin: 0 0 12px;
 }
 
 .trip-banner p:last-child {
   font-size: 16px;
+  line-height: 1.6;
+  color: #526779;
   margin: 0;
 }
+
+/* ==========================================
+   SHARED LIQUID GLASS PANELS
+========================================== */
+
+.trip-details,
+.trip-budget-form,
+.trip-budget-summary {
+  background: rgba(255, 255, 255, 0.82);
+
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+
+  box-shadow:
+    0 12px 35px rgba(52, 78, 104, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 1),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.4);
+
+  box-sizing: border-box;
+  min-width: 0;
+  position: relative;
+}
+
+/* Subtle top reflection */
+.trip-details::before,
+.trip-budget-form::before,
+.trip-budget-summary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  width: 76%;
+  height: 1px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 1),
+    transparent
+  );
+
+  pointer-events: none;
+}
+
+/* ==========================================
+   TRIP DETAILS
+========================================== */
 
 .trip-details {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 14px;
-  background: white;
-  padding: 22px 24px;
-  border-radius: 20px;
+  gap: 18px;
+
+  padding: 28px;
   margin-top: 24px;
 }
 
 .trip-details-title h2 {
-  font-size: 20px;
+  font-size: 21px;
+  font-weight: 600;
+  color: #1A1A1A;
   margin: 0 0 8px;
 }
 
 .trip-details-title p,
 .trip-detail-item span {
-  font-size: 12px;
-  color: #777;
+  font-size: 13px;
+  color: #667789;
 }
 
 .trip-detail-item p {
   font-size: 15px;
+  color: #1A1A1A;
   margin: 10px 0 0;
 }
 
 .edit-details {
-  background: none;
+  background: transparent;
   border: none;
-  color: #285d77;
-  font-weight: bold;
+  color: #344E68;
+  font-weight: 700;
   cursor: pointer;
+  padding: 8px 0;
 }
 
-/* Budget layout */
+.edit-details:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================
+   TRIP DETAILS FORM
+========================================== */
+
+.trip-details-form {
+  display: grid;
+  grid-template-columns:
+    1.2fr 1.4fr 1fr 1fr 0.8fr;
+
+  gap: 14px;
+  width: 100%;
+}
+
+.trip-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.trip-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.trip-field input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+
+  background: rgba(255, 255, 255, 0.78);
+
+  border: 1px solid rgba(180, 204, 224, 0.7);
+  border-radius: 12px;
+
+  box-sizing: border-box;
+  font-size: 14px;
+  color: #1A1A1A;
+
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    0 3px 10px rgba(52, 78, 104, 0.03);
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.trip-field input:focus {
+  outline: none;
+  border-color: #8EACC5;
+
+  box-shadow:
+    0 0 0 4px rgba(198, 218, 233, 0.5);
+}
+
+/* ==========================================
+   BUDGET LAYOUT
+========================================== */
+
 .trip-budget-layout {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(290px, 1fr);
+  grid-template-columns:
+    minmax(0, 2fr)
+    minmax(290px, 1fr);
+
   gap: 24px;
   margin-top: 24px;
   align-items: stretch;
@@ -125,25 +356,28 @@
 
 .trip-budget-form,
 .trip-budget-summary {
-  background: white;
-  border-radius: 20px;
-  padding: 24px;
+  padding: 28px;
 }
 
 .trip-budget-form h2,
 .trip-budget-summary h2 {
   font-size: 23px;
+  font-weight: 600;
+  color: #1A1A1A;
   margin: 0 0 8px;
 }
 
 .budget-description {
-  font-size: 12px;
-  color: #777;
-  line-height: 1.5;
-  margin: 0 0 14px;
+  font-size: 13px;
+  color: #667789;
+  line-height: 1.6;
+  margin: 0 0 18px;
 }
 
-/* Total budget input */
+/* ==========================================
+   TOTAL BUDGET INPUT
+========================================== */
+
 .budget-input-row {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -155,42 +389,68 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .budget-field label,
 .currency-field label {
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A1A1A;
 }
 
 .budget-field input,
 .currency-field select {
   width: 100%;
-  height: 44px;
-  border: 1px solid #dfe7eb;
-  border-radius: 6px;
-  padding: 0 12px;
-  background: white;
+  height: 48px;
+  padding: 0 14px;
+
+  background: rgba(255, 255, 255, 0.78);
+
+  border: 1px solid rgba(180, 204, 224, 0.7);
+  border-radius: 12px;
+
   box-sizing: border-box;
   font-size: 14px;
+  color: #1A1A1A;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
+.budget-field input:focus,
+.currency-field select:focus {
+  outline: none;
+  border-color: #8EACC5;
+
+  box-shadow:
+    0 0 0 4px rgba(198, 218, 233, 0.5);
+}
+
+/* Divider */
 .budget-divider {
   height: 1px;
-  background: #e5eaed;
-  margin: 12px 0;
+  background: rgba(180, 204, 224, 0.5);
+  margin: 20px 0;
 }
 
 .trip-budget-form h3 {
-  font-size: 16px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1A1A1A;
   margin: 0 0 6px;
 }
 
-/* Category allocation rows */
+/* ==========================================
+   BUDGET CATEGORIES
+========================================== */
+
 .budget-category-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-top: 18px;
+  gap: 18px;
+  margin-top: 20px;
 }
 
 .budget-category {
@@ -208,75 +468,115 @@
 }
 
 .category-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background: #f2f8fa;
-  color: #285d77;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+
+  background: linear-gradient(
+    145deg,
+    #DCE8F1,
+    #C6DAE9
+  );
+
+  color: #344E68;
+
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+
+  border: 1px solid rgba(255, 255, 255, 0.9);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    0 4px 12px rgba(52, 78, 104, 0.05);
 }
 
 .category-info h4 {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
+  color: #1A1A1A;
   margin: 0 0 4px;
 }
 
 .category-info p {
-  color: #777;
-  font-size: 11px;
+  color: #667789;
+  font-size: 12px;
   margin: 0;
 }
 
 .budget-category input {
   width: 145px;
-  height: 36px;
-  border: 1px solid #dfe7eb;
-  border-radius: 6px;
+  height: 40px;
   padding: 0 12px;
+
+  background: rgba(255, 255, 255, 0.78);
+
+  border: 1px solid rgba(180, 204, 224, 0.7);
+  border-radius: 10px;
+
   text-align: right;
+  font-size: 14px;
+  color: #1A1A1A;
+
   box-sizing: border-box;
   flex-shrink: 0;
 }
 
-/* Summary */
+.budget-category input:focus {
+  outline: none;
+  border-color: #8EACC5;
+  box-shadow: 0 0 0 4px rgba(198, 218, 233, 0.5);
+}
+
+/* ==========================================
+   BUDGET SUMMARY
+========================================== */
+
 .summary-label {
-  color: #777;
-  font-size: 12px;
-  margin: 14px 0 4px;
+  color: #667789;
+  font-size: 13px;
+  margin: 16px 0 6px;
 }
 
 .summary-total {
   display: flex;
   align-items: baseline;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .summary-total h1 {
-  font-size: 32px;
-  color: #285d77;
+  font-size: 34px;
+  font-weight: 700;
+  color: #344E68;
   margin: 0;
 }
 
 .summary-total span {
-  color: #777;
+  color: #667789;
   font-size: 12px;
 }
 
+/* Budget Progress Bar */
 .budget-progress {
-  height: 7px;
-  border-radius: 10px;
-  background: #d4e7eb;
-  margin-top: 16px;
+  height: 9px;
+  border-radius: 20px;
+  background: #DCE8F1;
+  margin-top: 18px;
   overflow: hidden;
 }
 
 .budget-progress-fill {
   height: 100%;
-  background: #285d77;
+  border-radius: inherit;
+
+  background: linear-gradient(
+    90deg,
+    #7299BA,
+    #344E68
+  );
+
   transition: width 0.3s ease;
 }
 
@@ -284,17 +584,21 @@
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  color: #777;
-  font-size: 11px;
+
+  color: #667789;
+  font-size: 12px;
   margin-top: 10px;
 }
 
-/* Summary categories */
+/* ==========================================
+   SUMMARY CATEGORIES
+========================================== */
+
 .summary-categories {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-top: 18px;
+  gap: 16px;
+  margin-top: 22px;
 }
 
 .summary-category {
@@ -305,28 +609,47 @@
 }
 
 .summary-category span {
-  color: #777;
+  color: #667789;
 }
 
 .summary-category strong {
-  font-weight: 500;
+  font-weight: 600;
+  color: #1A1A1A;
 }
 
+/* Total Allocated */
 .summary-allocated {
   display: flex;
   justify-content: space-between;
-  border-top: 1px solid #e5eaed;
-  padding-top: 16px;
-  margin-top: 20px;
+  gap: 12px;
+
+  border-top: 1px solid rgba(180, 204, 224, 0.5);
+  padding-top: 18px;
+  margin-top: 22px;
+
   font-size: 13px;
+  color: #1A1A1A;
 }
 
-/* Remaining budget */
+/* ==========================================
+   REMAINING BUDGET
+========================================== */
+
 .remaining-budget {
-  background: #e6f3f6;
-  border-radius: 8px;
-  padding: 16px;
-  margin-top: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(220, 232, 241, 0.85),
+    rgba(248, 251, 253, 0.85)
+  );
+
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+
+  padding: 18px;
+  margin-top: 20px;
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95);
 }
 
 .remaining-budget div {
@@ -337,109 +660,110 @@
 }
 
 .remaining-budget span {
-  color: #285d77;
+  color: #344E68;
   font-size: 13px;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .remaining-budget h2 {
-  color: #285d77;
-  font-size: 22px;
+  color: #344E68;
+  font-size: 23px;
+  font-weight: 700;
   margin: 0;
 }
 
 .remaining-budget p {
-  color: #777;
-  font-size: 11px;
-  margin: 8px 0 0;
+  color: #667789;
+  font-size: 12px;
+  margin: 10px 0 0;
 }
 
-/* Save button */
+/* ==========================================
+   SAVE BUDGET BUTTON
+========================================== */
+
 .save-budget-btn {
   width: 100%;
-  height: 44px;
-  border: none;
-  border-radius: 7px;
-  background: #285d77;
-  color: white;
-  font-weight: bold;
+  height: 50px;
+  margin-top: 20px;
+
+  background: linear-gradient(
+    180deg,
+    #4A6989 0%,
+    #344E68 65%,
+    #2C435A 100%
+  );
+
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 600;
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+
   cursor: pointer;
-  margin-top: 14px;
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    0 8px 20px rgba(52, 78, 104, 0.18);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
 }
 
 .save-budget-btn:hover {
-  background: #1b465e;
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+
+  box-shadow:
+    0 12px 26px rgba(52, 78, 104, 0.22);
 }
 
+.save-budget-btn:active {
+  transform: translateY(0);
+}
+
+/* Save Note */
 .save-note {
-  color: #777;
+  color: #667789;
   text-align: center;
-  font-size: 11px;
+  font-size: 12px;
+  line-height: 1.5;
   margin-top: 14px;
 }
-/* Trip Details Form */
-.trip-details-form {
-  display: grid;
-  grid-template-columns: 1.2fr 1.4fr 1fr 1fr 0.8fr;
-  gap: 14px;
-  width: 100%;
+
+/* ==========================================
+   ACCESSIBILITY
+========================================== */
+
+.edit-details:focus-visible,
+.save-budget-btn:focus-visible {
+  outline: 3px solid #8EACC5;
+  outline-offset: 3px;
 }
 
-.trip-field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+/* ==========================================
+   RESPONSIVE DESIGN
+========================================== */
 
-.trip-field label {
-  font-size: 12px;
-  font-weight: 500;
-  color: #333;
-}
-
-.trip-field input {
-  width: 100%;
-  height: 44px;
-  border: 1px solid #dfe7eb;
-  border-radius: 6px;
-  padding: 0 12px;
-  background: white;
-  box-sizing: border-box;
-  font-size: 14px;
-}
-
-.trip-field input:focus {
-  outline: none;
-  border-color: #285d77;
-}
-
+/* Tablet */
 @media (max-width: 1100px) {
+  .trip-main {
+    padding: 0 24px 32px;
+  }
+
+  .trip-budget-layout {
+    grid-template-columns: 1fr;
+  }
+
   .trip-details-form {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 700px) {
-  .trip-details-form {
-    grid-template-columns: 1fr;
-  }
-}
-
-
-
-
-
-/* Responsive layout */
-@media (max-width: 1100px) {
-  .trip-budget-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .trip-details {
-    flex-wrap: wrap;
-  }
-}
-
+/* Mobile */
 @media (max-width: 700px) {
   .trip-sidebar {
     display: none;
@@ -449,12 +773,33 @@
     padding: 0 14px 24px;
   }
 
+  .trip-header {
+    min-height: 65px;
+  }
+
   .trip-banner {
-    padding: 22px;
+    padding: 25px;
+    min-height: 145px;
+    border-radius: 22px;
   }
 
   .trip-banner h1 {
-    font-size: 25px;
+    font-size: 26px;
+  }
+
+  .trip-banner p:last-child {
+    font-size: 14px;
+  }
+
+  .trip-details,
+  .trip-budget-form,
+  .trip-budget-summary {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .trip-details-form {
+    grid-template-columns: 1fr;
   }
 
   .budget-input-row {
@@ -463,5 +808,21 @@
 
   .budget-category input {
     width: 100px;
+  }
+
+  .summary-total h1 {
+    font-size: 28px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .save-budget-btn,
+  .budget-progress-fill {
+    transition: none;
+  }
+
+  .save-budget-btn:hover {
+    transform: none;
   }
 }

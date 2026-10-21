@@ -1,25 +1,54 @@
 
+/* ================================
+   SIDEBAR - LIQUID GLASS
+================================ */
+
+/* Main Sidebar */
 .sidebar {
   width: 240px;
   min-width: 240px;
   min-height: 100vh;
-  background-color: #f4faf8;
+
   display: flex;
   flex-direction: column;
+
   padding: 24px 12px;
   box-sizing: border-box;
-  transition: width 0.3s ease, min-width 0.3s ease;
+
+  /* Milky Liquid Glass */
+  background: rgba(255, 255, 255, 0.82);
+
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+
+  border-right: 1px solid rgba(255, 255, 255, 0.9);
+
+  box-shadow:
+    4px 0 30px rgba(52, 78, 104, 0.06),
+    inset -1px 0 1px rgba(255, 255, 255, 0.8);
+
+  position: relative;
+
+  transition:
+    width 0.3s ease,
+    min-width 0.3s ease;
 }
 
+/* Collapsed Sidebar */
 .sidebar.collapsed {
   width: 75px;
   min-width: 75px;
 }
 
+/* ================================
+   SIDEBAR HEADER
+================================ */
+
 .sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 10px;
   margin-bottom: 30px;
   padding: 0 8px;
@@ -28,17 +57,48 @@
 .sidebar-header h2 {
   font-size: 18px;
   font-weight: 700;
-  color: #142f38;
+  color: #1A1A1A;
   margin: 0;
 }
 
+/* Collapse / Expand Button */
 .sidebar-toggle {
-  background: transparent;
-  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  background: rgba(255, 255, 255, 0.55);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 1),
+    0 3px 10px rgba(52, 78, 104, 0.05);
+
   cursor: pointer;
-  font-size: 24px;
-  color: #285d73;
+  font-size: 22px;
+  color: #344E68;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
+
+.sidebar-toggle:hover {
+  background: rgba(220, 232, 241, 0.85);
+  transform: translateY(-1px);
+}
+
+/* ================================
+   NAVIGATION LINKS
+================================ */
 
 .sidebar-nav {
   display: flex;
@@ -46,37 +106,81 @@
   gap: 8px;
 }
 
+/* Default Navigation Link */
 .sidebar-link {
   display: flex;
   align-items: center;
   gap: 15px;
+
   padding: 14px 16px;
-  border-radius: 12px;
+  border-radius: 16px;
+
   text-decoration: none;
-  color: #285d73;
+  color: #344E68;
+
   font-size: 15px;
   font-weight: 600;
   white-space: nowrap;
+
+  background: transparent;
+  border: 1px solid transparent;
+
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
+/* Hover - Soft Glass Highlight */
 .sidebar-link:hover {
-  background-color: #e1eff2;
+  background: rgba(220, 232, 241, 0.65);
+
+  border-color: rgba(255, 255, 255, 0.85);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    0 4px 12px rgba(52, 78, 104, 0.05);
+
+  transform: translateX(2px);
 }
 
+/* Active Navigation Link */
 .sidebar-link.active {
-  background-color: #d4e7ec;
+  background: linear-gradient(
+    135deg,
+    rgba(220, 232, 241, 0.95),
+    rgba(198, 218, 233, 0.75)
+  );
+
+  color: #1A1A1A;
+
+  border: 1px solid rgba(255, 255, 255, 0.95);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 1),
+    0 5px 16px rgba(52, 78, 104, 0.08);
 }
 
+/* Navigation Icons */
 .sidebar-icon {
   font-size: 21px;
   width: 24px;
   text-align: center;
   flex-shrink: 0;
+  color: #344E68;
 }
+
+/* ================================
+   COLLAPSED SIDEBAR
+================================ */
 
 .sidebar.collapsed .sidebar-header {
   justify-content: center;
   padding: 0;
+}
+
+.sidebar.collapsed .sidebar-header h2 {
+  display: none;
 }
 
 .sidebar.collapsed .sidebar-link {
@@ -84,26 +188,72 @@
   padding: 14px 0;
 }
 
+/* ================================
+   LOGOUT BUTTON
+================================ */
 
-/* Logout Button */
 .sidebar-logout {
   display: flex;
   align-items: center;
   gap: 15px;
+
   padding: 14px 16px;
   margin-top: auto;
-  border-radius: 12px;
+
+  border-radius: 16px;
+
   text-decoration: none;
-  color: #285d73;
+  color: #344E68;
+
   font-size: 15px;
   font-weight: 600;
+
+  background: rgba(255, 255, 255, 0.45);
+
+  border: 1px solid rgba(255, 255, 255, 0.75);
+
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.8),
+    0 3px 10px rgba(52, 78, 104, 0.04);
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .sidebar-logout:hover {
-  background-color: #d4e7ec;
+  background: rgba(220, 232, 241, 0.85);
+  transform: translateY(-1px);
 }
 
+/* Collapsed Logout */
 .sidebar.collapsed .sidebar-logout {
   justify-content: center;
   padding: 14px 0;
+}
+
+/* ================================
+   ACCESSIBILITY
+================================ */
+
+.sidebar-toggle:focus-visible,
+.sidebar-link:focus-visible,
+.sidebar-logout:focus-visible {
+  outline: 3px solid #8EACC5;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .sidebar-toggle,
+  .sidebar-link,
+  .sidebar-logout {
+    transition: none;
+  }
+
+  .sidebar-toggle:hover,
+  .sidebar-link:hover,
+  .sidebar-logout:hover {
+    transform: none;
+  }
 }
