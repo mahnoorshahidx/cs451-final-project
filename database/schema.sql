@@ -89,3 +89,25 @@ CREATE TABLE IF NOT EXISTS transactions (
     CONSTRAINT fk_transactions_goal FOREIGN KEY (savings_goal_id) REFERENCES savings_goals (id),
     CONSTRAINT fk_transactions_account FOREIGN KEY (bank_account_id) REFERENCES bank_accounts (id)
 );
+
+-- Trip budget (UC4): one budget per trip, plus its per-category amounts.
+-- ON DELETE CASCADE: deleting a trip deletes its budget.
+
+CREATE TABLE IF NOT EXISTS trip_budgets (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    trip_id BIGINT NOT NULL UNIQUE,
+    total_amount DECIMAL(12, 2) NOT NULL,
+    currency CHAR(3) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    CONSTRAINT fk_trip_budgets_trip
+        FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS trip_budget_allocations (
+    budget_id BIGINT NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    amount DECIMAL(12, 2) NOT NULL,
+    PRIMARY KEY (budget_id, category),
+    CONSTRAINT fk_allocations_budget
+        FOREIGN KEY (budget_id) REFERENCES trip_budgets(id) ON DELETE CASCADE
+);
