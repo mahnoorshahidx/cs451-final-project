@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.tripbudgetplanner.backend.bank.dto.ConnectBankAccountRequest;
 import com.tripbudgetplanner.backend.bank.exception.BankAccountAlreadyConnectedException;
+import com.tripbudgetplanner.backend.bank.exception.BankAccountNotFoundException;
 import com.tripbudgetplanner.backend.user.User;
 import com.tripbudgetplanner.backend.user.UserRepository;
 
@@ -82,5 +83,12 @@ public class BankAccountService {
         } catch (GeneralSecurityException e) {
             throw new IllegalStateException("Could not hash account number", e);
         }
+    }
+
+    // Removes a connected account, but only if it belongs to this user
+    public void disconnect(Long accountId, Long userId) {
+        BankAccount account = bankAccountRepository.findByIdAndUserId(accountId, userId)
+            .orElseThrow(BankAccountNotFoundException::new);
+        bankAccountRepository.delete(account);
     }
 }
