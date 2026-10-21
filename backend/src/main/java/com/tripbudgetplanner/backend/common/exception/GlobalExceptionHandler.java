@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.tripbudgetplanner.backend.auth.exception.EmailAlreadyExistsException;
 import com.tripbudgetplanner.backend.auth.exception.InvalidCredentialsException;
 import com.tripbudgetplanner.backend.bank.exception.BankAccountAlreadyConnectedException;
+import com.tripbudgetplanner.backend.bank.exception.BankAccountNotFoundException;
+import com.tripbudgetplanner.backend.trip.exception.TripNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -43,5 +45,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BankAccountAlreadyConnectedException.class)
     public ResponseEntity<Map<String, String>> handleBankDuplicate(BankAccountAlreadyConnectedException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(TripNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleTripNotFound(TripNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(BankAccountNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleBankNotFound(BankAccountNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
     }
 }

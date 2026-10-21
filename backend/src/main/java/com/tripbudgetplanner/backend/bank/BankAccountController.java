@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +41,13 @@ public class BankAccountController {
     @GetMapping
     public List<BankAccountResponse> list(@AuthenticationPrincipal Long userId) {
         return bankAccountService.listForUser(userId).stream().map(this::toResponse).toList();
+    }
+    
+    // Disconnect one of the logged-in user's accounts
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> disconnect(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
+        bankAccountService.disconnect(id, userId);
+        return ResponseEntity.noContent().build();
     }
 
     private BankAccountResponse toResponse(BankAccount a) {

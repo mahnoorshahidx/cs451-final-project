@@ -1,67 +1,113 @@
 
 import "../styles/Login.css";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { login } from "../api/api";
+import { clearSession, saveSession } from "../api/client";
 
 function Login() {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const justRegistered = location.state?.registered;
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    navigate("/dashboard");
-  };
+    // Inputs are now controlled so we can read what the user typed
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
-  return (
-    <div className="login-page">
+    // Now logs in through the backend and saves the token + user's name.
+    // Before, it just navigated to /dashboard, so later API calls got 401s (SCRUM-30).
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setError("");
+        setLoading(true);
+        clearSession();
 
-      {/* Left side - Travel image */}
-      <section className="login-left">
-      </section>
+        try {
+            const data = await login(email, password); // { token, name, email }
+            saveSession(data);
+            navigate("/dashboard");
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-      {/* Right side - Login form */}
-      <section className="login-right">
-        <div className="login-container">
+    return (
+        <div className="login-page">
 
-          <p className="welcome-text">WELCOME BACK</p>
-          <h1>Sign in to your account</h1>
-          <p className="login-subtitle">
-            Continue planning your next unforgettable adventure.
-          </p>
+            {/* Left side - Travel image */}
+            <section className="login-left">
+            </section>
 
-          <form className="login-form" onSubmit={handleLogin}>
+            {/* Right side - Login form */}
+            <section className="login-right">
+                <div className="login-container">
 
-            <label htmlFor="email">Email address</label>
-            <input
-              id="email"
-              type="email"
-              placeholder="example@example.com"
-            />
+                    <p className="welcome-text">WELCOME BACK</p>
+                    <h1>Sign in to your account</h1>
+                    <p className="login-subtitle">
+                        Continue planning your next unforgettable adventure.
+                    </p>
 
-            <div className="password-header">
-              <label htmlFor="password">Password</label>
-              <a href="/forgot-password">Forgot password?</a>
-            </div>
+                    {/* Shown after signing up */}
+                    {justRegistered && (
+                        <p className="success-text">Account created. Sign in to continue.</p>
+                    )}
 
-            <input
-              id="password"
-              type="password"
-              placeholder="Enter password"
-            />
+                    <form className="login-form" onSubmit={handleLogin}>
 
-            <button type="submit" className="login-button">
-              Sign In
-            </button>
+                        <label htmlFor="email">Email address</label>
+                        <input
+                            id="email"
+                            type="email"
+                            placeholder="example@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
 
-          </form>
+                        <div className="password-header">
+                            <label htmlFor="password">Password</label>
+                            <a href="/forgot-password">Forgot password?</a>
+                        </div>
 
-          <p className="signup-text">
-            New to TripBudget?{" "}
-            <Link to="/signup">Create an account</Link>
-          </p>
+                        <input
+                            id="password"
+                            type="password"
+                            placeholder="Enter password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
 
+                        {/* Login errors from the backend */}
+                        {error && <p className="error-text">{error}</p>}
+
+                        <button type="submit" className="login-button" disabled={loading}>
+                            {loading ? "Signing in..." : "Sign In"}
+                        </button>
+
+                    </form>
+
+                    <div className="login-divider">
+                        <span>or</span>
+                    </div>
+
+                    <button type="button" className="google-button">
+                        Continue with Google
+                    </button>
+
+                    <p className="signup-text">
+                        New to TripBudget? <Link to="/signup">Create an account</Link>
+                    </p>
+
+                </div>
+            </section>
         </div>
-      </section>
-    </div>
-  );
+    );
 }
 
 export default Login;

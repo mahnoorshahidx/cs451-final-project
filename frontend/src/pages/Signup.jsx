@@ -1,43 +1,67 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { register } from "../api/api";
 import "../styles/SignUp.css";
 
-function SignUp() {
+function Signup() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    phoneNumber: "",
+    dateOfBirth: "",
+    address: "",
   });
 
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
 
-    // Backend connection will go here.
-    // Do not save passwords in localStorage.
+    setLoading(true);
 
-    console.log("Sign up form validated.");
+    try {
+      const body = {
+        name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
+        email: formData.email,
+        password: formData.password,
+        phoneNumber: formData.phoneNumber,
+        dateOfBirth: formData.dateOfBirth,
+        address: formData.address,
+      };
 
-    setError("Registration is not connected to the backend yet.");
+      await register(body);
+
+      navigate("/", { state: { registered: true } });
+    } catch (err) {
+      setFieldErrors(err.fieldErrors || {});
+      setError(err.message || "Registration failed.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,7 +70,7 @@ function SignUp() {
       {/* Left side */}
       <section className="signup-left"></section>
 
-      {/* Right side - Sign up form */}
+      {/* Right side */}
       <section className="signup-right">
         <div className="signup-container">
 
@@ -59,44 +83,41 @@ function SignUp() {
 
           <form className="signup-form" onSubmit={handleSubmit}>
 
-            
-{/* First Name and Last Name Side by Side */}
-<div className="name-row">
+            {/* First and Last Name */}
+            <div className="name-row">
 
-            {/* First Name */}
-            <div className="name-field">
+              <div className="name-field">
                 <label htmlFor="firstName">First name</label>
                 <input
-                id="firstName"
-                name="firstName"
-                type="text"
-                placeholder="Enter your first name"
-                value={formData.firstName}
-                onChange={handleChange}
-                autoComplete="given-name"
-                required
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  placeholder="Enter your first name"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  required
                 />
-            </div>
+              </div>
 
-            {/* Last Name */}
-            <div className="name-field">
+              <div className="name-field">
                 <label htmlFor="lastName">Last name</label>
                 <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                placeholder="Enter your last name"
-                value={formData.lastName}
-                onChange={handleChange}
-                autoComplete="family-name"
-                required
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  placeholder="Enter your last name"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
                 />
-            </div>
+              </div>
 
             </div>
 
+            {fieldErrors.name && (
+              <p className="error-text">{fieldErrors.name}</p>
+            )}
 
-            {/* Email */}
             <label htmlFor="email">Email address</label>
             <input
               id="email"
@@ -105,11 +126,12 @@ function SignUp() {
               placeholder="example@example.com"
               value={formData.email}
               onChange={handleChange}
-              autoComplete="email"
               required
             />
+            {fieldErrors.email && (
+              <p className="error-text">{fieldErrors.email}</p>
+            )}
 
-            {/* Password */}
             <label htmlFor="password">Password</label>
             <input
               id="password"
@@ -118,15 +140,14 @@ function SignUp() {
               placeholder="Create a password"
               value={formData.password}
               onChange={handleChange}
-              autoComplete="new-password"
               minLength={8}
               required
             />
+            {fieldErrors.password && (
+              <p className="error-text">{fieldErrors.password}</p>
+            )}
 
-            {/* Confirm Password */}
-            <label htmlFor="confirmPassword">
-              Confirm password
-            </label>
+            <label htmlFor="confirmPassword">Confirm password</label>
             <input
               id="confirmPassword"
               name="confirmPassword"
@@ -134,14 +155,55 @@ function SignUp() {
               placeholder="Confirm your password"
               value={formData.confirmPassword}
               onChange={handleChange}
-              autoComplete="new-password"
               required
             />
 
-            {error && <p role="alert">{error}</p>}
+            <label htmlFor="phoneNumber">Phone number</label>
+            <input
+              id="phoneNumber"
+              name="phoneNumber"
+              type="tel"
+              placeholder="555-123-4567"
+              value={formData.phoneNumber}
+              onChange={handleChange}
+            />
+            {fieldErrors.phoneNumber && (
+              <p className="error-text">{fieldErrors.phoneNumber}</p>
+            )}
 
-            <button type="submit" className="signup-button">
-              Create Account
+            <label htmlFor="dateOfBirth">Date of birth</label>
+            <input
+              id="dateOfBirth"
+              name="dateOfBirth"
+              type="date"
+              value={formData.dateOfBirth}
+              onChange={handleChange}
+            />
+            {fieldErrors.dateOfBirth && (
+              <p className="error-text">{fieldErrors.dateOfBirth}</p>
+            )}
+
+            <label htmlFor="address">Address</label>
+            <input
+              id="address"
+              name="address"
+              type="text"
+              placeholder="Enter your address"
+              value={formData.address}
+              onChange={handleChange}
+            />
+            {fieldErrors.address && (
+              <p className="error-text">{fieldErrors.address}</p>
+            )}
+
+            {error && <p className="error-text" role="alert">{error}</p>}
+
+            <button
+              type="submit"
+              className="signup-button"
+              disabled={loading}
+            >
+              {loading ? "Creating account..." : "Create Account"}
             </button>
 
           </form>
@@ -153,8 +215,9 @@ function SignUp() {
 
         </div>
       </section>
+
     </div>
   );
 }
 
-export default SignUp;
+export default Signup;

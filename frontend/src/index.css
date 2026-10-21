@@ -5,3 +5,28 @@
 body {
   margin: 0;
 }
+
+/* Shared form messages (login, signup, create trip, bank card) */
+.error-text {
+  color: #d93025;
+  font-size: 0.85rem;
+  margin: 4px 0 0;
+}
+
+.success-text {
+  color: #1f6f5c;
+  background: #e5f3ee;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.signup-field {
+  display: flex;
+  flex-direction: column;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
