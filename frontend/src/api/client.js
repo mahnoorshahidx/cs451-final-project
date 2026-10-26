@@ -20,6 +20,11 @@ export function saveSession({ token, name, email }) {
   localStorage.setItem("user", JSON.stringify({ name, email }));
 }
 
+// Updates the stored user information after editing the profile
+ export function updateCurrentUser({ name, email }) {
+  localStorage.setItem("user", JSON.stringify({ name, email }));
+}
+
 export function clearSession() {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
