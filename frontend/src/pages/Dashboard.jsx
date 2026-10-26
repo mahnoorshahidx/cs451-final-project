@@ -5,10 +5,12 @@ import "../styles/Dashboard.css";
 import "../styles/Trips.css";
 import Sidebar from "../components/Sidebar";
 import TripCard from "../components/TripCard";
+import NotificationBell from "../components/NotificationBell";
 import BankConnection from "./BankConnection";
 import { listTrips } from "../api/api";
 import { getCurrentUser } from "../api/client";
 
+// Returns a greeting based on the time
 function greeting() {
   const hour = new Date().getHours();
 
@@ -25,6 +27,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Load the user's trips
   useEffect(() => {
     listTrips()
       .then(setTrips)
@@ -40,6 +43,7 @@ function Dashboard() {
     String(now.getDate()).padStart(2, "0"),
   ].join("-");
 
+  // Show up to 3 upcoming trips
   const upcoming = trips
     .filter((trip) => trip.endDate >= today)
     .slice(0, 3);
@@ -57,13 +61,16 @@ function Dashboard() {
 
         {/* Welcome Banner */}
         <section className="dashboard-banner">
-          <div>
+          <div className="dashboard-welcome">
             <h1>{greeting()}, {firstName}!</h1>
             <p>
               Where to next? Let's turn your travel dreams
               into a plan.
             </p>
           </div>
+
+          {/* Notification bell */}
+          <NotificationBell />
         </section>
 
         <div className="dashboard-content">
