@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS users (
     phone_number VARCHAR(255),
     date_of_birth DATE,
     address VARCHAR(255),
-    created_at DATETIME(6) NOT NULL
+    created_at DATETIME(6) NOT NULL,
+    trip_reminders_enabled BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 -- Creates the trips table based on the backend's Trip.java file.
@@ -110,4 +111,21 @@ CREATE TABLE IF NOT EXISTS trip_budget_allocations (
     PRIMARY KEY (budget_id, category),
     CONSTRAINT fk_allocations_budget
         FOREIGN KEY (budget_id) REFERENCES trip_budgets(id) ON DELETE CASCADE
+);
+
+-- Stores trip reminder notifications for users.
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    trip_id BIGINT NOT NULL,
+    type VARCHAR(255) NOT NULL,
+    message VARCHAR(255) NOT NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at DATETIME(6) NOT NULL,
+    CONSTRAINT uq_notifications_trip_type
+        UNIQUE (trip_id, type),
+    CONSTRAINT fk_notifications_user
+        FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_notifications_trip
+        FOREIGN KEY (trip_id) REFERENCES trips(id)
 );
