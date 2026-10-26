@@ -31,6 +31,10 @@ public class User {
     private LocalDate dateOfBirth;
     private String address;
 
+    // Whether the user wants trip reminders
+    @Column(nullable = false)
+    private boolean tripRemindersEnabled = true;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
@@ -55,6 +59,11 @@ public class User {
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+
+    public boolean isTripRemindersEnabled() { return tripRemindersEnabled; }
+    public void setTripRemindersEnabled(boolean tripRemindersEnabled) {
+        this.tripRemindersEnabled = tripRemindersEnabled;
+    }
 
     public Instant getCreatedAt() { return createdAt; }
 }
