@@ -35,3 +35,42 @@ export const connectBankAccount = (account) =>
   apiFetch("/api/bank-accounts", { method: "POST", body: account });
 export const disconnectBankAccount = (id) =>
   apiFetch(`/api/bank-accounts/${id}`, { method: "DELETE" });
+
+
+// ---- User profile ----
+// Gets the logged-in user's profile
+export const getProfile = () =>
+  apiFetch("/api/users/me");
+
+// Updates the logged-in user's name and email
+export const updateProfile = (profile) =>
+  apiFetch("/api/users/me", {
+    method: "PUT",
+    body: profile,
+  });
+
+// ---- Account security ----
+// Changes the logged-in user's password
+export const changePassword = (passwords) =>
+  apiFetch("/api/users/me/password", {
+    method: "PUT",
+    body: passwords,
+  });
+
+// ---- Notifications ----
+// Gets notifications for the logged-in user
+export const getNotifications = () =>
+  apiFetch("/api/notifications");
+
+// Marks a notification as read
+export const markNotificationAsRead = (id) =>
+  apiFetch(`/api/notifications/${id}/read`, {
+    method: "PATCH",
+  });
+
+ // Updates the user's trip reminder preference
+ export const updateNotificationPreference = (enabled) =>
+ apiFetch("/api/users/me/notifications", {
+   method: "PUT",
+   body: { tripRemindersEnabled: enabled },
+ });
