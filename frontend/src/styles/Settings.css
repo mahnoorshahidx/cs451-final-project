@@ -1,0 +1,195 @@
+
+/* ==================================
+   SETTINGS - LIQUID GLASS THEME
+================================== */
+
+/* Settings page content */
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  /* Page heading */
+  .settings-header h1 {
+    font-size: 32px;
+    font-weight: 600;
+    color: #1A1A1A;
+    margin: 0 0 10px;
+  }
+  
+  .settings-header p {
+    font-size: 16px;
+    color: #526779;
+    margin: 0;
+  }
+  
+  /* Glass settings cards */
+  .settings-card {
+    background: rgba(255, 255, 255, 0.82);
+  
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+  
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    border-radius: 24px;
+    padding: 28px;
+  
+    box-shadow:
+      0 12px 35px rgba(52, 78, 104, 0.08),
+      inset 0 1px 1px rgba(255, 255, 255, 1);
+  }
+  
+  /* Card headings */
+  .settings-card h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1A1A1A;
+    margin: 0 0 16px;
+  }
+  
+  /* Profile details */
+  .settings-card p {
+    font-size: 15px;
+    color: #526779;
+    line-height: 1.6;
+    margin: 8px 0;
+  }
+  
+  /* Mobile layout */
+  @media (max-width: 600px) {
+    .settings-header h1 {
+      font-size: 26px;
+    }
+  
+    .settings-card {
+      padding: 20px;
+      border-radius: 20px;
+    }
+  }
+  
+/* Profile editing form */
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-form label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #344E68;
+}
+
+.settings-form input {
+  padding: 13px 15px;
+  border: 1px solid #C6DAE9;
+  border-radius: 12px;
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #1A1A1A;
+}
+
+.settings-form input:focus {
+  outline: 2px solid #8EACC5;
+}
+
+.settings-form button {
+  align-self: flex-start;
+  margin-top: 10px;
+  padding: 13px 22px;
+  background: #344E68;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.settings-form button:hover {
+  background: #4A6989;
+}
+
+.settings-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Success message */
+.settings-success {
+  color: #287A52 !important;
+}
+
+/* Notification preference layout */
+.notification-preference {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.notification-preference h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.notification-preference p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Notification toggle */
+.settings-switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.settings-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.settings-switch-slider {
+  position: absolute;
+  inset: 0;
+  background: #ccc;
+  border-radius: 26px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.settings-switch-slider::before {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.settings-switch input:checked + .settings-switch-slider {
+  background: #16a34a;
+}
+
+.settings-switch input:checked + .settings-switch-slider::before {
+  transform: translateX(20px);
+}
+
+.settings-switch input:focus-visible + .settings-switch-slider {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.settings-switch input:disabled + .settings-switch-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
