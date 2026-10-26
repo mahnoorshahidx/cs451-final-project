@@ -1,5 +1,6 @@
 package com.tripbudgetplanner.backend.trip;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,4 +14,7 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
     // Only finds the trip if it belongs to this user (the ownership check)
     Optional<Trip> findByIdAndUserId(Long id, Long userId);
+
+    // Finds trips starting on a specific date
+    List<Trip> findByStartDate(LocalDate startDate);
 }
