@@ -88,6 +88,8 @@
 .dashboard-banner {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 20px;
 
   padding: 40px;
   min-height: 130px;
@@ -111,7 +113,10 @@
     inset 0 -1px 1px rgba(255, 255, 255, 0.5);
 
   position: relative;
-  overflow: hidden;
+
+  /* FIX: Allow notification dropdown outside banner */
+  overflow: visible;
+  z-index: 10;
 }
 
 /* Subtle Glass Reflection */
@@ -131,6 +136,10 @@
   );
 
   pointer-events: none;
+}
+
+.dashboard-welcome {
+  min-width: 0;
 }
 
 .dashboard-banner h1 {
@@ -373,6 +382,7 @@
     padding: 26px;
     min-height: auto;
     border-radius: 22px;
+    align-items: flex-start;
   }
 
   .dashboard-banner h1 {
