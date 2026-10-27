@@ -1,4 +1,4 @@
--- Trip Budget Planner
+﻿-- Trip Budget Planner
 -- Creates the initial development database.
 -- Table definitions will be added by the database team.
 
@@ -104,9 +104,6 @@ CREATE TABLE IF NOT EXISTS trip_budgets (
         FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
 );
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-
 -- Stores the budget allocation for each trip category.
 CREATE TABLE IF NOT EXISTS trip_budget_allocations (
     budget_id BIGINT NOT NULL,
@@ -133,17 +130,3 @@ CREATE TABLE IF NOT EXISTS notifications (
     CONSTRAINT fk_notifications_trip
         FOREIGN KEY (trip_id) REFERENCES trips(id)
 );
-
->>>>>>> Stashed changes
-    CREATE TABLE IF NOT EXISTS trip_budget_allocations (
-        budget_id BIGINT NOT NULL,
-        category VARCHAR(50) NOT NULL,
-        amount DECIMAL(12, 2) NOT NULL,
-        PRIMARY KEY (budget_id, category),
-        CONSTRAINT fk_allocations_budget
-            FOREIGN KEY (budget_id) REFERENCES trip_budgets(id) ON DELETE CASCADE
-    );
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
