@@ -105,6 +105,9 @@ CREATE TABLE IF NOT EXISTS trip_budgets (
 );
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+
+-- Stores the budget allocation for each trip category.
 CREATE TABLE IF NOT EXISTS trip_budget_allocations (
     budget_id BIGINT NOT NULL,
     category VARCHAR(50) NOT NULL,
@@ -130,7 +133,8 @@ CREATE TABLE IF NOT EXISTS notifications (
     CONSTRAINT fk_notifications_trip
         FOREIGN KEY (trip_id) REFERENCES trips(id)
 );
-=======
+
+>>>>>>> Stashed changes
     CREATE TABLE IF NOT EXISTS trip_budget_allocations (
         budget_id BIGINT NOT NULL,
         category VARCHAR(50) NOT NULL,
@@ -139,4 +143,7 @@ CREATE TABLE IF NOT EXISTS notifications (
         CONSTRAINT fk_allocations_budget
             FOREIGN KEY (budget_id) REFERENCES trip_budgets(id) ON DELETE CASCADE
     );
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
