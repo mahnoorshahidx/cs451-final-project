@@ -6,10 +6,16 @@ import "../styles/Sidebar.css";
 function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
 
+  // NOTE: Budget and Savings share one page for now (/budget, BudgetDashboard.jsx),
+  // since each trip's savings goal is based on its budget.
+  // Plan: split Savings into its own page later (e.g. all contributions across trips,
+  // filtered by bank account for UC7) and add it back here.
+
   const menuItems = [
     { name: "Dashboard", path: "/dashboard", icon: "⌂" },
     { name: "My Trips", path: "/trips", icon: "✈" },
-    { name: "Savings", path: "/savings", icon: "$" },
+    { name: "Budget & Savings", path: "/budget", icon: "◔" },
+    // { name: "Savings", path: "/savings", icon: "$" },
     { name: "Settings", path: "/settings", icon: "⚙" },
   ];
 

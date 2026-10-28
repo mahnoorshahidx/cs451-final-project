@@ -11,6 +11,7 @@ import MyTrips from "./pages/MyTrips";
 import Settings from "./pages/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import EditTrip from "./pages/EditTrip";
+import BudgetDashboard from "./pages/BudgetDashboard";
 
 function App() {
 
@@ -95,7 +96,9 @@ function App() {
           }
         />
 
-        {/* Unknown Routes */}
+        <Route path="/budget" element={<ProtectedRoute><BudgetDashboard /></ProtectedRoute>} />
+        <Route path="/budget/:tripId" element={<ProtectedRoute><BudgetDashboard /></ProtectedRoute>} />
+        
         <Route
           path="*"
           element={<Navigate to="/dashboard" replace />}

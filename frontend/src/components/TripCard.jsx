@@ -69,7 +69,7 @@ function TripCard({ trip, onDelete }) {
 
       <div className="trip-card-actions">
       <div className="trip-card-links">
-        <Link to={`/trips/${trip.id}/edit?tab=budget`} className="trip-card-link">Budget</Link>
+        <Link to={`/budget/${trip.id}`} className="trip-card-link">Budget</Link>
         <Link to={`/trips/${trip.id}/edit?tab=details`} className="trip-card-link">Edit details</Link>
       </div>
 
