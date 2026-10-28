@@ -74,3 +74,11 @@ export const markNotificationAsRead = (id) =>
    method: "PUT",
    body: { tripRemindersEnabled: enabled },
  });
+
+// ---- User preferences ----
+// Saves currency, date format, and appearance
+export const updatePreferences = (preferences) =>
+apiFetch("/api/users/me/preferences", {
+  method: "PUT",
+  body: preferences,
+});
