@@ -6,6 +6,7 @@ import {
   updateProfile,
   changePassword,
   updateNotificationPreference,
+  updatePreferences,
 } from "../api/api";
 import { updateCurrentUser } from "../api/client";
 import "../styles/Dashboard.css";
@@ -13,6 +14,7 @@ import "../styles/Settings.css";
 
 // Settings page component
 function Settings() {
+
   // Profile information
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -35,13 +37,24 @@ function Settings() {
   const [notificationError, setNotificationError] = useState("");
   const [notificationSuccess, setNotificationSuccess] = useState("");
 
-  // Load the user's profile and notification preferences
+  // User preferences
+  const [currency, setCurrency] = useState("USD");
+  const [dateFormat, setDateFormat] = useState("MM/DD/YYYY");
+  const [appearance, setAppearance] = useState("light");
+  const [savingPreferences, setSavingPreferences] = useState(false);
+  const [preferencesError, setPreferencesError] = useState("");
+  const [preferencesSuccess, setPreferencesSuccess] = useState("");
+
+  // Load the user's profile and preferences
   useEffect(() => {
     getProfile()
       .then((user) => {
         setName(user.name);
         setEmail(user.email);
         setTripRemindersEnabled(user.tripRemindersEnabled);
+        setCurrency(user.currency);
+        setDateFormat(user.dateFormat);
+        setAppearance(user.appearance);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -124,6 +137,38 @@ function Settings() {
     }
   }
 
+  // Save currency, date format, and appearance
+  async function handleSavePreferences(event) {
+    event.preventDefault();
+    setPreferencesError("");
+    setPreferencesSuccess("");
+    setSavingPreferences(true);
+
+    try {
+      const updatedUser = await updatePreferences({
+        currency,
+        dateFormat,
+        appearance,
+      });
+
+      setCurrency(updatedUser.currency);
+      setDateFormat(updatedUser.dateFormat);
+      setAppearance(updatedUser.appearance);
+
+      // Apply the saved appearance
+      document.documentElement.setAttribute(
+        "data-theme",
+        updatedUser.appearance
+      );
+
+      setPreferencesSuccess("Preferences saved successfully!");
+    } catch (err) {
+      setPreferencesError(err.message);
+    } finally {
+      setSavingPreferences(false);
+    }
+  }
+
   return (
     <div className="dashboard-page">
 
@@ -203,7 +248,7 @@ function Settings() {
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                autoComplete="current-password"
+                autoComplete="off"
                 required
               />
 
@@ -287,6 +332,71 @@ function Settings() {
             {notificationSuccess && (
               <p role="status" className="settings-success">
                 {notificationSuccess}
+              </p>
+            )}
+          </section>
+
+          {/* User preferences */}
+          <section className="settings-card">
+            <h2>Preferences</h2>
+            <p>Customize your trip planning experience.</p>
+
+            {loading ? (
+              <p>Loading preferences...</p>
+            ) : (
+              <form onSubmit={handleSavePreferences} className="settings-form">
+
+                {/* Currency */}
+                <label htmlFor="currency">Currency</label>
+                <select
+                  id="currency"
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                >
+                  <option value="USD">USD - US Dollar</option>
+                  <option value="EUR">EUR - Euro</option>
+                  <option value="GBP">GBP - British Pound</option>
+                  <option value="MAD">MAD - Moroccan Dirham</option>
+                </select>
+
+                {/* Date format */}
+                <label htmlFor="date-format">Date Format</label>
+                <select
+                  id="date-format"
+                  value={dateFormat}
+                  onChange={(e) => setDateFormat(e.target.value)}
+                >
+                  <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                  <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                </select>
+
+                {/* Appearance */}
+                <label htmlFor="appearance">Appearance</label>
+                <select
+                  id="appearance"
+                  value={appearance}
+                  onChange={(e) => setAppearance(e.target.value)}
+                >
+                  <option value="light">Light Mode</option>
+                  <option value="dark">Dark Mode</option>
+                </select>
+
+                {/* Save preferences */}
+                <button type="submit" disabled={savingPreferences}>
+                  {savingPreferences ? "Saving..." : "Save Preferences"}
+                </button>
+              </form>
+            )}
+
+            {preferencesError && (
+              <p role="alert" className="error-text">
+                {preferencesError}
+              </p>
+            )}
+
+            {preferencesSuccess && (
+              <p role="status" className="settings-success">
+                {preferencesSuccess}
               </p>
             )}
           </section>
