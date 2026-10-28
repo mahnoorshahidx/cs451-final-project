@@ -1,8 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../styles/CreateTrip.css";
 import Sidebar from "../components/Sidebar";
-import { createTrip, getBudget, getTrip, saveBudget, updateTrip } from "../api/api";
+import { createTrip, getBudget, getTrip, getProfile, saveBudget, updateTrip } from "../api/api";
 import { getCurrentUser, initials } from "../api/client";
 
 const budgetCategories = [
@@ -12,7 +13,7 @@ const budgetCategories = [
   { name: "Food", icon: "♜", description: "Meals, drinks and snacks" }
 ];
 
-// Now used for both "create" (/create-trip) and "edit" (/trips/:tripId/edit)
+// Used for both creating and editing trips
 function CreateTrip() {
   const navigate = useNavigate();
   const { tripId } = useParams();
@@ -26,6 +27,7 @@ function CreateTrip() {
     endDate: "",
     numberOfTravelers: "",
   });
+
   const [totalBudget, setTotalBudget] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [allocations, setAllocations] = useState({});
@@ -35,9 +37,21 @@ function CreateTrip() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEditing);
 
+  // Load saved currency preference for new trips
+  useEffect(() => {
+    if (isEditing) return;
+
+    getProfile()
+      .then((profile) => {
+        setCurrency(profile.currency || "USD");
+      })
+      .catch((err) => setError(err.message));
+  }, [isEditing]);
+
   // Edit mode: load the trip and its budget
   useEffect(() => {
     if (!isEditing) return;
+
     Promise.all([getTrip(tripId), getBudget(tripId)])
       .then(([trip, budget]) => {
         setTripDetails({
@@ -47,6 +61,7 @@ function CreateTrip() {
           endDate: trip.endDate,
           numberOfTravelers: String(trip.numberOfTravelers),
         });
+
         if (budget) {
           setTotalBudget(String(budget.totalBudget));
           setCurrency(budget.currency);
@@ -64,13 +79,11 @@ function CreateTrip() {
   const travelers = Number(tripDetails.numberOfTravelers) || 0;
   const total = Number(totalBudget) || 0;
 
-
   const allocated = budgetCategories.reduce(
     (sum, category) =>
       sum + (Number(allocations[category.name]) || 0),
     0
   );
-
 
   const remaining = total - allocated;
   const percentage = total > 0 ? (allocated / total) * 100 : 0;
@@ -93,21 +106,25 @@ function CreateTrip() {
 
   function validate() {
     const errs = {};
+
     if (!tripDetails.name.trim()) errs.name = "Trip name is required";
     if (!tripDetails.destination.trim()) errs.destination = "Destination is required";
     if (!tripDetails.startDate) errs.startDate = "Start date is required";
     if (!tripDetails.endDate) errs.endDate = "End date is required";
     else if (tripDetails.startDate && tripDetails.endDate < tripDetails.startDate)
       errs.endDate = "End date cannot be before start date";
+
     if (!Number.isInteger(travelers) || travelers < 1)
       errs.numberOfTravelers = "At least 1 traveler";
+
     if (total <= 0) errs.totalBudget = "Enter a total budget";
-    else if (allocated > total) errs.totalBudget = "Your allocations exceed your total budget";
+    else if (allocated > total)
+      errs.totalBudget = "Your allocations exceed your total budget";
+
     return errs;
   }
 
-  // Saves to the backend instead of localStorage (SCRUM-31, SCRUM-35):
-  // first the trip, then its budget, then goes to My Trips
+  // Save the trip and its budget
   async function handleSave() {
     setError("");
     const errs = validate();
@@ -124,17 +141,18 @@ function CreateTrip() {
         numberOfTravelers: travelers,
       };
 
-      // 1. Save the trip
+      // Save the trip
       const trip = isEditing
         ? await updateTrip(tripId, tripBody)
         : await createTrip(tripBody);
 
-      // 2. Save its budget (only categories with an amount)
+      // Save its budget
       const cleanAllocations = Object.fromEntries(
         Object.entries(allocations)
           .filter(([, v]) => v !== "" && Number(v) > 0)
           .map(([k, v]) => [k, Number(v)])
       );
+
       await saveBudget(trip.id, {
         totalBudget: total,
         currency,
@@ -168,7 +186,6 @@ function CreateTrip() {
       {/* Right main content */}
       <main className="trip-main">
 
-        {/* Top navigation */}
         <header className="trip-header">
         </header>
 
@@ -190,7 +207,6 @@ function CreateTrip() {
 
         {/* Trip details */}
         <section className="trip-details">
-
           <div className="trip-details-title">
             <h2>Your trip details</h2>
             <p>Tell us a little about your upcoming trip.</p>
@@ -247,7 +263,6 @@ function CreateTrip() {
 
             <div className="trip-field">
               <label htmlFor="travelers">Number of Travelers</label>
-
               <input
                 id="travelers"
                 type="number"
@@ -260,7 +275,6 @@ function CreateTrip() {
             </div>
 
           </div>
-
         </section>
 
         {/* Budget area */}
@@ -268,16 +282,13 @@ function CreateTrip() {
 
           {/* Left: Set your budget */}
           <section className="trip-budget-form">
-
             <h2>Set your budget</h2>
 
             <p className="budget-description">
               Start with a total, then divide it across your trip.
-              {/* Was hard-coded to "2 travelers"; now follows the field (SCRUM-33) */}
               {travelers > 0 &&
                 ` All amounts are for ${travelers} traveler${travelers === 1 ? "" : "s"}.`}
             </p>
-
 
             <div className="budget-input-row">
 
@@ -323,7 +334,6 @@ function CreateTrip() {
 
                   <div className="category-info">
                     <div className="category-icon">{category.icon}</div>
-
                     <div>
                       <h4>{category.name}</h4>
                       <p>{category.description}</p>
@@ -344,12 +354,10 @@ function CreateTrip() {
                 </div>
               ))}
             </div>
-
           </section>
 
           {/* Right: Budget breakdown */}
           <section className="trip-budget-summary">
-
             <h2>Budget breakdown</h2>
 
             <p className="summary-label">Total trip budget</p>
@@ -401,15 +409,15 @@ function CreateTrip() {
                 <h2>{formatter.format(remaining)}</h2>
               </div>
 
-            <p>
-              {remaining < 0
-                ? "Your planned spending exceeds your total budget."
-                : remaining === 0 && total > 0
-                ? "Your entire budget has been planned."
-                : total === 0
-                ? "Enter your total budget to get started."
-                : "You still have money available in your budget."}
-            </p>
+              <p>
+                {remaining < 0
+                  ? "Your planned spending exceeds your total budget."
+                  : remaining === 0 && total > 0
+                  ? "Your entire budget has been planned."
+                  : total === 0
+                  ? "Enter your total budget to get started."
+                  : "You still have money available in your budget."}
+              </p>
             </div>
 
             {error && <p className="error-text">{error}</p>}
@@ -421,11 +429,9 @@ function CreateTrip() {
             <p className="save-note">
               Your budget can be updated anytime.
             </p>
-
           </section>
 
         </div>
-
       </main>
     </div>
   );
