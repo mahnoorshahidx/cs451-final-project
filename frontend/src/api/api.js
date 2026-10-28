@@ -89,3 +89,29 @@ export const recommendTiming = (body) =>
 
 export const recommendBudget = (body) =>
   apiFetch("/api/recommendations/budget", { method: "POST", body });
+
+// Paste at the end of frontend/src/api/api.js
+// (apiFetch and ApiError are already imported at the top of that file)
+
+// ---- Budget page & savings ----
+// Every trip with its budget total and savings progress
+export const getBudgetOverview = () => apiFetch("/api/budget-overview");
+
+// Returns null when the trip has no savings goal yet (404)
+export async function getSavings(tripId) {
+  try {
+    return await apiFetch(`/api/trips/${tripId}/savings`);
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  }
+}
+
+export const saveSavingsGoal = (tripId, goal) =>
+  apiFetch(`/api/trips/${tripId}/savings`, { method: "PUT", body: goal });
+
+export const addContribution = (tripId, contribution) =>
+  apiFetch(`/api/trips/${tripId}/savings/contributions`, { method: "POST", body: contribution });
+
+export const deleteContribution = (tripId, contributionId) =>
+  apiFetch(`/api/trips/${tripId}/savings/contributions/${contributionId}`, { method: "DELETE" });
