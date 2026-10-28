@@ -1,3 +1,4 @@
+
 package com.tripbudgetplanner.backend.user;
 
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tripbudgetplanner.backend.user.dto.ChangePasswordRequest;
 import com.tripbudgetplanner.backend.user.dto.ProfileResponse;
 import com.tripbudgetplanner.backend.user.dto.UpdateProfileRequest;
+import com.tripbudgetplanner.backend.user.dto.UpdatePreferencesRequest;
 
 import jakarta.validation.Valid;
 
@@ -57,10 +59,19 @@ public class UserController {
             @AuthenticationPrincipal Long userId) {
 
         userService.updateNotificationPreference(
-            userId,
-            request.tripRemindersEnabled()
+                userId,
+                request.tripRemindersEnabled()
         );
 
         return ResponseEntity.noContent().build();
+    }
+
+    // Updates the user's currency, date format, and appearance
+    @PutMapping("/me/preferences")
+    public ProfileResponse updatePreferences(
+            @RequestBody UpdatePreferencesRequest request,
+            @AuthenticationPrincipal Long userId) {
+
+        return userService.updatePreferences(userId, request);
     }
 }
