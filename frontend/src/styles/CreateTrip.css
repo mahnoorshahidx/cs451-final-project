@@ -485,6 +485,199 @@
   color: var(--wz-muted);
 }
 
+/* Budget step: split choice */
+.wizard-split-title {
+  margin-top: 28px;
+}
+
+/* Last step: wider layout with caps list + breakdown */
+.wizard-body.is-wide {
+  max-width: 980px;
+}
+
+.wizard-caps {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.wizard-caps-list,
+.wizard-caps-summary {
+  background: #fff;
+  border: 1px solid var(--wz-line);
+  padding: 18px 20px;
+  min-width: 0;
+}
+
+.wizard-caps-tools {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.wizard-textbtn {
+  padding: 4px 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wz-teal);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.wizard-textbtn:hover {
+  text-decoration: underline;
+}
+
+.wizard-cap {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 40px 140px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--wz-line);
+}
+
+.wizard-cap-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: var(--wz-teal-tint);
+  color: var(--wz-teal);
+  font-size: 16px;
+}
+
+.wizard-cap-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.wizard-cap-text strong {
+  font-size: 14px;
+}
+
+.wizard-cap-text span {
+  font-size: 12px;
+  color: var(--wz-muted);
+}
+
+.wizard-cap-pct {
+  font-size: 12px;
+  color: var(--wz-muted);
+  text-align: right;
+}
+
+.wizard-cap-input {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--wz-line);
+  background: #fff;
+  padding: 0 10px;
+}
+
+.wizard-cap-input:focus-within {
+  outline: 2px solid var(--wz-teal);
+  outline-offset: -1px;
+  border-color: var(--wz-teal);
+}
+
+.wizard-cap-input span {
+  color: var(--wz-muted);
+  font-size: 14px;
+  margin-right: 6px;
+}
+
+.wizard-cap-input input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 0;
+  font: inherit;
+  font-size: 15px;
+  text-align: right;
+  color: var(--wz-ink);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.wizard-caps-summary {
+  position: sticky;
+  top: 16px;
+}
+
+.wizard-caps-summary .wizard-rec-headline small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--wz-muted);
+}
+
+.wizard-caps-meter {
+  height: 8px;
+  margin-top: 16px;
+  background: var(--wz-line);
+  overflow: hidden;
+}
+
+.wizard-caps-meter span {
+  display: block;
+  height: 100%;
+  background: var(--wz-teal);
+  transition: width 0.25s ease;
+}
+
+.wizard-caps-meter span.is-over {
+  background: var(--wz-error);
+}
+
+.wizard-caps-meter-label {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--wz-muted);
+}
+
+.wizard-caps-lines {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--wz-line);
+  display: grid;
+  gap: 8px;
+}
+
+.wizard-caps-lines li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.wizard-caps-lines span {
+  color: var(--wz-muted);
+}
+
+.wizard-caps-remaining {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--wz-teal-tint);
+  font-size: 14px;
+}
+
+.wizard-caps-remaining strong {
+  font-size: 18px;
+}
+
+.wizard-caps-remaining.is-over {
+  background: rgba(180, 35, 24, 0.1);
+  color: var(--wz-error);
+}
+
 /* Recap on final step */
 .wizard-recap {
   display: grid;
@@ -590,6 +783,22 @@
     flex-direction: column;
   }
 
+  .wizard-caps {
+    grid-template-columns: 1fr;
+  }
+
+  .wizard-caps-summary {
+    position: static;
+  }
+
+  .wizard-cap {
+    grid-template-columns: 36px minmax(0, 1fr) 110px;
+  }
+
+  .wizard-cap-pct {
+    display: none;
+  }
+
   .wizard-continue {
     min-width: 0;
     flex: 0 1 auto;
@@ -644,6 +853,12 @@
   color: #24232E;
 }
 
+[data-theme="dark"] .wizard-caps-list,
+[data-theme="dark"] .wizard-caps-summary {
+  background: #2D2B39;
+}
+
+[data-theme="dark"] .wizard-cap-input,
 [data-theme="dark"] .wizard-input,
 [data-theme="dark"] .wizard-money,
 [data-theme="dark"] .wizard-chip,

@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/CreateTrip.css";
 import { createTrip, getProfile, recommendBudget, recommendTiming, saveBudget } from "../api/api";
-import { fallbackAllocations, scaleAllocations } from "../lib/budgetSuggestions";
+import { BUDGET_CATEGORIES, fallbackAllocations, scaleAllocations } from "../lib/budgetSuggestions";
+import { categoryMeta } from "../lib/budgetCategories";
 
 // Budget comes last so the recommendation can use everything collected before it
 const STEPS = [
@@ -11,7 +12,7 @@ const STEPS = [
   { key: "details", label: "Travelers" },
   { key: "tradeoffs", label: "Trade-offs" },
   { key: "budget", label: "Total budget" },
-  { key: "ready", label: "Budget ready" },
+  { key: "ready", label: "Category caps" },
 ];
 
 const POPULAR_DESTINATIONS = ["Kyoto, Japan", "Lisbon, Portugal", "Denver, Colorado"];
@@ -103,6 +104,11 @@ function CreateTrip() {
   const [budgetError, setBudgetError] = useState("");
   // true while the total is the one we filled in, so a new recommendation can replace it
   const [totalIsSuggested, setTotalIsSuggested] = useState(false);
+
+  // Category caps (last step): start from the recommendation or empty for a manual split
+  const [splitMode, setSplitMode] = useState("recommended"); // "recommended" | "manual"
+  const [caps, setCaps] = useState(null);
+  const [capsKey, setCapsKey] = useState("");
 
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -253,6 +259,30 @@ function CreateTrip() {
     return scaleAllocations(budgetRec, total) ?? fallbackAllocations(total, form.tradeOffs);
   }
 
+  const emptyCaps = () => Object.fromEntries(BUDGET_CATEGORIES.map((c) => [c, ""]));
+  const recommendedCaps = () =>
+    Object.fromEntries(Object.entries(plannedAllocations()).map(([c, v]) => [c, String(v)]));
+
+  // Fill the caps when entering the last step. Recommended caps re-scale if the total changed;
+  // a manual split keeps whatever the user already typed.
+  function prepareCaps() {
+    const key = splitMode === "manual" ? "manual" : `rec|${total}|${form.currency}|${budgetRec?.recommendedTotal ?? ""}`;
+    if (key === capsKey && caps) return;
+    setCaps(splitMode === "manual" ? emptyCaps() : recommendedCaps());
+    setCapsKey(key);
+  }
+
+  function updateCap(category, value) {
+    setCaps((c) => ({ ...c, [category]: value }));
+    setError("");
+  }
+
+  const capCategories = caps
+    ? [...BUDGET_CATEGORIES, ...Object.keys(caps).filter((c) => !BUDGET_CATEGORIES.includes(c))]
+    : [];
+  const capsAllocated = caps ? Object.values(caps).reduce((sum, v) => sum + (Number(v) || 0), 0) : 0;
+  const capsRemaining = total - capsAllocated;
+
   // ---------- validation & navigation ----------
 
   function validateStep(key) {
@@ -277,6 +307,8 @@ function CreateTrip() {
         return form.tradeOffs.length ? "" : "Pick at least one option, or choose \u201cI'd rather not compromise.\u201d";
       case "budget":
         return total > 0 ? "" : "Enter a total budget greater than 0.";
+      case "ready":
+        return capsAllocated > total ? "Your category caps add up to more than your total budget." : "";
       default:
         return "";
     }
@@ -286,6 +318,7 @@ function CreateTrip() {
     const err = validateStep(current.key);
     if (err) return setError(err);
     setError("");
+    if (current.key === "budget") prepareCaps();
     setStep((s) => s + 1);
   }
 
@@ -295,7 +328,7 @@ function CreateTrip() {
   }
 
   async function handleFinish() {
-    for (let i = 0; i < STEPS.length - 1; i++) {
+    for (let i = 0; i < STEPS.length; i++) {
       const err = validateStep(STEPS[i].key);
       if (err) {
         setStep(i);
@@ -323,11 +356,15 @@ function CreateTrip() {
       await saveBudget(trip.id, {
         totalBudget: total,
         currency: form.currency,
-        allocations: plannedAllocations(),
+        allocations: Object.fromEntries(
+          Object.entries(caps ?? {})
+            .filter(([, v]) => Number(v) > 0)
+            .map(([k, v]) => [k, Number(v)])
+        ),
       });
 
-      // Land on the new trip's budget tab, where caps can be fine-tuned
-      navigate(`/trips/${trip.id}/edit?tab=budget`);
+      // Land on the new trip's budget summary
+      navigate(`/budget/${trip.id}`);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -378,8 +415,8 @@ function CreateTrip() {
         </div>
       </div>
 
-      <form className="wizard-body" onSubmit={handleSubmit} noValidate>
-        <div className={`wizard-content ${isLast ? "is-centered" : ""}`}>
+      <form className={`wizard-body ${isLast ? "is-wide" : ""}`} onSubmit={handleSubmit} noValidate>
+        <div className="wizard-content">
           {current.key === "destination" && (
             <>
               <h1>Where do you want to go?</h1>
@@ -683,25 +720,118 @@ function CreateTrip() {
                   </button>
                 ))}
               </div>
+
+              <p className="wizard-label wizard-split-title">How should we split it into categories?</p>
+              <div className="wizard-grid" role="radiogroup" aria-label="Category split">
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={splitMode === "recommended"}
+                  className={`wizard-option ${splitMode === "recommended" ? "is-selected" : ""}`}
+                  onClick={() => setSplitMode("recommended")}
+                >
+                  <strong>Use the recommended split</strong>
+                  <span>We fill in each category. You can still adjust it next.</span>
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={splitMode === "manual"}
+                  className={`wizard-option ${splitMode === "manual" ? "is-selected" : ""}`}
+                  onClick={() => setSplitMode("manual")}
+                >
+                  <strong>I'll split it myself</strong>
+                  <span>Start with empty categories and enter your own amounts.</span>
+                </button>
+              </div>
             </>
           )}
 
-          {current.key === "ready" && (
+          {current.key === "ready" && caps && (
             <>
-              <p className="wizard-eyebrow">Next</p>
-              <h1>We'll suggest category caps for your trip.</h1>
+              <h1>Fine-tune your category caps</h1>
               <p className="wizard-sub">
-                Here's how your budget splits across flights, lodging, food, transport, and activities. Nothing is booked or charged.
+                {splitMode === "manual"
+                  ? "Split your budget however you like. Anything you leave unassigned stays as a buffer."
+                  : "We've split your budget using the recommendation. Adjust any category, or keep it as-is."}{" "}
+                Nothing is booked or charged.
               </p>
-              <dl className="wizard-recap">
-                <div><dt>Destination</dt><dd>{form.destination}</dd></div>
-                <div><dt>Budget</dt><dd>{money(total)}</dd></div>
-                <div><dt>Dates</dt><dd>{formatDate(form.startDate)} → {formatDate(form.endDate)}</dd></div>
-                <div><dt>Travelers</dt><dd>{travelers}</dd></div>
-                {Object.entries(plannedAllocations()).map(([category, amount]) => (
-                  <div key={category}><dt>{category}</dt><dd>{money(Number(amount))}</dd></div>
-                ))}
-              </dl>
+
+              <div className="wizard-caps">
+                <section className="wizard-caps-list" aria-label="Category caps">
+                  <div className="wizard-caps-tools">
+                    <button type="button" className="wizard-textbtn" onClick={() => setCaps(recommendedCaps())}>
+                      Use recommended split
+                    </button>
+                    <button type="button" className="wizard-textbtn" onClick={() => setCaps(emptyCaps())}>
+                      Clear all
+                    </button>
+                  </div>
+
+                  {capCategories.map((category) => {
+                    const meta = categoryMeta(category);
+                    const amount = Number(caps[category]) || 0;
+                    return (
+                      <div className="wizard-cap" key={category}>
+                        <span className="wizard-cap-icon" aria-hidden="true">{meta.icon}</span>
+                        <div className="wizard-cap-text">
+                          <strong>{category}</strong>
+                          <span>{meta.description}</span>
+                        </div>
+                        <span className="wizard-cap-pct">
+                          {total > 0 && amount > 0 ? `${Math.round((amount / total) * 100)}%` : ""}
+                        </span>
+                        <div className="wizard-cap-input">
+                          <span aria-hidden="true">{currencySymbol(form.currency)}</span>
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            aria-label={`${category} cap`}
+                            value={caps[category] ?? ""}
+                            onChange={(e) => updateCap(category, e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </section>
+
+                <aside className="wizard-caps-summary">
+                  <p className="wizard-eyebrow">Budget breakdown</p>
+                  <p className="wizard-rec-headline">
+                    {money(total)} <small>{form.currency}</small>
+                  </p>
+                  <p className="wizard-rec-reason">
+                    {form.destination} · {formatDate(form.startDate)} – {formatDate(form.endDate)} · {travelers} traveler
+                    {travelers === 1 ? "" : "s"}
+                  </p>
+
+                  <div className="wizard-caps-meter" aria-hidden="true">
+                    <span
+                      className={capsRemaining < 0 ? "is-over" : ""}
+                      style={{ width: `${total > 0 ? Math.min(100, (capsAllocated / total) * 100) : 0}%` }}
+                    />
+                  </div>
+                  <p className="wizard-caps-meter-label">
+                    {money(capsAllocated)} of {money(total)} planned
+                  </p>
+
+                  <ul className="wizard-caps-lines">
+                    {capCategories.map((category) => (
+                      <li key={category}>
+                        <span>{category}</span>
+                        <strong>{money(Number(caps[category]) || 0)}</strong>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className={`wizard-caps-remaining ${capsRemaining < 0 ? "is-over" : ""}`}>
+                    <span>{capsRemaining < 0 ? "Over budget by" : "Unassigned buffer"}</span>
+                    <strong>{money(Math.abs(capsRemaining))}</strong>
+                  </div>
+                </aside>
+              </div>
             </>
           )}
 
@@ -720,7 +850,7 @@ function CreateTrip() {
             {isLast
               ? saving
                 ? "Saving..."
-                : "View budget dashboard"
+                : "Save trip & budget"
               : "Continue →"}
           </button>
         </footer>
