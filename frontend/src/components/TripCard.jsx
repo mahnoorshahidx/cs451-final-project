@@ -68,20 +68,21 @@ function TripCard({ trip, onDelete }) {
       </p>
 
       <div className="trip-card-actions">
-        <Link to={`/trips/${trip.id}/edit`} className="trip-card-link">
-          Edit trip &amp; budget
-        </Link>
-
-        {onDelete && (
-          <button
-            type="button"
-            className="trip-card-delete"
-            onClick={() => onDelete(trip)}
-          >
-            Delete
-          </button>
-        )}
+      <div className="trip-card-links">
+        <Link to={`/trips/${trip.id}/edit?tab=budget`} className="trip-card-link">Budget</Link>
+        <Link to={`/trips/${trip.id}/edit?tab=details`} className="trip-card-link">Edit details</Link>
       </div>
+
+      {onDelete && (
+        <button
+          type="button"
+          className="trip-card-delete"
+          onClick={() => onDelete(trip)}
+        >
+          Delete
+        </button>
+      )}
+    </div>
     </article>
   );
 }

@@ -40,6 +40,11 @@
   gap: 16px;
 }
 
+.trip-card-links {
+  display: flex;
+  gap: 16px;
+}
+
 .trip-card {
   background: #fff;
   border: 1px solid #e6e6e6;
