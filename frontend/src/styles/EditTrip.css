@@ -1,0 +1,607 @@
+/* Edit trip page: /trips/:tripId/edit */
+
+.et-page {
+  --et-accent: #12756b;
+  --et-accent-dark: #0d5d55;
+  --et-accent-tint: #e8f3f1;
+  --et-ink: #1a1a1a;
+  --et-muted: #5f6368;
+  --et-line: #dcdcdc;
+  --et-bg: #f4f4f4;
+  --et-surface: #ffffff;
+  --et-error: #b42318;
+  --et-success: #0d6b4f;
+
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--et-bg);
+  color: var(--et-ink);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.et-message {
+  padding: 32px;
+  color: var(--et-muted);
+}
+
+/* Top bar */
+.et-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  background: var(--et-surface);
+  border-bottom: 1px solid var(--et-line);
+}
+
+.et-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--et-accent);
+}
+
+.et-logo {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  background: var(--et-accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.et-back {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--et-ink);
+  text-decoration: none;
+}
+
+.et-back:hover {
+  text-decoration: underline;
+}
+
+/* Header with trip name, switcher and tabs */
+.et-head {
+  background: var(--et-surface);
+  border-bottom: 1px solid var(--et-line);
+  padding: 28px 24px 0;
+}
+
+.et-head-inner {
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.et-head-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.et-eyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--et-accent);
+}
+
+.et-head h1 {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: -0.02em;
+}
+
+.et-meta {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--et-muted);
+}
+
+.et-switcher {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--et-muted);
+}
+
+.et-switcher select {
+  min-width: 220px;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--et-ink);
+  background: var(--et-surface);
+  border: 1px solid var(--et-line);
+}
+
+.et-tabs {
+  display: flex;
+  gap: 28px;
+  margin-top: 24px;
+}
+
+.et-tab {
+  position: relative;
+  padding: 12px 0 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--et-muted);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+
+.et-tab:hover {
+  color: var(--et-ink);
+}
+
+.et-tab.is-active {
+  color: var(--et-ink);
+  border-bottom-color: var(--et-accent);
+}
+
+.et-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 6px;
+  vertical-align: 2px;
+  border-radius: 50%;
+  background: #d97706;
+}
+
+/* Main area */
+.et-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 28px 24px 48px;
+  box-sizing: border-box;
+}
+
+.et-panel {
+  background: var(--et-surface);
+  border: 1px solid var(--et-line);
+  padding: 24px;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.et-panel h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.et-panel h3 {
+  margin: 24px 0 8px;
+  font-size: 15px;
+}
+
+.et-sub {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--et-muted);
+}
+
+.et-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+/* Fields */
+.et-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.et-field label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.et-field input,
+.et-field select,
+.et-category input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--et-ink);
+  background: var(--et-surface);
+  border: 1px solid var(--et-line);
+  border-radius: 0;
+}
+
+.et-field input:focus,
+.et-field select:focus,
+.et-category input:focus,
+.et-switcher select:focus {
+  outline: 2px solid var(--et-accent);
+  outline-offset: -1px;
+  border-color: var(--et-accent);
+}
+
+/* Budget tab */
+.et-budget {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.et-total-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.et-categories {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.et-category {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 44px 130px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--et-line);
+}
+
+.et-cat-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: var(--et-accent-tint);
+  color: var(--et-accent);
+  font-size: 16px;
+}
+
+.et-cat-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.et-cat-text strong {
+  font-size: 14px;
+}
+
+.et-cat-text span {
+  font-size: 12px;
+  color: var(--et-muted);
+}
+
+.et-cat-pct {
+  font-size: 12px;
+  color: var(--et-muted);
+  text-align: right;
+}
+
+.et-category input {
+  text-align: right;
+  padding: 9px 10px;
+}
+
+/* Summary column */
+.et-summary {
+  position: sticky;
+  top: 16px;
+}
+
+.et-summary-total {
+  margin: 10px 0 0;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.et-progress {
+  height: 8px;
+  margin-top: 18px;
+  background: var(--et-line);
+  overflow: hidden;
+}
+
+.et-progress-fill {
+  height: 100%;
+  background: var(--et-accent);
+  transition: width 0.25s ease;
+}
+
+.et-progress-fill.is-over {
+  background: var(--et-error);
+}
+
+.et-progress-label {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--et-muted);
+}
+
+.et-remaining {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 18px;
+  padding: 12px 14px;
+  background: var(--et-accent-tint);
+  font-size: 14px;
+}
+
+.et-remaining strong {
+  font-size: 18px;
+}
+
+.et-remaining.is-over {
+  background: rgba(180, 35, 24, 0.1);
+  color: var(--et-error);
+}
+
+/* Messages */
+.et-error,
+.et-notice {
+  margin: 16px 0 0;
+  font-size: 14px;
+}
+
+.et-error {
+  color: var(--et-error);
+}
+
+.et-notice {
+  color: var(--et-success);
+}
+
+/* Buttons */
+.et-primary {
+  width: 100%;
+  margin-top: 18px;
+  padding: 13px 20px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--et-accent);
+  border: none;
+  cursor: pointer;
+}
+
+.et-primary:hover:not(:disabled) {
+  background: var(--et-accent-dark);
+}
+
+.et-primary:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.et-ghost {
+  flex-shrink: 0;
+  padding: 9px 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--et-accent);
+  background: var(--et-accent-tint);
+  border: 1px solid var(--et-accent);
+  cursor: pointer;
+}
+
+.et-ghost:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.et-link {
+  display: block;
+  margin: 10px auto 0;
+  padding: 4px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--et-muted);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.et-danger {
+  padding: 11px 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--et-error);
+  background: none;
+  border: 1px solid var(--et-error);
+  cursor: pointer;
+}
+
+.et-danger:disabled {
+  opacity: 0.6;
+}
+
+.et-primary:focus-visible,
+.et-ghost:focus-visible,
+.et-danger:focus-visible,
+.et-link:focus-visible,
+.et-tab:focus-visible,
+.et-back:focus-visible {
+  outline: 2px solid var(--et-accent);
+  outline-offset: 2px;
+}
+
+/* Details tab */
+.et-details {
+  max-width: 720px;
+}
+
+.et-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.et-span-2 {
+  grid-column: span 3;
+}
+
+.et-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--et-line);
+}
+
+.et-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.et-actions .et-primary {
+  width: auto;
+  margin-top: 0;
+}
+
+.et-actions .et-link {
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 860px) {
+  .et-budget {
+    grid-template-columns: 1fr;
+  }
+
+  .et-summary {
+    position: static;
+  }
+}
+
+@media (max-width: 600px) {
+  .et-head,
+  .et-main {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .et-head h1 {
+    font-size: 24px;
+  }
+
+  .et-switcher,
+  .et-switcher select {
+    width: 100%;
+  }
+
+  .et-panel-head {
+    flex-direction: column;
+  }
+
+  .et-category {
+    grid-template-columns: 36px minmax(0, 1fr) 100px;
+  }
+
+  .et-cat-pct {
+    display: none;
+  }
+
+  .et-grid,
+  .et-total-row {
+    grid-template-columns: 1fr;
+  }
+
+  .et-span-2 {
+    grid-column: auto;
+  }
+
+  .et-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .et-actions-right {
+    justify-content: space-between;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .et-progress-fill {
+    transition: none;
+  }
+}
+
+/* ==================================
+   EDIT TRIP - LAVENDER CHARCOAL (dark)
+================================== */
+
+[data-theme="dark"] .et-page {
+  --et-accent: #B8A5D6;
+  --et-accent-dark: #CDBDE8;
+  --et-accent-tint: rgba(184, 165, 214, 0.14);
+  --et-ink: #F1EDF8;
+  --et-muted: #C5BDD2;
+  --et-line: #4A4459;
+  --et-bg: #24232E;
+  --et-surface: #2D2B39;
+  --et-error: #F4A3A3;
+  --et-success: #9FE0C4;
+}
+
+[data-theme="dark"] .et-logo,
+[data-theme="dark"] .et-primary {
+  color: #24232E;
+}
+
+[data-theme="dark"] .et-field input,
+[data-theme="dark"] .et-field select,
+[data-theme="dark"] .et-category input,
+[data-theme="dark"] .et-switcher select {
+  background: #353344;
+  border-color: #625578;
+}
+
+[data-theme="dark"] .et-field input[type="date"] {
+  color-scheme: dark;
+}
+
+[data-theme="dark"] .et-field select option,
+[data-theme="dark"] .et-switcher select option {
+  background: #353344;
+  color: #F1EDF8;
+}
+
+[data-theme="dark"] .et-remaining.is-over {
+  background: rgba(244, 163, 163, 0.12);
+}

@@ -10,6 +10,7 @@ import CreateTrip from "./pages/CreateTrip";
 import MyTrips from "./pages/MyTrips";
 import Settings from "./pages/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
+import EditTrip from "./pages/EditTrip";
 
 function App() {
 
@@ -79,7 +80,7 @@ function App() {
           path="/trips/:tripId/edit"
           element={
             <ProtectedRoute>
-              <CreateTrip />
+              <EditTrip />
             </ProtectedRoute>
           }
         />
