@@ -258,3 +258,100 @@
     margin-left: 0;
   }
 }
+
+/* ==================================
+   BANK CONNECTION - LAVENDER CHARCOAL
+================================== */
+
+/* Main bank card */
+[data-theme="dark"] .bank-card {
+  background: rgba(53, 51, 68, 0.88);
+  border-color: rgba(190, 175, 215, 0.18);
+  color: #F1EDF8;
+}
+
+/* Headings */
+[data-theme="dark"] .bank-card h2,
+[data-theme="dark"] .bank-card h3,
+[data-theme="dark"] .bank-card h4 {
+  color: #F1EDF8;
+}
+
+/* Secondary text */
+[data-theme="dark"] .bank-name p,
+[data-theme="dark"] .bank-balance p,
+[data-theme="dark"] .bank-empty-state p,
+[data-theme="dark"] .bank-selection > p,
+[data-theme="dark"] .bank-option-name small,
+[data-theme="dark"] .bank-demo-note {
+  color: #C5BDD2;
+}
+
+/* Connection status */
+[data-theme="dark"] .bank-status {
+  background: #504960;
+  color: #E8DFF5;
+}
+
+[data-theme="dark"] .bank-status.connected {
+  background: rgba(113, 101, 142, 0.4);
+  color: #D8C8F0;
+}
+
+/* Bank logos */
+[data-theme="dark"] .bank-logo,
+[data-theme="dark"] .bank-option-logo {
+  background: #504960;
+  color: #FFFFFF;
+}
+
+/* Smart saving section */
+[data-theme="dark"] .smart-saving {
+  background: rgba(113, 101, 142, 0.2);
+}
+
+[data-theme="dark"] .smart-saving p {
+  color: #C5BDD2;
+}
+
+/* Bank selection options */
+[data-theme="dark"] .bank-option {
+  background: #353344;
+  border-color: rgba(190, 175, 215, 0.2);
+  color: #F1EDF8;
+}
+
+[data-theme="dark"] .bank-option:hover {
+  background: #454155;
+  border-color: #81729D;
+}
+
+[data-theme="dark"] .bank-option-arrow,
+[data-theme="dark"] .bank-cancel-btn {
+  color: #C5BDD2;
+}
+
+/* Buttons */
+[data-theme="dark"] .bank-action-btn {
+  background: #454155;
+  border-color: rgba(190, 175, 215, 0.25);
+  color: #F1EDF8;
+}
+
+[data-theme="dark"] .bank-action-btn:hover {
+  background: #504960;
+}
+
+[data-theme="dark"] .bank-connect-btn {
+  background: #71658E;
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .bank-connect-btn:hover {
+  background: #81729D;
+}
+
+/* Empty state icon */
+[data-theme="dark"] .bank-empty-icon {
+  background: #504960;
+}
