@@ -3,7 +3,10 @@ package com.tripbudgetplanner.backend.trip;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.tripbudgetplanner.backend.savings.SavingsContributionRepository;
+import com.tripbudgetplanner.backend.savings.SavingsGoalRepository;
 import com.tripbudgetplanner.backend.trip.dto.CreateTripRequest;
 import com.tripbudgetplanner.backend.trip.exception.TripNotFoundException;
 import com.tripbudgetplanner.backend.user.User;
@@ -15,11 +18,18 @@ public class TripService {
 
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
+    private final SavingsGoalRepository savingsGoalRepository;
+    private final SavingsContributionRepository savingsContributionRepository;
 
-    // Connects the service to the trip and user repositories
-    public TripService(TripRepository tripRepository, UserRepository userRepository) {
+    // Connects the service to the trip, user and savings repositories
+    public TripService(TripRepository tripRepository,
+                       UserRepository userRepository,
+                       SavingsGoalRepository savingsGoalRepository,
+                       SavingsContributionRepository savingsContributionRepository) {
         this.tripRepository = tripRepository;
         this.userRepository = userRepository;
+        this.savingsGoalRepository = savingsGoalRepository;
+        this.savingsContributionRepository = savingsContributionRepository;
     }
 
     // Validates the trip information and saves a new trip
@@ -80,8 +90,16 @@ public class TripService {
     }
 
     // Deletes the trip (UC12)
+    @Transactional
     public void deleteTrip(Long tripId, Long userId) {
         Trip trip = getTrip(tripId, userId);
+
+        // The database doesn't cascade savings rows, so remove them first
+        savingsGoalRepository.findByTripId(tripId).ifPresent(goal -> {
+            savingsContributionRepository.deleteBySavingsGoalId(goal.getId());
+            savingsGoalRepository.delete(goal);
+        });
+
         tripRepository.delete(trip);
     }
 }

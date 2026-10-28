@@ -1,13 +1,20 @@
 package com.tripbudgetplanner.backend.trip;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import com.tripbudgetplanner.backend.savings.SavingsContributionRepository;
+import com.tripbudgetplanner.backend.savings.SavingsGoalRepository;
 import com.tripbudgetplanner.backend.trip.dto.CreateTripRequest;
 import com.tripbudgetplanner.backend.user.User;
 import com.tripbudgetplanner.backend.user.UserRepository;
@@ -21,7 +28,8 @@ public class TripServiceTest {
 		TripRepository tripRepository = mock(TripRepository.class);
 		UserRepository userRepository = mock(UserRepository.class);
 
-		TripService tripService = new TripService(tripRepository, userRepository);
+		TripService tripService = new TripService(tripRepository, userRepository,
+        mock(SavingsGoalRepository.class), mock(SavingsContributionRepository.class));
 
 		// Create sample trip information
 		CreateTripRequest request = new CreateTripRequest();
@@ -60,7 +68,8 @@ public class TripServiceTest {
 		TripRepository tripRepository = mock(TripRepository.class);
 		UserRepository userRepository = mock(UserRepository.class);
 
-		TripService tripService = new TripService(tripRepository, userRepository);
+		TripService tripService = new TripService(tripRepository, userRepository,
+        mock(SavingsGoalRepository.class), mock(SavingsContributionRepository.class));
 
 		// Create a trip with a return date before the departure date
 		CreateTripRequest request = new CreateTripRequest();
@@ -84,7 +93,8 @@ public class TripServiceTest {
 		TripRepository tripRepository = mock(TripRepository.class);
 		UserRepository userRepository = mock(UserRepository.class);
 
-		TripService tripService = new TripService(tripRepository, userRepository);
+		TripService tripService = new TripService(tripRepository, userRepository,
+        mock(SavingsGoalRepository.class), mock(SavingsContributionRepository.class));
 
 		// Create sample trip information
 		CreateTripRequest request = new CreateTripRequest();
