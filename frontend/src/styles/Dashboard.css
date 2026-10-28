@@ -443,3 +443,84 @@
     transform: none;
   }
 }
+
+/* ==================================
+   DARK MODE - LAVENDER CHARCOAL
+================================== */
+
+/* Dashboard background */
+[data-theme="dark"] .dashboard-page {
+  background: linear-gradient(
+    135deg,
+    #24232E 0%,
+    #2D2B39 55%,
+    #24232E 100%
+  );
+}
+
+/* Soft lavender glow */
+[data-theme="dark"] .dashboard-page::before {
+  background: radial-gradient(
+    circle,
+    rgba(160, 140, 190, 0.18),
+    transparent 70%
+  );
+}
+
+/* Glass cards */
+[data-theme="dark"] .dashboard-banner,
+[data-theme="dark"] .dashboard-plan,
+[data-theme="dark"] .dashboard-card {
+  background: rgba(53, 51, 68, 0.88);
+  border: 1px solid rgba(190, 175, 215, 0.18);
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+/* Glass reflections */
+[data-theme="dark"] .dashboard-banner::before,
+[data-theme="dark"] .dashboard-plan::before,
+[data-theme="dark"] .dashboard-card::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(220, 205, 240, 0.25),
+    transparent
+  );
+}
+
+/* Headings */
+[data-theme="dark"] .dashboard-banner h1,
+[data-theme="dark"] .plan-info h2 {
+  color: #F1EDF8;
+}
+
+/* Description text */
+[data-theme="dark"] .dashboard-banner p,
+[data-theme="dark"] .plan-info p {
+  color: #C5BDD2;
+}
+
+/* Create trip icon */
+[data-theme="dark"] .plan-icon {
+  background: linear-gradient(145deg, #504960, #403B50);
+  border-color: rgba(190, 175, 215, 0.2);
+  color: #E8DFF5;
+}
+
+/* Create trip button */
+[data-theme="dark"] .plan-link {
+  background: linear-gradient(
+    180deg,
+    #81729D,
+    #625578
+  );
+  border-color: rgba(220, 205, 240, 0.2);
+  color: #FFFFFF;
+}
+
+/* Upcoming trips heading */
+[data-theme="dark"] .dashboard-page .dashboard-main > h2 {
+  color: #F1EDF8;
+}
