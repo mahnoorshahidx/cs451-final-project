@@ -160,3 +160,68 @@
   line-height: 1;
   box-sizing: border-box;
 }
+
+/* ==================================
+   NOTIFICATIONS - LAVENDER CHARCOAL
+================================== */
+
+/* Notification bell */
+[data-theme="dark"] .notification-bell {
+  background: rgba(80, 73, 96, 0.65);
+  border-color: rgba(190, 175, 215, 0.25);
+  color: #F1EDF8;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="dark"] .notification-bell:hover {
+  background: rgba(113, 101, 142, 0.65);
+}
+
+/* Unread count */
+[data-theme="dark"] .notification-count {
+  background: #81729D;
+  color: #FFFFFF;
+}
+
+/* Notification dropdown */
+[data-theme="dark"] .notification-dropdown {
+  background: rgba(42, 40, 54, 0.97);
+  border-color: rgba(190, 175, 215, 0.25);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+/* Dropdown heading */
+[data-theme="dark"] .notification-dropdown h3 {
+  color: #F1EDF8;
+}
+
+/* Notification cards */
+[data-theme="dark"] .notification-item {
+  background: rgba(53, 51, 68, 0.9);
+  border-color: rgba(190, 175, 215, 0.18);
+}
+
+/* Unread notifications */
+[data-theme="dark"] .notification-item.unread {
+  background: rgba(113, 101, 142, 0.35);
+  border-color: #81729D;
+}
+
+/* Notification text */
+[data-theme="dark"] .notification-item p {
+  color: #E8DFF5;
+}
+
+/* Mark as read button */
+[data-theme="dark"] .notification-item button {
+  color: #C5B0E5;
+}
+
+[data-theme="dark"] .notification-item button:hover {
+  color: #F1EDF8;
+}
+
+/* Empty notifications message */
+[data-theme="dark"] .notification-empty {
+  color: #C5BDD2;
+}
