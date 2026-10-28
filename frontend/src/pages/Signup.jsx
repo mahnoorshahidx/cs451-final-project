@@ -15,7 +15,10 @@ function Signup() {
     confirmPassword: "",
     phoneNumber: "",
     dateOfBirth: "",
-    address: "",
+    streetAddress: "",
+    city: "",
+    state: "",
+    zipCode: "",
   });
 
   const [error, setError] = useState("");
@@ -50,7 +53,15 @@ function Signup() {
         password: formData.password,
         phoneNumber: formData.phoneNumber,
         dateOfBirth: formData.dateOfBirth,
-        address: formData.address,
+        address: [
+          formData.streetAddress.trim(),
+          formData.city.trim(),
+          [formData.state.trim(), formData.zipCode.trim()]
+            .filter(Boolean)
+            .join(" "),
+        ]
+          .filter(Boolean)
+          .join(", "),
       };
 
       await register(body);
@@ -84,117 +95,168 @@ function Signup() {
           <form className="signup-form" onSubmit={handleSubmit}>
 
             {/* First and Last Name */}
-            <div className="name-row">
 
-              <div className="name-field">
+            <div className="signup-grid">
+
+              <div className="signup-field">
                 <label htmlFor="firstName">First name</label>
                 <input
                   id="firstName"
                   name="firstName"
                   type="text"
-                  placeholder="Enter your first name"
+                  placeholder="First name"
+                  autoComplete="given-name"
                   value={formData.firstName}
                   onChange={handleChange}
                   required
                 />
               </div>
 
-              <div className="name-field">
+              <div className="signup-field">
                 <label htmlFor="lastName">Last name</label>
                 <input
                   id="lastName"
                   name="lastName"
                   type="text"
-                  placeholder="Enter your last name"
+                  placeholder="Last name"
+                  autoComplete="family-name"
                   value={formData.lastName}
                   onChange={handleChange}
                   required
                 />
               </div>
 
+              {fieldErrors.name && (
+                <p className="error-text signup-full">{fieldErrors.name}</p>
+              )}
+
+              <div className="signup-field signup-full">
+                <label htmlFor="email">Email address</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="example@example.com"
+                  autoComplete="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+                {fieldErrors.email && <p className="error-text">{fieldErrors.email}</p>}
+              </div>
+
+              <div className="signup-field">
+                <label htmlFor="password">Password</label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="Create a password"
+                  autoComplete="new-password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  minLength={8}
+                  required
+                />
+                {fieldErrors.password && <p className="error-text">{fieldErrors.password}</p>}
+              </div>
+
+              <div className="signup-field">
+                <label htmlFor="confirmPassword">Confirm password</label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Confirm password"
+                  autoComplete="new-password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  minLength={8}
+                  required
+                />
+              </div>
+
+              <div className="signup-field">
+                <label htmlFor="phoneNumber">Phone number</label>
+                <input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  placeholder="555-123-4567"
+                  autoComplete="tel"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                />
+                {fieldErrors.phoneNumber && <p className="error-text">{fieldErrors.phoneNumber}</p>}
+              </div>
+
+              <div className="signup-field">
+                <label htmlFor="dateOfBirth">Date of birth</label>
+                <input
+                  id="dateOfBirth"
+                  name="dateOfBirth"
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={handleChange}
+                />
+                {fieldErrors.dateOfBirth && <p className="error-text">{fieldErrors.dateOfBirth}</p>}
+              </div>
+
+              <div className="signup-field signup-full">
+                <label htmlFor="streetAddress">Street address</label>
+                <input
+                  id="streetAddress"
+                  name="streetAddress"
+                  type="text"
+                  placeholder="123 Main Street"
+                  autoComplete="street-address"
+                  value={formData.streetAddress}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="signup-field">
+                <label htmlFor="city">City</label>
+                <input
+                  id="city"
+                  name="city"
+                  type="text"
+                  placeholder="Kansas City"
+                  autoComplete="address-level2"
+                  value={formData.city}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="signup-field">
+                <label htmlFor="state">State</label>
+                <input
+                  id="state"
+                  name="state"
+                  type="text"
+                  placeholder="MO"
+                  autoComplete="address-level1"
+                  value={formData.state}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="signup-field signup-full">
+                <label htmlFor="zipCode">ZIP code</label>
+                <input
+                  id="zipCode"
+                  name="zipCode"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="64108"
+                  autoComplete="postal-code"
+                  value={formData.zipCode}
+                  onChange={handleChange}
+                />
+                {fieldErrors.address && <p className="error-text">{fieldErrors.address}</p>}
+              </div>
+
             </div>
-
-            {fieldErrors.name && (
-              <p className="error-text">{fieldErrors.name}</p>
-            )}
-
-            <label htmlFor="email">Email address</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="example@example.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-            {fieldErrors.email && (
-              <p className="error-text">{fieldErrors.email}</p>
-            )}
-
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Create a password"
-              value={formData.password}
-              onChange={handleChange}
-              minLength={8}
-              required
-            />
-            {fieldErrors.password && (
-              <p className="error-text">{fieldErrors.password}</p>
-            )}
-
-            <label htmlFor="confirmPassword">Confirm password</label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              placeholder="Confirm your password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-            />
-
-            <label htmlFor="phoneNumber">Phone number</label>
-            <input
-              id="phoneNumber"
-              name="phoneNumber"
-              type="tel"
-              placeholder="555-123-4567"
-              value={formData.phoneNumber}
-              onChange={handleChange}
-            />
-            {fieldErrors.phoneNumber && (
-              <p className="error-text">{fieldErrors.phoneNumber}</p>
-            )}
-
-            <label htmlFor="dateOfBirth">Date of birth</label>
-            <input
-              id="dateOfBirth"
-              name="dateOfBirth"
-              type="date"
-              value={formData.dateOfBirth}
-              onChange={handleChange}
-            />
-            {fieldErrors.dateOfBirth && (
-              <p className="error-text">{fieldErrors.dateOfBirth}</p>
-            )}
-
-            <label htmlFor="address">Address</label>
-            <input
-              id="address"
-              name="address"
-              type="text"
-              placeholder="Enter your address"
-              value={formData.address}
-              onChange={handleChange}
-            />
-            {fieldErrors.address && (
-              <p className="error-text">{fieldErrors.address}</p>
-            )}
 
             {error && <p className="error-text" role="alert">{error}</p>}
 
@@ -205,6 +267,7 @@ function Signup() {
             >
               {loading ? "Creating account..." : "Create Account"}
             </button>
+
 
           </form>
 

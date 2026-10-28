@@ -7,7 +7,9 @@
 .sidebar {
   width: 240px;
   min-width: 240px;
+  height: 100%;
   min-height: 100vh;
+  align-self: stretch;
 
   display: flex;
   flex-direction: column;

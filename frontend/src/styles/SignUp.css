@@ -388,3 +388,132 @@
   }
 }
 
+
+
+
+/* Compact signup layout */
+.signup-right {
+  padding: 16px 28px;
+}
+
+.signup-container {
+  max-width: 600px;
+  padding: 22px 30px;
+  overflow: visible;
+}
+
+.signup-container .welcome-text {
+  font-size: 11px;
+  margin: 0 0 6px;
+}
+
+.signup-container h1 {
+  font-size: 29px;
+  margin: 0 0 5px;
+}
+
+.signup-subtitle {
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0 0 15px;
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.signup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+}
+
+.signup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.signup-full {
+  grid-column: 1 / -1;
+}
+
+.signup-field label {
+  font-size: 12px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.signup-field input {
+  min-width: 0;
+  height: 39px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.signup-button {
+  padding: 11px 16px;
+  margin-top: 4px;
+  font-size: 14px;
+  border-radius: 11px;
+}
+
+.signup-login-text {
+  font-size: 12px;
+  margin: 12px 0 0;
+}
+
+.signup-form .error-text {
+  color: #B42318;
+  font-size: 12px;
+  margin: 2px 0;
+}
+
+/* Allow scrolling when screen height is limited */
+.signup-page {
+  overflow: visible;
+}
+
+.signup-right {
+  min-height: 100vh;
+}
+
+/* Responsive layout */
+@media (max-width: 900px) {
+  .signup-right {
+    padding: 20px;
+  }
+
+  .signup-container {
+    max-width: 600px;
+    padding: 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .signup-right {
+    padding: 16px;
+  }
+
+  .signup-container {
+    padding: 22px 18px;
+  }
+
+  .signup-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .signup-full {
+    grid-column: auto;
+  }
+
+  .signup-container h1 {
+    font-size: 26px;
+  }
+}
+

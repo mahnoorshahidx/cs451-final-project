@@ -92,14 +92,6 @@ function Login() {
 
                     </form>
 
-                    <div className="login-divider">
-                        <span>or</span>
-                    </div>
-
-                    <button type="button" className="google-button">
-                        Continue with Google
-                    </button>
-
                     <p className="signup-text">
                         New to TripBudget? <Link to="/signup">Create an account</Link>
                     </p>

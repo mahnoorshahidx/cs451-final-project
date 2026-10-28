@@ -111,11 +111,6 @@ function BankConnection() {
 
           </div>
 
-          <div className="smart-saving">
-            <h4>✦ Smart saving is active</h4>
-            <p>$125 moves to travel savings every Friday (simulated)</p>
-          </div>
-
           <button className="bank-action-btn" onClick={disconnectBank} disabled={busy}>
             {busy ? "Disconnecting..." : "Disconnect demo account"}
           </button>
