@@ -1,438 +1,730 @@
-
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "../styles/CreateTrip.css";
-import Sidebar from "../components/Sidebar";
-import { createTrip, getBudget, getTrip, getProfile, saveBudget, updateTrip } from "../api/api";
-import { getCurrentUser, initials } from "../api/client";
+import { createTrip, getProfile, recommendBudget, recommendTiming, saveBudget } from "../api/api";
+import { fallbackAllocations, scaleAllocations } from "../lib/budgetSuggestions";
 
-const budgetCategories = [
-  { name: "Flights", icon: "✈", description: "Round-trip tickets for all travelers" },
-  { name: "Accommodation", icon: "▣", description: "Hotels, rentals and other stays" },
-  { name: "Local transport", icon: "▤", description: "Transfers, public transport and car rentals" },
-  { name: "Food", icon: "♜", description: "Meals, drinks and snacks" }
+// Budget comes last so the recommendation can use everything collected before it
+const STEPS = [
+  { key: "destination", label: "Destination" },
+  { key: "timing", label: "Travel timing" },
+  { key: "details", label: "Travelers" },
+  { key: "tradeoffs", label: "Trade-offs" },
+  { key: "budget", label: "Total budget" },
+  { key: "ready", label: "Budget ready" },
 ];
 
-// Used for both creating and editing trips
+const POPULAR_DESTINATIONS = ["Kyoto, Japan", "Lisbon, Portugal", "Denver, Colorado"];
+const FALLBACK_PRESETS = [2500, 4200, 6000];
+const CURRENCIES = ["USD", "EUR", "GBP", "MAD"];
+
+const TIMING_OPTIONS = [
+  { value: "set", title: "I have set dates", description: "Plan around dates that are already decided." },
+  { value: "best", title: "Recommend the best time", description: "Prioritize ideal weather, events, and the liveliest season." },
+  { value: "cheapest", title: "Find the cheapest time", description: "Use flexible dates to unlock lower flights and room rates." },
+];
+
+const NO_COMPROMISE = "none";
+const TRADE_OFFS = [
+  { value: "budgetHotels", title: "Budget hotels", description: "Simple stays, fewer amenities" },
+  { value: "sharedRooms", title: "Shared rooms", description: "Hostels or shared lodging" },
+  { value: "lowCostMeals", title: "Low-cost meals", description: "Fast-casual and self-catering" },
+  { value: "longLayovers", title: "Long layovers", description: "Trade time for cheaper fares" },
+  { value: "lowerCostActivities", title: "Lower-cost activities", description: "Free sights and self-guided days" },
+  { value: "skipPaidActivities", title: "Skip paid activities", description: "Focus on the destination itself" },
+];
+
+// ---------- date helpers (dates stay "YYYY-MM-DD" strings, no timezone shifts) ----------
+
+function todayIso() {
+  const now = new Date();
+  return [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("-");
+}
+
+function toUtc(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return Date.UTC(y, m - 1, d);
+}
+
+function nightsBetween(start, end) {
+  if (!start || !end) return 0;
+  return Math.round((toUtc(end) - toUtc(start)) / 86400000);
+}
+
+function formatDate(iso) {
+  if (!iso) return "";
+  return new Date(toUtc(iso)).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function currencySymbol(currency) {
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency, currencyDisplay: "narrowSymbol" })
+      .formatToParts(0)
+      .find((p) => p.type === "currency").value;
+  } catch {
+    return currency;
+  }
+}
+
+// New trips only. Existing trips are edited on EditTrip (/trips/:tripId/edit).
 function CreateTrip() {
   const navigate = useNavigate();
-  const { tripId } = useParams();
-  const isEditing = Boolean(tripId);
-  const user = getCurrentUser();
 
-  const [tripDetails, setTripDetails] = useState({
-    name: "",
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState({
     destination: "",
+    timing: "",
+    // flexible modes: the window the user could travel in, plus trip length
+    windowStart: "",
+    windowEnd: "",
+    nights: "5",
+    // final trip dates (typed in, or filled from the recommendation)
     startDate: "",
     endDate: "",
-    numberOfTravelers: "",
+    numberOfTravelers: "1",
+    name: "",
+    tradeOffs: [],
+    totalBudget: "",
+    currency: "USD",
   });
 
-  const [totalBudget, setTotalBudget] = useState("");
-  const [currency, setCurrency] = useState("USD");
-  const [allocations, setAllocations] = useState({});
+  // Recommendations
+  const [timingRec, setTimingRec] = useState(null);
+  const [timingLoading, setTimingLoading] = useState(false);
+  const [timingError, setTimingError] = useState("");
+  const [budgetRec, setBudgetRec] = useState(null);
+  const [budgetLoading, setBudgetLoading] = useState(false);
+  const [budgetError, setBudgetError] = useState("");
+  // true while the total is the one we filled in, so a new recommendation can replace it
+  const [totalIsSuggested, setTotalIsSuggested] = useState(false);
 
-  const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(isEditing);
 
-  // Load saved currency preference for new trips
+  const current = STEPS[step];
+  const isLast = step === STEPS.length - 1;
+  const isFlexible = form.timing === "best" || form.timing === "cheapest";
+  const total = Number(form.totalBudget) || 0;
+  const travelers = Number(form.numberOfTravelers) || 0;
+  const tripNights = Math.max(1, nightsBetween(form.startDate, form.endDate));
+
+  const money = (n) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: form.currency, maximumFractionDigits: 0 }).format(n);
+
+  // ---------- loading ----------
+
+  // Start with the user's saved currency preference
   useEffect(() => {
-    if (isEditing) return;
-
     getProfile()
-      .then((profile) => {
-        setCurrency(profile.currency || "USD");
-      })
-      .catch((err) => setError(err.message));
-  }, [isEditing]);
+      .then((profile) => setForm((p) => ({ ...p, currency: profile.currency || "USD" })))
+      .catch(() => {}); // non-blocking: fall back to USD
+  }, []);
 
-  // Edit mode: load the trip and its budget
+  // ---------- timing recommendation (refreshes as the window or length changes) ----------
+
   useEffect(() => {
-    if (!isEditing) return;
+    if (current.key !== "timing" || !isFlexible) return;
 
-    Promise.all([getTrip(tripId), getBudget(tripId)])
-      .then(([trip, budget]) => {
-        setTripDetails({
-          name: trip.name,
-          destination: trip.destination,
-          startDate: trip.startDate,
-          endDate: trip.endDate,
-          numberOfTravelers: String(trip.numberOfTravelers),
-        });
+    const nights = Number(form.nights);
+    if (!form.windowStart || !form.windowEnd || !Number.isInteger(nights) || nights < 1) {
+      setTimingRec(null);
+      setTimingError("");
+      return;
+    }
+    if (nightsBetween(form.windowStart, form.windowEnd) < nights) {
+      setTimingRec(null);
+      setTimingError(`Your window needs to be at least ${nights} night${nights === 1 ? "" : "s"} long.`);
+      return;
+    }
 
-        if (budget) {
-          setTotalBudget(String(budget.totalBudget));
-          setCurrency(budget.currency);
-          setAllocations(
-            Object.fromEntries(
-              Object.entries(budget.allocations).map(([k, v]) => [k, String(v)])
-            )
-          );
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      setTimingLoading(true);
+      setTimingError("");
+      recommendTiming({
+        destination: form.destination.trim(),
+        mode: form.timing,
+        windowStart: form.windowStart,
+        windowEnd: form.windowEnd,
+        nights,
+      })
+        .then((rec) => {
+          if (cancelled) return;
+          setTimingRec(rec);
+          setForm((p) => ({ ...p, startDate: rec.startDate, endDate: rec.endDate }));
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          setTimingRec(null);
+          setTimingError(err.message);
+        })
+        .finally(() => !cancelled && setTimingLoading(false));
+    }, 400); // wait until the user stops typing
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [current.key, isFlexible, form.timing, form.destination, form.windowStart, form.windowEnd, form.nights]);
+
+  // ---------- budget recommendation (on entering the budget step, and when currency changes) ----------
+
+  useEffect(() => {
+    if (current.key !== "budget") return;
+
+    let cancelled = false;
+    setBudgetLoading(true);
+    setBudgetError("");
+    recommendBudget({
+      destination: form.destination.trim(),
+      startDate: form.startDate || null,
+      nights: tripNights,
+      travelers: Math.max(1, travelers),
+      tradeOffs: form.tradeOffs.filter((t) => t !== NO_COMPROMISE),
+      currency: form.currency,
+    })
+      .then((rec) => {
+        if (cancelled) return;
+        setBudgetRec(rec);
+        // Prefill the total, unless the user already chose one themselves
+        if (!form.totalBudget || totalIsSuggested) {
+          setForm((p) => ({ ...p, totalBudget: String(rec.recommendedTotal) }));
+          setTotalIsSuggested(true);
         }
       })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [isEditing, tripId]);
+      .catch((err) => {
+        if (cancelled) return;
+        setBudgetRec(null);
+        setBudgetError(err.message);
+      })
+      .finally(() => !cancelled && setBudgetLoading(false));
 
-  const travelers = Number(tripDetails.numberOfTravelers) || 0;
-  const total = Number(totalBudget) || 0;
+    return () => {
+      cancelled = true;
+    };
+    // Only re-run on step entry or currency change; the other inputs are fixed by this step
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current.key, form.currency]);
 
-  const allocated = budgetCategories.reduce(
-    (sum, category) =>
-      sum + (Number(allocations[category.name]) || 0),
-    0
-  );
+  // ---------- form updates ----------
 
-  const remaining = total - allocated;
-  const percentage = total > 0 ? (allocated / total) * 100 : 0;
-
-  const formatter = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  });
-
-  function updateField(field, value) {
-    setTripDetails((prev) => ({ ...prev, [field]: value }));
+  function update(field, value) {
+    setForm((p) => ({ ...p, [field]: value }));
+    setError("");
   }
 
-  function updateAllocation(category, value) {
-    setAllocations((previous) => ({
-      ...previous,
-      [category]: value,
+  function selectTiming(value) {
+    setError("");
+    setTimingError("");
+    setTimingRec(null);
+    setForm((p) => ({
+      ...p,
+      timing: value,
+      // flexible modes get their dates from the recommendation
+      ...(value !== "set" && { startDate: "", endDate: "" }),
     }));
   }
 
-  function validate() {
-    const errs = {};
-
-    if (!tripDetails.name.trim()) errs.name = "Trip name is required";
-    if (!tripDetails.destination.trim()) errs.destination = "Destination is required";
-    if (!tripDetails.startDate) errs.startDate = "Start date is required";
-    if (!tripDetails.endDate) errs.endDate = "End date is required";
-    else if (tripDetails.startDate && tripDetails.endDate < tripDetails.startDate)
-      errs.endDate = "End date cannot be before start date";
-
-    if (!Number.isInteger(travelers) || travelers < 1)
-      errs.numberOfTravelers = "At least 1 traveler";
-
-    if (total <= 0) errs.totalBudget = "Enter a total budget";
-    else if (allocated > total)
-      errs.totalBudget = "Your allocations exceed your total budget";
-
-    return errs;
+  function setTotal(value, suggested = false) {
+    update("totalBudget", value);
+    setTotalIsSuggested(suggested);
   }
 
-  // Save the trip and its budget
-  async function handleSave() {
+  function toggleTradeOff(value) {
     setError("");
-    const errs = validate();
-    setFieldErrors(errs);
-    if (Object.keys(errs).length > 0) return;
+    setForm((prev) => {
+      if (value === NO_COMPROMISE) {
+        return { ...prev, tradeOffs: prev.tradeOffs.includes(NO_COMPROMISE) ? [] : [NO_COMPROMISE] };
+      }
+      const without = prev.tradeOffs.filter((t) => t !== NO_COMPROMISE);
+      const next = without.includes(value) ? without.filter((t) => t !== value) : [...without, value];
+      return { ...prev, tradeOffs: next };
+    });
+  }
+
+  // Category caps that will be saved with the budget
+  function plannedAllocations() {
+    return scaleAllocations(budgetRec, total) ?? fallbackAllocations(total, form.tradeOffs);
+  }
+
+  // ---------- validation & navigation ----------
+
+  function validateStep(key) {
+    switch (key) {
+      case "destination":
+        return form.destination.trim() ? "" : "Enter a destination to continue.";
+      case "timing":
+        if (!form.timing) return "Choose how you'd like to plan your timing.";
+        if (isFlexible) {
+          if (!form.windowStart || !form.windowEnd) return "Add the window you could travel in.";
+          if (!(Number(form.nights) >= 1)) return "Enter how many nights you want to stay.";
+          if (timingLoading) return "Still finding your dates, one moment.";
+          if (!timingRec) return timingError || "We couldn't recommend dates yet. Check your window.";
+          return "";
+        }
+        if (!form.startDate || !form.endDate) return "Add your start and end dates.";
+        if (form.endDate < form.startDate) return "End date can't be before the start date.";
+        return "";
+      case "details":
+        return Number.isInteger(travelers) && travelers >= 1 ? "" : "At least 1 traveler.";
+      case "tradeoffs":
+        return form.tradeOffs.length ? "" : "Pick at least one option, or choose \u201cI'd rather not compromise.\u201d";
+      case "budget":
+        return total > 0 ? "" : "Enter a total budget greater than 0.";
+      default:
+        return "";
+    }
+  }
+
+  function goNext() {
+    const err = validateStep(current.key);
+    if (err) return setError(err);
+    setError("");
+    setStep((s) => s + 1);
+  }
+
+  function goBack() {
+    setError("");
+    setStep((s) => Math.max(s - 1, 0));
+  }
+
+  async function handleFinish() {
+    for (let i = 0; i < STEPS.length - 1; i++) {
+      const err = validateStep(STEPS[i].key);
+      if (err) {
+        setStep(i);
+        return setError(err);
+      }
+    }
 
     setSaving(true);
+    setError("");
     try {
+      const destination = form.destination.trim();
       const tripBody = {
-        name: tripDetails.name.trim(),
-        destination: tripDetails.destination.trim(),
-        startDate: tripDetails.startDate,
-        endDate: tripDetails.endDate,
+        name: form.name.trim() || `${destination.split(",")[0]} trip`,
+        destination,
+        startDate: form.startDate,
+        endDate: form.endDate,
         numberOfTravelers: travelers,
+        // Ignored by the backend until the trips table has these columns
+        timingPreference: form.timing,
+        tradeOffs: form.tradeOffs,
       };
 
-      // Save the trip
-      const trip = isEditing
-        ? await updateTrip(tripId, tripBody)
-        : await createTrip(tripBody);
-
-      // Save its budget
-      const cleanAllocations = Object.fromEntries(
-        Object.entries(allocations)
-          .filter(([, v]) => v !== "" && Number(v) > 0)
-          .map(([k, v]) => [k, Number(v)])
-      );
+      const trip = await createTrip(tripBody);
 
       await saveBudget(trip.id, {
         totalBudget: total,
-        currency,
-        allocations: cleanAllocations,
+        currency: form.currency,
+        allocations: plannedAllocations(),
       });
 
-      navigate("/trips");
+      // Land on the new trip's budget tab, where caps can be fine-tuned
+      navigate(`/trips/${trip.id}/edit?tab=budget`);
     } catch (err) {
-      setFieldErrors(err.fieldErrors || {});
       setError(err.message);
     } finally {
       setSaving(false);
     }
   }
 
-  const fieldError = (name) =>
-    fieldErrors[name] ? <p className="error-text">{fieldErrors[name]}</p> : null;
-
-  if (loading) {
-    return <p className="trips-message" style={{ padding: 32 }}>Loading trip...</p>;
+  function handleSubmit(e) {
+    e.preventDefault();
+    isLast ? handleFinish() : goNext();
   }
 
+  const presets = budgetRec
+    ? [Number(budgetRec.lowTotal), Number(budgetRec.recommendedTotal), Number(budgetRec.highTotal)]
+    : FALLBACK_PRESETS;
+  const presetLabels = budgetRec ? ["Lean", "Recommended", "Comfortable"] : [];
+
   return (
-    <div className="create-trip-page">
+    <div className="wizard-page">
+      <header className="wizard-topbar">
+        <div className="wizard-brand">
+          <span className="wizard-logo">W</span>
+          <span>Wayfare</span>
+        </div>
+        <button type="button" className="wizard-exit" onClick={() => navigate("/trips")}>
+          <span aria-hidden="true">×</span> Exit
+        </button>
+      </header>
 
-      {/* Left sidebar */}
-      <aside className="trip-sidebar">
-        <Sidebar />
-      </aside>
-
-      {/* Right main content */}
-      <main className="trip-main">
-
-        <header className="trip-header">
-        </header>
-
-        {/* Banner */}
-        <section className="trip-banner">
-          <div>
-            <p className="trip-breadcrumb">
-              My Trips / {isEditing ? "Edit Trip" : "Plan a New Trip"} / Budget
-            </p>
-
-            <h1>{isEditing ? "Edit your trip budget" : "Create your trip budget"}</h1>
-
-            <p>
-              Plan your spending now, so you can enjoy
-              the journey later.
-            </p>
+      <div className="wizard-progress">
+        <div className="wizard-progress-inner">
+          <div className="wizard-progress-labels">
+            <span className="wizard-eyebrow">Create your budget</span>
+            <span className="wizard-step-name">{current.label}</span>
           </div>
-        </section>
-
-        {/* Trip details */}
-        <section className="trip-details">
-          <div className="trip-details-title">
-            <h2>Your trip details</h2>
-            <p>Tell us a little about your upcoming trip.</p>
+          <div
+            className="wizard-bars"
+            role="progressbar"
+            aria-valuemin={1}
+            aria-valuemax={STEPS.length}
+            aria-valuenow={step + 1}
+            aria-label={`Step ${step + 1} of ${STEPS.length}`}
+          >
+            {STEPS.map((s, i) => (
+              <span key={s.key} className={`wizard-bar ${i <= step ? "is-done" : ""}`} />
+            ))}
           </div>
+        </div>
+      </div>
 
-          <div className="trip-details-form">
-
-            <div className="trip-field">
-              <label htmlFor="tripName">Trip Name</label>
-              <input
-                id="tripName"
-                type="text"
-                placeholder="e.g. Morocco Vacation"
-                value={tripDetails.name}
-                onChange={(e) => updateField("name", e.target.value)}
-              />
-              {fieldError("name")}
-            </div>
-
-            <div className="trip-field">
-              <label htmlFor="destination">Destination</label>
+      <form className="wizard-body" onSubmit={handleSubmit} noValidate>
+        <div className={`wizard-content ${isLast ? "is-centered" : ""}`}>
+          {current.key === "destination" && (
+            <>
+              <h1>Where do you want to go?</h1>
+              <p className="wizard-sub">
+                Choose a destination and we'll estimate realistic costs for getting there and staying comfortably.
+              </p>
+              <label className="wizard-label" htmlFor="destination">City, region, or country</label>
               <input
                 id="destination"
+                className="wizard-input wizard-input-lg"
                 type="text"
-                placeholder="e.g. Marrakech, Morocco"
-                value={tripDetails.destination}
-                onChange={(e) => updateField("destination", e.target.value)}
+                placeholder="Try Kyoto, Japan"
+                autoFocus
+                value={form.destination}
+                onChange={(e) => update("destination", e.target.value)}
               />
-              {fieldError("destination")}
-            </div>
+              <p className="wizard-hint">Popular right now</p>
+              <div className="wizard-chips">
+                {POPULAR_DESTINATIONS.map((d) => (
+                  <button
+                    type="button"
+                    key={d}
+                    className={`wizard-chip ${form.destination === d ? "is-selected" : ""}`}
+                    onClick={() => update("destination", d)}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
-            <div className="trip-field">
-              <label htmlFor="startDate">Start Date</label>
-              <input
-                id="startDate"
-                type="date"
-                value={tripDetails.startDate}
-                onChange={(e) => updateField("startDate", e.target.value)}
-              />
-              {fieldError("startDate")}
-            </div>
+          {current.key === "timing" && (
+            <>
+              <h1>When would you like to travel?</h1>
+              <p className="wizard-sub">Set your dates or let Wayfare recommend the right window for your priorities.</p>
+              <div className="wizard-options" role="radiogroup" aria-label="Travel timing">
+                {TIMING_OPTIONS.map((opt) => (
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={form.timing === opt.value}
+                    key={opt.value}
+                    className={`wizard-option ${form.timing === opt.value ? "is-selected" : ""}`}
+                    onClick={() => selectTiming(opt.value)}
+                  >
+                    <strong>{opt.title}</strong>
+                    <span>{opt.description}</span>
+                  </button>
+                ))}
+              </div>
 
-            <div className="trip-field">
-              <label htmlFor="endDate">End Date</label>
-              <input
-                id="endDate"
-                type="date"
-                min={tripDetails.startDate}
-                value={tripDetails.endDate}
-                onChange={(e) => updateField("endDate", e.target.value)}
-              />
-              {fieldError("endDate")}
-            </div>
+              {form.timing === "set" && (
+                <div className="wizard-dates">
+                  <div>
+                    <label className="wizard-label" htmlFor="startDate">Start date</label>
+                    <input
+                      id="startDate"
+                      className="wizard-input"
+                      type="date"
+                      value={form.startDate}
+                      onChange={(e) => update("startDate", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="wizard-label" htmlFor="endDate">End date</label>
+                    <input
+                      id="endDate"
+                      className="wizard-input"
+                      type="date"
+                      min={form.startDate}
+                      value={form.endDate}
+                      onChange={(e) => update("endDate", e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
 
-            <div className="trip-field">
-              <label htmlFor="travelers">Number of Travelers</label>
-              <input
-                id="travelers"
-                type="number"
-                min="1"
-                step="1"
-                value={tripDetails.numberOfTravelers}
-                onChange={(e) => updateField("numberOfTravelers", e.target.value)}
-              />
-              {fieldError("numberOfTravelers")}
-            </div>
+              {isFlexible && (
+                <>
+                  <div className="wizard-dates wizard-dates-3">
+                    <div>
+                      <label className="wizard-label" htmlFor="windowStart">Earliest you could leave</label>
+                      <input
+                        id="windowStart"
+                        className="wizard-input"
+                        type="date"
+                        min={todayIso()}
+                        value={form.windowStart}
+                        onChange={(e) => update("windowStart", e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="wizard-label" htmlFor="windowEnd">Latest you'd be back</label>
+                      <input
+                        id="windowEnd"
+                        className="wizard-input"
+                        type="date"
+                        min={form.windowStart || todayIso()}
+                        value={form.windowEnd}
+                        onChange={(e) => update("windowEnd", e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="wizard-label" htmlFor="nights">Nights</label>
+                      <input
+                        id="nights"
+                        className="wizard-input"
+                        type="number"
+                        min="1"
+                        max="60"
+                        step="1"
+                        value={form.nights}
+                        onChange={(e) => update("nights", e.target.value)}
+                      />
+                    </div>
+                  </div>
 
-          </div>
-        </section>
+                  <div className="wizard-rec" aria-live="polite">
+                    {timingLoading ? (
+                      <p className="wizard-rec-loading">
+                        Finding the {form.timing === "cheapest" ? "cheapest" : "best"} dates…
+                      </p>
+                    ) : timingRec ? (
+                      <>
+                        <p className="wizard-eyebrow">Recommended dates</p>
+                        <p className="wizard-rec-headline">
+                          {formatDate(timingRec.startDate)} → {formatDate(timingRec.endDate)}
+                        </p>
+                        <p className="wizard-rec-reason">{timingRec.reason}</p>
+                      </>
+                    ) : timingError ? (
+                      <p className="wizard-rec-error">{timingError}</p>
+                    ) : (
+                      <p className="wizard-rec-loading">
+                        Add your travel window and trip length, and we'll pick dates.
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+            </>
+          )}
 
-        {/* Budget area */}
-        <div className="trip-budget-layout">
+          {current.key === "details" && (
+            <>
+              <h1>Who's going?</h1>
+              <p className="wizard-sub">We'll size rooms and per-person costs to your group, and name your trip so it's easy to find later.</p>
+              <div className="wizard-dates">
+                <div>
+                  <label className="wizard-label" htmlFor="travelers">Number of travelers</label>
+                  <input
+                    id="travelers"
+                    className="wizard-input"
+                    type="number"
+                    min="1"
+                    step="1"
+                    autoFocus
+                    value={form.numberOfTravelers}
+                    onChange={(e) => update("numberOfTravelers", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="wizard-label" htmlFor="tripName">
+                    Trip name <span className="wizard-optional">(optional)</span>
+                  </label>
+                  <input
+                    id="tripName"
+                    className="wizard-input"
+                    type="text"
+                    placeholder={`${form.destination.split(",")[0] || "My"} trip`}
+                    value={form.name}
+                    onChange={(e) => update("name", e.target.value)}
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
-          {/* Left: Set your budget */}
-          <section className="trip-budget-form">
-            <h2>Set your budget</h2>
+          {current.key === "tradeoffs" && (
+            <>
+              <h1>Which trade-offs feel okay?</h1>
+              <p className="wizard-sub">Select all you'd consider. We'll use these to keep recommendations within your budget.</p>
+              <div className="wizard-grid">
+                {TRADE_OFFS.map((opt) => {
+                  const selected = form.tradeOffs.includes(opt.value);
+                  return (
+                    <button
+                      type="button"
+                      aria-pressed={selected}
+                      key={opt.value}
+                      className={`wizard-option ${selected ? "is-selected" : ""}`}
+                      onClick={() => toggleTradeOff(opt.value)}
+                    >
+                      <strong>{opt.title}</strong>
+                      <span>{opt.description}</span>
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  aria-pressed={form.tradeOffs.includes(NO_COMPROMISE)}
+                  className={`wizard-option wizard-option-wide ${form.tradeOffs.includes(NO_COMPROMISE) ? "is-selected" : ""}`}
+                  onClick={() => toggleTradeOff(NO_COMPROMISE)}
+                >
+                  <strong>I'd rather not compromise on these</strong>
+                </button>
+              </div>
+            </>
+          )}
 
-            <p className="budget-description">
-              Start with a total, then divide it across your trip.
-              {travelers > 0 &&
-                ` All amounts are for ${travelers} traveler${travelers === 1 ? "" : "s"}.`}
-            </p>
+          {current.key === "budget" && (
+            <>
+              <h1>How much do you want to spend in total?</h1>
+              <p className="wizard-sub">
+                We've estimated a budget from your trip so far. Use it as-is, or set your own ceiling.
+              </p>
 
-            <div className="budget-input-row">
+              <div className="wizard-rec" aria-live="polite">
+                {budgetLoading ? (
+                  <p className="wizard-rec-loading">Estimating your trip costs…</p>
+                ) : budgetRec ? (
+                  <>
+                    <div className="wizard-rec-top">
+                      <div>
+                        <p className="wizard-eyebrow">Recommended budget</p>
+                        <p className="wizard-rec-headline">{money(Number(budgetRec.recommendedTotal))}</p>
+                        <p className="wizard-rec-reason">
+                          Typical range {money(Number(budgetRec.lowTotal))} – {money(Number(budgetRec.highTotal))}
+                          {travelers > 1 &&
+                            ` · about ${money(Number(budgetRec.recommendedTotal) / travelers)} per traveler`}
+                        </p>
+                      </div>
+                      {Number(form.totalBudget) !== Number(budgetRec.recommendedTotal) && (
+                        <button
+                          type="button"
+                          className="wizard-rec-apply"
+                          onClick={() => setTotal(String(budgetRec.recommendedTotal), true)}
+                        >
+                          Use this amount
+                        </button>
+                      )}
+                    </div>
 
-              <div className="budget-field">
-                <label htmlFor="totalBudget">Total trip budget</label>
+                    <ul className="wizard-rec-breakdown">
+                      {Object.entries(budgetRec.allocations).map(([category, amount]) => (
+                        <li key={category}>
+                          <span>{category}</span>
+                          <strong>{money(Number(amount))}</strong>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <details className="wizard-rec-assumptions">
+                      <summary>How we estimated this</summary>
+                      <ul>
+                        {budgetRec.assumptions.map((a) => (
+                          <li key={a}>{a}</li>
+                        ))}
+                      </ul>
+                    </details>
+                  </>
+                ) : budgetError ? (
+                  <p className="wizard-rec-error">Couldn't load a recommendation ({budgetError}). You can still set your own budget.</p>
+                ) : null}
+              </div>
+
+              <label className="wizard-label" htmlFor="totalBudget">Total trip budget</label>
+              <div className="wizard-money">
+                <span className="wizard-money-symbol">{currencySymbol(form.currency)}</span>
                 <input
                   id="totalBudget"
                   type="number"
                   min="0"
-                  placeholder="0.00"
-                  value={totalBudget}
-                  onChange={(e) => setTotalBudget(e.target.value)}
+                  inputMode="decimal"
+                  placeholder="4,200"
+                  value={form.totalBudget}
+                  onChange={(e) => setTotal(e.target.value, false)}
                 />
-                {fieldError("totalBudget")}
-              </div>
-
-              <div className="currency-field">
-                <label htmlFor="currency">Currency</label>
                 <select
-                  id="currency"
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
+                  aria-label="Currency"
+                  value={form.currency}
+                  onChange={(e) => update("currency", e.target.value)}
                 >
-                  <option value="USD">USD — US Dollar</option>
-                  <option value="EUR">EUR — Euro</option>
-                  <option value="GBP">GBP — British Pound</option>
-                  <option value="MAD">MAD — Moroccan Dirham</option>
+                  {CURRENCIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
                 </select>
               </div>
-
-            </div>
-
-            <div className="budget-divider"></div>
-
-            <h3>Plan your spending</h3>
-            <p className="budget-description">
-              Enter your planned spending. You can adjust these amounts later.
-            </p>
-
-            <div className="budget-category-list">
-              {budgetCategories.map((category) => (
-                <div className="budget-category" key={category.name}>
-
-                  <div className="category-info">
-                    <div className="category-icon">{category.icon}</div>
-                    <div>
-                      <h4>{category.name}</h4>
-                      <p>{category.description}</p>
-                    </div>
-                  </div>
-
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0.00"
-                    aria-label={`${category.name} budget`}
-                    value={allocations[category.name] ?? ""}
-                    onChange={(e) =>
-                      updateAllocation(category.name, e.target.value)
-                    }
-                  />
-
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Right: Budget breakdown */}
-          <section className="trip-budget-summary">
-            <h2>Budget breakdown</h2>
-
-            <p className="summary-label">Total trip budget</p>
-
-            <div className="summary-total">
-              <h1>{formatter.format(total)}</h1>
-              <span>{currency}</span>
-            </div>
-
-            {travelers > 1 && total > 0 && (
-              <p className="summary-label">
-                {formatter.format(total / travelers)} per traveler
-              </p>
-            )}
-
-            <div className="budget-progress">
-              <div
-                className="budget-progress-fill"
-                style={{ width: `${Math.min(percentage, 100)}%` }}
-              ></div>
-            </div>
-
-            <div className="progress-labels">
-              <span>{percentage.toFixed(0)}% planned</span>
-              <span>
-                {formatter.format(allocated)} of {formatter.format(total)}
-              </span>
-            </div>
-
-            <div className="summary-categories">
-              {budgetCategories.map((category) => (
-                <div className="summary-category" key={category.name}>
-                  <span>• &nbsp;{category.name}</span>
-                  <strong>
-                    {formatter.format(Number(allocations[category.name]) || 0)}
-                  </strong>
-                </div>
-              ))}
-            </div>
-
-            <div className="summary-allocated">
-              <span>Total planned spending</span>
-              <strong>{formatter.format(allocated)}</strong>
-            </div>
-
-            <div className="remaining-budget">
-              <div>
-                <span>Remaining budget</span>
-                <h2>{formatter.format(remaining)}</h2>
+              <p className="wizard-hint">This is your ceiling, not a spending target.</p>
+              <div className="wizard-presets">
+                {presets.map((amount, i) => (
+                  <button
+                    type="button"
+                    key={`${i}-${amount}`}
+                    className={`wizard-chip wizard-preset ${total === amount ? "is-selected" : ""}`}
+                    onClick={() => setTotal(String(amount), i === 1 && Boolean(budgetRec))}
+                  >
+                    {presetLabels[i] && <small>{presetLabels[i]}</small>}
+                    {money(amount)}
+                  </button>
+                ))}
               </div>
+            </>
+          )}
 
-              <p>
-                {remaining < 0
-                  ? "Your planned spending exceeds your total budget."
-                  : remaining === 0 && total > 0
-                  ? "Your entire budget has been planned."
-                  : total === 0
-                  ? "Enter your total budget to get started."
-                  : "You still have money available in your budget."}
+          {current.key === "ready" && (
+            <>
+              <p className="wizard-eyebrow">Next</p>
+              <h1>We'll suggest category caps for your trip.</h1>
+              <p className="wizard-sub">
+                Here's how your budget splits across flights, lodging, food, transport, and activities. Nothing is booked or charged.
               </p>
-            </div>
+              <dl className="wizard-recap">
+                <div><dt>Destination</dt><dd>{form.destination}</dd></div>
+                <div><dt>Budget</dt><dd>{money(total)}</dd></div>
+                <div><dt>Dates</dt><dd>{formatDate(form.startDate)} → {formatDate(form.endDate)}</dd></div>
+                <div><dt>Travelers</dt><dd>{travelers}</dd></div>
+                {Object.entries(plannedAllocations()).map(([category, amount]) => (
+                  <div key={category}><dt>{category}</dt><dd>{money(Number(amount))}</dd></div>
+                ))}
+              </dl>
+            </>
+          )}
 
-            {error && <p className="error-text">{error}</p>}
-
-            <button className="save-budget-btn" onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : isEditing ? "Save Changes →" : "Save Trip & Budget →"}
-            </button>
-
-            <p className="save-note">
-              Your budget can be updated anytime.
-            </p>
-          </section>
-
+          {error && <p className="wizard-error" role="alert">{error}</p>}
         </div>
-      </main>
+
+        <footer className="wizard-footer">
+          {step > 0 ? (
+            <button type="button" className="wizard-back" onClick={goBack} disabled={saving}>
+              ← Back
+            </button>
+          ) : (
+            <span />
+          )}
+          <button type="submit" className="wizard-continue" disabled={saving}>
+            {isLast
+              ? saving
+                ? "Saving..."
+                : "View budget dashboard"
+              : "Continue →"}
+          </button>
+        </footer>
+      </form>
     </div>
   );
 }
