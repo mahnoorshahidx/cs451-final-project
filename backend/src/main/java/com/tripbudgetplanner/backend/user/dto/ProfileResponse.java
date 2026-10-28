@@ -1,9 +1,13 @@
+
 package com.tripbudgetplanner.backend.user.dto;
 
-// User profile information sent to the frontend
+// User profile and saved preferences
 public record ProfileResponse(
     Long id,
     String name,
     String email,
-    boolean tripRemindersEnabled
+    boolean tripRemindersEnabled,
+    String currency,
+    String dateFormat,
+    String appearance
 ) {}
