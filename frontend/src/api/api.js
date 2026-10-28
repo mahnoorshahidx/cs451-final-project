@@ -82,3 +82,10 @@ apiFetch("/api/users/me/preferences", {
   method: "PUT",
   body: preferences,
 });
+
+// ---- Recommendations (Create Trip wizard) ----
+export const recommendTiming = (body) =>
+  apiFetch("/api/recommendations/timing", { method: "POST", body });
+
+export const recommendBudget = (body) =>
+  apiFetch("/api/recommendations/budget", { method: "POST", body });
