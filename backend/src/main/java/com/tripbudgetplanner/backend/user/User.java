@@ -1,3 +1,4 @@
+
 package com.tripbudgetplanner.backend.user;
 
 import java.time.Instant;
@@ -35,6 +36,16 @@ public class User {
     @Column(nullable = false)
     private boolean tripRemindersEnabled = true;
 
+    // User preferences
+    @Column(nullable = false)
+    private String currency = "USD";
+
+    @Column(nullable = false)
+    private String dateFormat = "MM/DD/YYYY";
+
+    @Column(nullable = false)
+    private String appearance = "light";
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
@@ -64,6 +75,16 @@ public class User {
     public void setTripRemindersEnabled(boolean tripRemindersEnabled) {
         this.tripRemindersEnabled = tripRemindersEnabled;
     }
+
+    // Preference getters and setters
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
+
+    public String getDateFormat() { return dateFormat; }
+    public void setDateFormat(String dateFormat) { this.dateFormat = dateFormat; }
+
+    public String getAppearance() { return appearance; }
+    public void setAppearance(String appearance) { this.appearance = appearance; }
 
     public Instant getCreatedAt() { return createdAt; }
 }
