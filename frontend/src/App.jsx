@@ -1,4 +1,7 @@
+
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { getProfile } from "./api/api";
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -9,6 +12,22 @@ import Settings from "./pages/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
+
+  // Load the user's saved appearance
+  useEffect(() => {
+    getProfile()
+      .then((user) => {
+        document.documentElement.setAttribute(
+          "data-theme",
+          user.appearance
+        );
+      })
+      .catch(() => {
+        // Use light mode if the user is not logged in
+        document.documentElement.setAttribute("data-theme", "light");
+      });
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
