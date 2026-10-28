@@ -105,3 +105,90 @@
   cursor: pointer;
   font-size: 0.9rem;
 }
+
+/* ==================================
+   TRIPS - LAVENDER CHARCOAL
+================================== */
+
+/* Section headings */
+[data-theme="dark"] .trips-section-header h2 {
+  color: #F1EDF8;
+}
+
+/* View all link */
+[data-theme="dark"] .trips-section-header a {
+  color: #C5B0E5;
+}
+
+/* Trip cards */
+[data-theme="dark"] .trip-card {
+  background: rgba(53, 51, 68, 0.88);
+  border-color: rgba(190, 175, 215, 0.18);
+  color: #F1EDF8;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Trip names */
+[data-theme="dark"] .trip-card h3 {
+  color: #F1EDF8;
+}
+
+/* Destination and dates */
+[data-theme="dark"] .trip-card-destination,
+[data-theme="dark"] .trip-card-meta,
+[data-theme="dark"] .trips-message {
+  color: #C5BDD2;
+}
+
+/* Upcoming trip badges */
+[data-theme="dark"] .trip-card-badge {
+  background: rgba(113, 101, 142, 0.35);
+  color: #E8DFF5;
+}
+
+/* Past trip badges */
+[data-theme="dark"] .trip-card-badge.past {
+  background: #454155;
+  color: #B8AFC7;
+}
+
+/* Edit trip links */
+[data-theme="dark"] .trip-card-link {
+  color: #C5B0E5;
+}
+
+[data-theme="dark"] .trip-card-link:hover,
+[data-theme="dark"] .trips-section-header a:hover {
+  color: #E8DFF5;
+}
+
+/* Create new trip button */
+[data-theme="dark"] .trips-new-btn {
+  background: #71658E;
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .trips-new-btn:hover {
+  background: #81729D;
+}
+
+/* Delete trip button */
+[data-theme="dark"] .trip-card-delete {
+  color: #F0A5AC;
+}
+
+[data-theme="dark"] .trip-card-delete:hover {
+  color: #FFD0D5;
+}
+
+/* Make the New Trip button stand out */
+[data-theme="dark"] .trips-new-btn {
+  background: linear-gradient(135deg, #81729D, #625578);
+  color: #FFFFFF;
+  border: 1px solid rgba(220, 205, 240, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .trips-new-btn:hover {
+  background: linear-gradient(135deg, #9484B0, #71658E);
+}
