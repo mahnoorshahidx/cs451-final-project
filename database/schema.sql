@@ -19,7 +19,10 @@ CREATE TABLE IF NOT EXISTS users (
     date_of_birth DATE,
     address VARCHAR(255),
     created_at DATETIME(6) NOT NULL,
-    trip_reminders_enabled BOOLEAN NOT NULL DEFAULT TRUE
+    trip_reminders_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    currency VARCHAR(255) NOT NULL DEFAULT 'USD',
+    date_format VARCHAR(255) NOT NULL DEFAULT 'MM/DD/YYYY',
+    appearance VARCHAR(255) NOT NULL DEFAULT 'light'
 );
 
 -- Creates the trips table based on the backend's Trip.java file.
