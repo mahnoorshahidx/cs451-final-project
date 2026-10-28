@@ -193,3 +193,85 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Preferences dropdowns */
+.settings-form select {
+  padding: 13px 15px;
+  border: 1px solid #C6DAE9;
+  border-radius: 12px;
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #1A1A1A;
+  cursor: pointer;
+}
+
+/* Dropdown focus */
+.settings-form select:focus {
+  outline: 2px solid #8EACC5;
+}
+
+/* ==================================
+   SETTINGS - LAVENDER CHARCOAL
+================================== */
+
+/* Page headings */
+[data-theme="dark"] .settings-header h1,
+[data-theme="dark"] .settings-card h2,
+[data-theme="dark"] .notification-preference h3 {
+  color: #F1EDF8;
+}
+
+/* Description text */
+[data-theme="dark"] .settings-header p,
+[data-theme="dark"] .settings-card p {
+  color: #C5BDD2;
+}
+
+/* Glass cards */
+[data-theme="dark"] .settings-card {
+  background: rgba(53, 51, 68, 0.88);
+  border-color: rgba(190, 175, 215, 0.18);
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+/* Form labels */
+[data-theme="dark"] .settings-form label {
+  color: #D8D0E5;
+}
+
+/* Inputs and dropdowns */
+[data-theme="dark"] .settings-form input,
+[data-theme="dark"] .settings-form select {
+  background: rgba(36, 35, 46, 0.85);
+  border-color: #625578;
+  color: #F1EDF8;
+}
+
+/* Input focus */
+[data-theme="dark"] .settings-form input:focus,
+[data-theme="dark"] .settings-form select:focus {
+  outline: 2px solid #B8A5D6;
+}
+
+/* Buttons */
+[data-theme="dark"] .settings-form button {
+  background: #71658E;
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .settings-form button:hover {
+  background: #81729D;
+}
+
+/* Success messages */
+[data-theme="dark"] .settings-success {
+  color: #A7E3BC !important;
+}
+
+/* Notification toggle */
+[data-theme="dark"] .settings-switch input:checked
+  + .settings-switch-slider {
+  background: #81729D;
+}
