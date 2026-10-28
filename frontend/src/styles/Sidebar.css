@@ -257,3 +257,75 @@
     transform: none;
   }
 }
+
+/* ==================================
+   SIDEBAR - LAVENDER CHARCOAL
+================================== */
+
+/* Sidebar background */
+[data-theme="dark"] .sidebar {
+  background: rgba(42, 40, 54, 0.95);
+  border-right: 1px solid rgba(190, 175, 215, 0.18);
+  box-shadow: 4px 0 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Sidebar title */
+[data-theme="dark"] .sidebar-header h2 {
+  color: #F1EDF8;
+}
+
+/* Collapse button */
+[data-theme="dark"] .sidebar-toggle {
+  background: rgba(80, 73, 96, 0.6);
+  border-color: rgba(190, 175, 215, 0.2);
+  color: #F1EDF8;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .sidebar-toggle:hover {
+  background: #625578;
+}
+
+/* Navigation links and icons */
+[data-theme="dark"] .sidebar-link,
+[data-theme="dark"] .sidebar-icon {
+  color: #D8D0E5;
+}
+
+/* Hover effect */
+[data-theme="dark"] .sidebar-link:hover {
+  background: rgba(113, 101, 142, 0.3);
+  border-color: rgba(190, 175, 215, 0.2);
+  box-shadow: none;
+}
+
+/* Active navigation link */
+[data-theme="dark"] .sidebar-link.active {
+  background: linear-gradient(
+    135deg,
+    #625578,
+    #504960
+  );
+  color: #FFFFFF;
+  border-color: rgba(190, 175, 215, 0.3);
+  box-shadow: none;
+}
+
+/* Logout button */
+[data-theme="dark"] .sidebar-logout {
+  background: rgba(80, 73, 96, 0.45);
+  border-color: rgba(190, 175, 215, 0.2);
+  color: #D8D0E5;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .sidebar-logout:hover {
+  background: rgba(113, 101, 142, 0.45);
+}
+
+/* Keyboard focus */
+[data-theme="dark"] .sidebar-toggle:focus-visible,
+[data-theme="dark"] .sidebar-link:focus-visible,
+[data-theme="dark"] .sidebar-logout:focus-visible {
+  outline-color: #B8A5D6;
+}
