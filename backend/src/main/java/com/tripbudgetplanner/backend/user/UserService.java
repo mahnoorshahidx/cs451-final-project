@@ -1,3 +1,4 @@
+
 package com.tripbudgetplanner.backend.user;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -8,6 +9,7 @@ import com.tripbudgetplanner.backend.auth.exception.EmailAlreadyExistsException;
 import com.tripbudgetplanner.backend.user.dto.ChangePasswordRequest;
 import com.tripbudgetplanner.backend.user.dto.ProfileResponse;
 import com.tripbudgetplanner.backend.user.dto.UpdateProfileRequest;
+import com.tripbudgetplanner.backend.user.dto.UpdatePreferencesRequest;
 
 // Handles user profile and account security operations
 @Service
@@ -80,14 +82,40 @@ public class UserService {
         user.setTripRemindersEnabled(enabled);
         userRepository.save(user);
     }
-   
+
+    // Saves the user's preferences
+    @Transactional
+    public ProfileResponse updatePreferences(Long userId, UpdatePreferencesRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Check supported preference values
+        if (!java.util.List.of("USD", "EUR", "GBP", "MAD").contains(request.currency())
+                || !java.util.List.of("MM/DD/YYYY", "DD/MM/YYYY").contains(request.dateFormat())
+                || !java.util.List.of("light", "dark").contains(request.appearance())) {
+            throw new IllegalArgumentException("Invalid preference selection");
+        }
+
+        // Save preferences
+        user.setCurrency(request.currency());
+        user.setDateFormat(request.dateFormat());
+        user.setAppearance(request.appearance());
+
+        userRepository.save(user);
+
+        return toResponse(user);
+    }
+
     // Converts the User entity into a safe response
     private ProfileResponse toResponse(User user) {
         return new ProfileResponse(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.isTripRemindersEnabled()
+                user.isTripRemindersEnabled(),
+                user.getCurrency(),
+                user.getDateFormat(),
+                user.getAppearance()
         );
     }
 }
