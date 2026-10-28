@@ -802,3 +802,199 @@
     transform: none;
   }
 }
+
+/* ==================================
+   CREATE TRIP - LAVENDER CHARCOAL
+================================== */
+
+/* Page background */
+[data-theme="dark"] .create-trip-page {
+  background: linear-gradient(
+    135deg,
+    #24232E 0%,
+    #2D2B39 55%,
+    #24232E 100%
+  );
+  color: #F1EDF8;
+}
+
+/* Background glow */
+[data-theme="dark"] .create-trip-page::before {
+  background: radial-gradient(
+    circle,
+    rgba(160, 140, 190, 0.18),
+    transparent 70%
+  );
+}
+
+/* Welcome banner */
+[data-theme="dark"] .trip-banner {
+  background-image: linear-gradient(
+    90deg,
+    rgba(53, 51, 68, 0.94),
+    rgba(53, 51, 68, 0.85)
+  ), url("../assets/trip-banner.jpg");
+
+  border-color: rgba(190, 175, 215, 0.18);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* Glass panels */
+[data-theme="dark"] .trip-details,
+[data-theme="dark"] .trip-budget-form,
+[data-theme="dark"] .trip-budget-summary {
+  background: rgba(53, 51, 68, 0.88);
+  border-color: rgba(190, 175, 215, 0.18);
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+/* Glass reflections */
+[data-theme="dark"] .trip-banner::before,
+[data-theme="dark"] .trip-details::before,
+[data-theme="dark"] .trip-budget-form::before,
+[data-theme="dark"] .trip-budget-summary::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(220, 205, 240, 0.25),
+    transparent
+  );
+}
+
+/* Headings */
+[data-theme="dark"] .trip-banner h1,
+[data-theme="dark"] .trip-details-title h2,
+[data-theme="dark"] .trip-budget-form h2,
+[data-theme="dark"] .trip-budget-summary h2,
+[data-theme="dark"] .trip-budget-form h3,
+[data-theme="dark"] .category-info h4,
+[data-theme="dark"] .summary-category strong {
+  color: #F1EDF8;
+}
+
+/* Labels and trip details */
+[data-theme="dark"] .trip-field label,
+[data-theme="dark"] .budget-field label,
+[data-theme="dark"] .currency-field label,
+[data-theme="dark"] .trip-detail-item p,
+[data-theme="dark"] .summary-allocated {
+  color: #F1EDF8;
+}
+
+/* Secondary text */
+[data-theme="dark"] .trip-breadcrumb,
+[data-theme="dark"] .trip-banner p:last-child,
+[data-theme="dark"] .trip-details-title p,
+[data-theme="dark"] .trip-detail-item span,
+[data-theme="dark"] .budget-description,
+[data-theme="dark"] .category-info p,
+[data-theme="dark"] .summary-label,
+[data-theme="dark"] .summary-total span,
+[data-theme="dark"] .progress-labels,
+[data-theme="dark"] .summary-category span,
+[data-theme="dark"] .save-note {
+  color: #C5BDD2;
+}
+
+/* Form inputs and dropdowns */
+[data-theme="dark"] .trip-field input,
+[data-theme="dark"] .budget-field input,
+[data-theme="dark"] .currency-field select,
+[data-theme="dark"] .budget-category input {
+  background: rgba(36, 35, 46, 0.85);
+  border-color: #625578;
+  color: #F1EDF8;
+  box-shadow: none;
+}
+
+/* Input focus */
+[data-theme="dark"] .trip-field input:focus,
+[data-theme="dark"] .budget-field input:focus,
+[data-theme="dark"] .currency-field select:focus,
+[data-theme="dark"] .budget-category input:focus {
+  border-color: #B8A5D6;
+  box-shadow: 0 0 0 4px rgba(184, 165, 214, 0.2);
+}
+
+/* Date picker icons */
+[data-theme="dark"] .trip-field input[type="date"] {
+  color-scheme: dark;
+}
+
+/* Budget category icons */
+[data-theme="dark"] .category-icon {
+  background: linear-gradient(145deg, #504960, #403B50);
+  border-color: rgba(190, 175, 215, 0.2);
+  color: #E8DFF5;
+  box-shadow: none;
+}
+
+/* Budget dividers */
+[data-theme="dark"] .budget-divider {
+  background: rgba(190, 175, 215, 0.2);
+}
+
+/* Total budget amount */
+[data-theme="dark"] .summary-total h1 {
+  color: #D8C8F0;
+}
+
+/* Budget progress bar */
+[data-theme="dark"] .budget-progress {
+  background: #454155;
+}
+
+[data-theme="dark"] .budget-progress-fill {
+  background: linear-gradient(90deg, #B8A5D6, #81729D);
+}
+
+/* Allocated budget divider */
+[data-theme="dark"] .summary-allocated {
+  border-top-color: rgba(190, 175, 215, 0.2);
+}
+
+/* Remaining budget card */
+[data-theme="dark"] .remaining-budget {
+  background: linear-gradient(135deg, #504960, #403B50);
+  border-color: rgba(190, 175, 215, 0.25);
+  box-shadow: none;
+}
+
+[data-theme="dark"] .remaining-budget span,
+[data-theme="dark"] .remaining-budget h2 {
+  color: #F1EDF8;
+}
+
+[data-theme="dark"] .remaining-budget p {
+  color: #C5BDD2;
+}
+
+/* Edit details link */
+[data-theme="dark"] .edit-details {
+  color: #C5B0E5;
+}
+
+/* Save budget button */
+[data-theme="dark"] .save-budget-btn {
+  background: linear-gradient(180deg, #81729D, #625578);
+  border-color: rgba(220, 205, 240, 0.2);
+  color: #FFFFFF;
+}
+
+/* Keyboard focus */
+[data-theme="dark"] .edit-details:focus-visible,
+[data-theme="dark"] .save-budget-btn:focus-visible {
+  outline-color: #B8A5D6;
+}
+
+/* Keep autofilled inputs dark */
+[data-theme="dark"] .trip-field input:-webkit-autofill,
+[data-theme="dark"] .trip-field input:-webkit-autofill:hover,
+[data-theme="dark"] .trip-field input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #24232E inset;
+  -webkit-text-fill-color: #F1EDF8;
+  caret-color: #F1EDF8;
+  transition: background-color 9999s ease-out;
+}
