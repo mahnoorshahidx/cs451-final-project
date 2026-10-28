@@ -14,6 +14,10 @@ A trip budgeting application that helps users plan travel expenses, track saving
 - Backend: Java and Spring Boot
 - Database: MySQL
 
+## Getting Started
+- [Developer setup](docs/developer-setup.md): install, run the backend and frontend, fix common errors, and push changes.
+- [Trip planning features](docs/trip-planning-features.md): how Create Trip, recommendations, Edit Trip and Budget & Savings work, and where the code lives.
+
 ## Development Guidelines
 - Work within your assigned project folder.
 - Commit and push changes to the shared GitHub repository EVERY time any changes are made.
