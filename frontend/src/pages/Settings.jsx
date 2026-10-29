@@ -8,9 +8,17 @@ import {
   updateNotificationPreference,
   updatePreferences,
 } from "../api/api";
+
 import { updateCurrentUser } from "../api/client";
 import "../styles/Dashboard.css";
 import "../styles/Settings.css";
+
+import {
+  UserRound,
+  LockKeyhole,
+  Bell,
+  SlidersHorizontal
+} from "lucide-react";
 
 // Settings page component
 function Settings() {
@@ -187,9 +195,12 @@ function Settings() {
             <p>Manage your account settings and preferences.</p>
           </section>
 
+          {/* Two-column settings grid */}
+          <div className="settings-grid">
+
           {/* Profile information */}
           <section className="settings-card">
-            <h2>Profile Information</h2>
+            <h2><UserRound size={22} /> Profile Information</h2>
 
             {loading ? (
               <p>Loading profile...</p>
@@ -236,7 +247,7 @@ function Settings() {
 
           {/* Account security */}
           <section className="settings-card">
-            <h2>Account Security</h2>
+            <h2><LockKeyhole size={22} /> Account Security</h2>
             <p>Change your account password.</p>
 
             <form onSubmit={handlePasswordChange} className="settings-form">
@@ -297,7 +308,7 @@ function Settings() {
 
           {/* Notification preferences */}
           <section className="settings-card">
-            <h2>Notification Preferences</h2>
+            <h2><Bell size={22} /> Notification Preferences</h2>
             <p>Manage your trip reminders.</p>
 
             <div className="notification-preference">
@@ -338,7 +349,7 @@ function Settings() {
 
           {/* User preferences */}
           <section className="settings-card">
-            <h2>Preferences</h2>
+            <h2><SlidersHorizontal size={22} /> Preferences</h2>
             <p>Customize your trip planning experience.</p>
 
             {loading ? (
@@ -401,10 +412,12 @@ function Settings() {
             )}
           </section>
 
-        </div>
-      </main>
-    </div>
-  );
+        </div> {/* End settings-grid */}
+
+      </div> {/* End settings-content */}
+    </main>
+  </div>
+);
 }
 
 export default Settings;

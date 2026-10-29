@@ -14,7 +14,7 @@ import { BUDGET_CATEGORIES } from "../lib/budgetSuggestions";
 import { categoryMeta } from "../lib/budgetCategories";
 
 // Budget & savings: /budget (next upcoming trip) or /budget/:tripId
-// Top: totals across upcoming trips. Left: every trip with its savings progress.
+// Top: totals across upcoming trips. Left: every dget & dget & savin with its savings progress.
 // Right: the selected trip's savings goal, contributions and budget envelopes.
 
 // ---------- helpers (dates stay "YYYY-MM-DD" strings) ----------

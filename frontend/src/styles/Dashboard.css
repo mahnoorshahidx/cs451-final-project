@@ -814,3 +814,73 @@
     grid-row: auto;
   }
 }
+
+
+/* Upcoming Trips Header */
+.trips-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+/* Header Actions */
+.trips-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Small Create Trip Button */
+.dashboard-create-trip-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 9px 15px;
+  background: #34516d;
+  color: white;
+  border-radius: 9px;
+
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  transition: background 0.2s ease;
+}
+
+.dashboard-create-trip-btn:hover {
+  background: #263f57;
+  color: white;
+}
+
+/* View All Link */
+.dashboard-view-all {
+  font-size: 13px;
+  color: #34516d;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.dashboard-view-all:hover {
+  text-decoration: underline;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+  .trips-section-header {
+    flex-wrap: wrap;
+  }
+
+  .trips-header-actions {
+    gap: 12px;
+  }
+
+  .dashboard-create-trip-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}

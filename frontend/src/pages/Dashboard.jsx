@@ -146,25 +146,6 @@ const mainCurrency =
 
           <div className="dashboard-left">
 
-          {/* Create Trip Card */}
-          <section className="dashboard-plan">
-
-            <div className="plan-icon">✈</div>
-
-            <div className="plan-info">
-              <h2>Create a New Trip</h2>
-              <p>
-                Plan your next adventure and set your travel budget.
-              </p>
-            </div>
-
-            <Link to="/create-trip" className="plan-link">
-              Create Trip <span aria-hidden="true">→</span>
-            </Link>
-
-          </section>
-
-
           {/* Next Trip Countdown */}
         {!loading && !error && nextTrip && (
           <section className="dashboard-countdown">
@@ -250,14 +231,21 @@ const mainCurrency =
         <section className="dashboard-trips">
 
             <div className="trips-section-header">
-              <h2>Upcoming Trips</h2>
+            <h2>Upcoming Trips</h2>
+
+            <div className="trips-header-actions">
+              <Link to="/create-trip" className="dashboard-create-trip-btn">
+                <span aria-hidden="true">+</span>
+                Create Trip
+              </Link>
 
               {trips.length > 0 && (
-                <Link to="/trips">
+                <Link to="/trips" className="dashboard-view-all">
                   View all ({trips.length})
                 </Link>
               )}
             </div>
+          </div>
 
             {loading && (
               <p className="trips-message">

@@ -9,7 +9,7 @@ function Sidebar() {
   const menuItems = [
     { name: "Dashboard", path: "/dashboard", icon: "⌂" },
     { name: "My Trips", path: "/trips", icon: "✈" },
-    { name: "Savings", path: "/savings", icon: "$" },
+    { name: "Savings Planner", path: "/savings", icon: "$" },
     { name: "Settings", path: "/settings", icon: "⚙" },
   ];
 

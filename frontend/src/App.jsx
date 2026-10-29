@@ -98,6 +98,15 @@ function App() {
 
         <Route path="/budget" element={<ProtectedRoute><BudgetDashboard /></ProtectedRoute>} />
         <Route path="/budget/:tripId" element={<ProtectedRoute><BudgetDashboard /></ProtectedRoute>} />
+        {/* Savings Planner */}
+        <Route
+          path="/savings"
+          element={
+            <ProtectedRoute>
+              <BudgetDashboard />
+            </ProtectedRoute>
+          }
+        />
         
         <Route
           path="*"
