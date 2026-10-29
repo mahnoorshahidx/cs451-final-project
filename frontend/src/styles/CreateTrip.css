@@ -908,3 +908,29 @@
   caret-color: #F1EDF8;
   transition: background-color 9999s ease-out;
 }
+
+
+
+
+
+/* Create Trip page layout */
+.create-trip-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+
+  background: linear-gradient(
+    135deg,
+    #F8FBFD 0%,
+    #DCE8F1 55%,
+    #EEF5FA 100%
+  );
+
+  position: relative;
+  isolation: isolate;
+}
+
+.create-trip-main {
+  flex: 1;
+  min-width: 0;
+}

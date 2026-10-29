@@ -169,10 +169,6 @@ function BankConnection() {
 
       {error && <p className="error-text">{error}</p>}
 
-      <p className="bank-demo-note">
-        Demo only — no real banking information is accessed.
-      </p>
-
     </section>
   );
 }

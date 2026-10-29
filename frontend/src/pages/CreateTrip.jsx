@@ -4,6 +4,7 @@ import "../styles/CreateTrip.css";
 import { createTrip, getProfile, recommendBudget, recommendTiming, saveBudget } from "../api/api";
 import { BUDGET_CATEGORIES, fallbackAllocations, scaleAllocations } from "../lib/budgetSuggestions";
 import { categoryMeta } from "../lib/budgetCategories";
+import Sidebar from "../components/Sidebar";
 
 // Budget comes last so the recommendation can use everything collected before it
 const STEPS = [
@@ -383,16 +384,24 @@ function CreateTrip() {
   const presetLabels = budgetRec ? ["Lean", "Recommended", "Comfortable"] : [];
 
   return (
-    <div className="wizard-page">
-      <header className="wizard-topbar">
-        <div className="wizard-brand">
-          <span className="wizard-logo">W</span>
-          <span>Wayfare</span>
-        </div>
-        <button type="button" className="wizard-exit" onClick={() => navigate("/trips")}>
-          <span aria-hidden="true">×</span> Exit
-        </button>
-      </header>
+    <div className="create-trip-layout">
+      <aside className="dashboard-sidebar">
+        <Sidebar />
+      </aside>
+
+      <main className="create-trip-main">
+      <div className="wizard-page">
+        <header className="wizard-topbar">
+          <div className="wizard-brand">
+          </div>
+          <button
+            type="button"
+            className="wizard-exit"
+            onClick={() => navigate("/trips")}
+          >
+            <span aria-hidden="true">×</span> Exit
+          </button>
+        </header>
 
       <div className="wizard-progress">
         <div className="wizard-progress-inner">
@@ -452,7 +461,7 @@ function CreateTrip() {
           {current.key === "timing" && (
             <>
               <h1>When would you like to travel?</h1>
-              <p className="wizard-sub">Set your dates or let Wayfare recommend the right window for your priorities.</p>
+              <p className="wizard-sub">Choose your travel dates or let us recommend the best time to go based on your preferences.</p>
               <div className="wizard-options" role="radiogroup" aria-label="Travel timing">
                 {TIMING_OPTIONS.map((opt) => (
                   <button
@@ -853,10 +862,14 @@ function CreateTrip() {
                 : "Save trip & budget"
               : "Continue →"}
           </button>
+
+
         </footer>
       </form>
-    </div>
-  );
+      </div>
+    </main>
+  </div>
+);
 }
 
 export default CreateTrip;
