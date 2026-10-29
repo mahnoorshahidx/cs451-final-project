@@ -324,8 +324,6 @@ function EditTrip() {
     <div className="et-page">
       <header className="et-topbar">
         <div className="et-brand">
-          <span className="et-logo">W</span>
-          <span>Wayfare</span>
         </div>
         <Link to="/trips" className="et-back" onClick={(e) => !confirmLeave() && e.preventDefault()}>
           ← My trips
