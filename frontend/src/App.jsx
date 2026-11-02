@@ -8,6 +8,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import CreateTrip from "./pages/CreateTrip";
 import MyTrips from "./pages/MyTrips";
+import CreateItinerary from "./pages/CreateItinerary";
 import Settings from "./pages/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import EditTrip from "./pages/EditTrip";
@@ -67,6 +68,16 @@ function App() {
           element={
             <ProtectedRoute>
               <MyTrips />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Create Itinerary */}
+        <Route
+          path="/create-itinerary"
+          element={
+            <ProtectedRoute>
+              <CreateItinerary />
             </ProtectedRoute>
           }
         />
