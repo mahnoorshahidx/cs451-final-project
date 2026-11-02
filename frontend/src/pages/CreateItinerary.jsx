@@ -1,29 +1,25 @@
 
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { listTrips } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import "../styles/Dashboard.css";
 import "../styles/CreateItinerary.css";
 
-// Temporary data for the UI layout.
-// Feature 3 will replace this with saved trips.
-const previewTrips = [
-  {
-    id: 1,
-    name: "Washington Weekend",
-    destination: "Washington, DC",
-    dates: "Nov 12–14, 2026",
-    travelers: 1,
-  },
-  {
-    id: 2,
-    name: "Chicago 2027",
-    destination: "Chicago, Illinois",
-    dates: "Feb 8–14, 2027",
-    travelers: 1,
-  },
-];
 
 function CreateItinerary() {
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Retrieve the user's saved trips when the page opens.
+  useEffect(() => {
+    listTrips()
+      .then((data) => setTrips(data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <div className="dashboard-page itinerary-page">
       <aside className="dashboard-sidebar">
@@ -66,33 +62,60 @@ function CreateItinerary() {
               </p>
             </div>
 
-            {/* Trip preview cards */}
-            <section className="itinerary-trip-list">
-              {previewTrips.map((trip) => (
-                <div
-                  key={trip.id}
-                  className="itinerary-trip-card"
-                >
-                  <div className="itinerary-trip-info">
-                    <h2>{trip.name}</h2>
-                    <p>{trip.destination}</p>
+            {/* Loading message */}
+            {loading && (
+              <p role="status">
+                Loading your trips...
+              </p>
+            )}
 
-                    <div className="itinerary-trip-meta">
-                      <span>▦ {trip.dates}</span>
-                      <span>
-                        ♙ {trip.travelers} traveler
-                        {trip.travelers !== 1 ? "s" : ""}
-                      </span>
+            {/* Error message */}
+            {!loading && error && (
+              <p role="alert" className="error-text">
+                Unable to load trips: {error}
+              </p>
+            )}
+
+            {/* No trips found */}
+            {!loading && !error && trips.length === 0 && (
+              <p>
+                You haven't created any trips yet.
+                Create a trip to get started.
+              </p>
+            )}
+
+            {/* Saved trip cards */}
+            {!loading && !error && trips.length > 0 && (
+              <section className="itinerary-trip-list">
+                {trips.map((trip) => (
+                  <div
+                    key={trip.id}
+                    className="itinerary-trip-card"
+                  >
+                    <div className="itinerary-trip-info">
+                      <h2>{trip.name}</h2>
+
+                      <p>
+                        {trip.destination || "Destination not provided"}
+                      </p>
+
+                      <div className="itinerary-trip-meta">
+                        {/*
+                          Additional date/traveler fields
+                          will be mapped after confirming
+                          the API response field names.
+                        */}
+                      </div>
                     </div>
-                  </div>
 
-                  <span
-                    className="itinerary-radio"
-                    aria-hidden="true"
-                  />
-                </div>
-              ))}
-            </section>
+                    <span
+                      className="itinerary-radio"
+                      aria-hidden="true"
+                    />
+                  </div>
+                ))}
+              </section>
+            )}
 
             <Link
               to="/create-trip"
