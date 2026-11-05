@@ -1,0 +1,461 @@
+/* FEATURE 6: Calendar views. No outer card or frame. */
+.itcal {
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: #202020;
+}
+
+.itcal-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 18px;
+}
+
+.itcal-view-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.itcal-view-toggle button {
+  border: 0;
+  background: transparent;
+  color: #526978;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.itcal-view-toggle button.is-active {
+  color: #087a70;
+  box-shadow: inset 0 -2px #087a70;
+}
+
+.itcal-navigation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.itcal-navigation h2 {
+  margin: 0;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #202020;
+  text-align: center;
+}
+
+.itcal-navigation button {
+  padding: 0;
+  width: 28px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: #087a70;
+  font: inherit;
+  font-size: 27px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.itcal-navigation button:disabled {
+  color: #b1b8c1;
+  cursor: not-allowed;
+}
+
+.itcal-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Month view: room for event titles, even when the viewport is narrower. */
+.itcal-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(90px, 1fr));
+  min-width: 630px;
+}
+
+.itcal-month-weekday {
+  padding: 8px 5px 12px;
+  text-align: center;
+  color: #60717c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.itcal-month-cell {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 116px;
+  padding: 6px 4px;
+  border-top: 1px solid #dfe5e6;
+}
+
+.itcal-month-cell.is-selected {
+  background: rgba(8, 122, 112, 0.06);
+}
+
+.itcal-month-cell.is-outside,
+.itcal-month-cell.is-blank {
+  opacity: 0.45;
+}
+
+.itcal-month-date {
+  display: block;
+  width: 29px;
+  height: 29px;
+  margin: 0 0 5px 2px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #202020;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.itcal-month-date:disabled {
+  color: #a5b0b7;
+  cursor: default;
+}
+
+.itcal-month-date.is-selected {
+  color: #fff;
+  background: #087a70;
+}
+
+.itcal-month-activities {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.itcal-month-pill,
+.itcal-more {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 3px 5px;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 3px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  font: inherit;
+  font-size: 10px;
+  line-height: 15px;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: clip;
+  cursor: pointer;
+}
+
+.itcal-more {
+  color: #087a70;
+  font-weight: 700;
+}
+
+/* Shared translucent category palette for all calendar views. */
+.itcal-color--activity { background: rgba(8, 122, 112, 0.13); border-left-color: #087a70; color: #17584f; }
+.itcal-color--food { background: rgba(218, 142, 43, 0.16); border-left-color: #c47d15; color: #744910; }
+.itcal-color--sightseeing { background: rgba(63, 124, 209, 0.15); border-left-color: #3f7cd1; color: #244f84; }
+.itcal-color--nature { background: rgba(68, 145, 89, 0.15); border-left-color: #449159; color: #285d35; }
+.itcal-color--transportation { background: rgba(124, 97, 176, 0.15); border-left-color: #7c61b0; color: #4e386f; }
+.itcal-color--other { background: rgba(101, 110, 125, 0.14); border-left-color: #65707d; color: #3c4854; }
+
+/* Week and Day views: hourly rows, timestamps in the leftmost column. */
+.itcal-timeline {
+  display: grid;
+  align-items: stretch;
+}
+
+.itcal-timeline--week {
+  grid-template-columns: 60px repeat(7, minmax(175px, 1fr));
+  min-width: 1285px;
+}
+
+.itcal-timeline--day {
+  grid-template-columns: 60px minmax(360px, 1fr);
+  min-width: 420px;
+}
+
+.itcal-timeline-corner,
+.itcal-timeline-day {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 11px 5px;
+  border: 0;
+  border-bottom: 1px solid #dfe5e6;
+  background: #f5f5f6;
+  color: #526978;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.itcal-timeline-day {
+  cursor: pointer;
+}
+
+.itcal-timeline-day.is-selected {
+  color: #087a70;
+  box-shadow: inset 0 -2px #087a70;
+}
+
+.itcal-timeline-day:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* One continuous vertical 24-hour ruler, aligned with each day's event track. */
+.itcal-time-ruler {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  height: 1968px; /* 24 hours × 82 px per hour */
+  background: #f5f5f6;
+}
+
+.itcal-hour-mark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 82px;
+  box-sizing: border-box;
+  padding: 7px 7px 0 0;
+  border-top: 1px solid #dfe5e6;
+  color: #65717c;
+  font-size: 11px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.itcal-anytime-label {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  padding: 12px 7px 0 0;
+  border-top: 1px solid #dfe5e6;
+  background: #f5f5f6;
+  color: #65717c;
+  font-size: 11px;
+  text-align: right;
+}
+
+.itcal-anytime-cell {
+  min-width: 0;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 4px;
+  border-top: 1px solid #dfe5e6;
+  border-left: 1px solid #e8ecee;
+}
+
+/* The grid lines and event blocks share the same pixel-per-hour scale. */
+.itcal-day-track {
+  position: relative;
+  box-sizing: border-box;
+  min-width: 0;
+  height: 1968px;
+  border-left: 1px solid #e8ecee;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #dfe5e6 0px,
+    #dfe5e6 1px,
+    transparent 1px,
+    transparent 82px
+  );
+}
+
+.itcal-day-track.is-outside {
+  background-color: rgba(128, 128, 128, 0.045);
+}
+
+/* Actual event time controls top/height; concurrency controls left/width. */
+.itcal-timed-event {
+  position: absolute;
+  z-index: 1;
+  margin: 0;
+  overflow: hidden;
+  min-height: 0;
+  padding: 5px 6px;
+  gap: 2px;
+}
+
+/* Very short activities: maintain a legible title rather than clipping text. */
+.itcal-timed-event.itcal-event--compact {
+  justify-content: center;
+  gap: 0;
+  padding: 4px 6px;
+}
+
+.itcal-timed-event.itcal-event--compact .itcal-event-title {
+  display: block;
+  flex: 0 0 auto;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itcal-timed-event.itcal-event--compact .itcal-event-time,
+.itcal-timed-event.itcal-event--compact .itcal-event-location,
+.itcal-timed-event.itcal-event--compact .itcal-event-description,
+.itcal-timed-event.itcal-event--compact .itcal-event-category {
+  display: none;
+}
+
+.itcal-timed-event .itcal-event-title,
+.itcal-timed-event .itcal-event-time {
+  flex: 0 0 auto;
+}
+
+.itcal-event {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  margin-bottom: 5px;
+  padding: 8px;
+  border-radius: 3px;
+  border-left-width: 3px;
+  border-left-style: solid;
+  overflow-wrap: anywhere;
+}
+
+.itcal-event-title {
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.itcal-event-time,
+.itcal-event-location,
+.itcal-event-description,
+.itcal-event-category {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.itcal-event-location {
+  overflow-wrap: anywhere;
+}
+
+.itcal-event--week .itcal-event-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.itcal-event--day {
+  padding: 12px;
+  gap: 6px;
+}
+
+.itcal-event--day .itcal-event-title {
+  font-size: 15px;
+}
+
+.itcal-event--day .itcal-event-time,
+.itcal-event--day .itcal-event-location,
+.itcal-event--day .itcal-event-description,
+.itcal-event--day .itcal-event-category {
+  font-size: 13px;
+}
+
+.itcal-help {
+  margin: 12px 0 0;
+  color: #65717c;
+  font-size: 12px;
+}
+
+.itcal button:focus-visible {
+  outline: 2px solid #087a70;
+  outline-offset: 1px;
+}
+
+/* Dark mode */
+[data-theme="dark"] .itcal { color: #f1edf8; }
+[data-theme="dark"] .itcal-navigation h2 { color: #f1edf8; }
+[data-theme="dark"] .itcal-month-date { color: #f1edf8; }
+[data-theme="dark"] .itcal-month-date:disabled { color: #80798d; }
+[data-theme="dark"] .itcal-month-date.is-selected { color: #fff; background: #71658e; }
+[data-theme="dark"] .itcal-month-cell.is-selected { background: rgba(197, 176, 229, 0.10); }
+[data-theme="dark"] .itcal-month-weekday,
+[data-theme="dark"] .itcal-hour-mark,
+[data-theme="dark"] .itcal-anytime-label,
+[data-theme="dark"] .itcal-help { color: #c5bdd2; }
+[data-theme="dark"] .itcal-view-toggle button,
+[data-theme="dark"] .itcal-navigation button { color: #d9cbe8; }
+[data-theme="dark"] .itcal-view-toggle button.is-active,
+[data-theme="dark"] .itcal-timeline-day.is-selected,
+[data-theme="dark"] .itcal-more { color: #c5b0e5; }
+[data-theme="dark"] .itcal-timeline-corner,
+[data-theme="dark"] .itcal-timeline-day,
+[data-theme="dark"] .itcal-time-ruler,
+[data-theme="dark"] .itcal-anytime-label { background: #292733; }
+[data-theme="dark"] .itcal-day-track,
+[data-theme="dark"] .itcal-anytime-cell,
+[data-theme="dark"] .itcal-month-cell,
+[data-theme="dark"] .itcal-hour-mark,
+[data-theme="dark"] .itcal-anytime-label,
+[data-theme="dark"] .itcal-timeline-day { border-color: #514b60; }
+[data-theme="dark"] .itcal-day-track {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #514b60 0px,
+    #514b60 1px,
+    transparent 1px,
+    transparent 82px
+  );
+}
+[data-theme="dark"] .itcal-color--activity { background: rgba(39, 154, 133, 0.27); color: #d5faf1; }
+[data-theme="dark"] .itcal-color--food { background: rgba(188, 132, 39, 0.29); color: #fff0cc; }
+[data-theme="dark"] .itcal-color--sightseeing { background: rgba(65, 122, 195, 0.31); color: #e0edff; }
+[data-theme="dark"] .itcal-color--nature { background: rgba(63, 144, 83, 0.32); color: #e2f7e7; }
+[data-theme="dark"] .itcal-color--transportation { background: rgba(126, 102, 193, 0.36); color: #f2eaff; }
+[data-theme="dark"] .itcal-color--other { background: rgba(126, 132, 149, 0.29); color: #f0eff8; }
+
+@media (max-width: 900px) {
+  .itcal-header { align-items: flex-start; }
+}
+
+/* UPDATE: Only the calendar content scrolls, not the entire itinerary page. */
+.manual-itinerary-layout > .itcal {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.manual-itinerary-layout > .itcal .itcal-header,
+.manual-itinerary-layout > .itcal .itcal-help {
+  flex: 0 0 auto;
+}
+
+.manual-itinerary-layout > .itcal .itcal-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}

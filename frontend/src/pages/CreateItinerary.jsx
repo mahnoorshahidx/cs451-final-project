@@ -5,8 +5,13 @@ import Sidebar from "../components/Sidebar";
 import { listTrips } from "../api/api";
 import "../styles/Dashboard.css";
 import "../styles/CreateItinerary.css";
+import ManualItineraryEditor from "../components/ManualItineraryEditor";
 
 function CreateItinerary() {
+
+  // Temporary manual itinerary drafts, organized by trip ID.
+  const [manualPlans, setManualPlans] = useState({});
+
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -39,7 +44,15 @@ function CreateItinerary() {
         <Sidebar />
       </aside>
 
-      <main className="dashboard-main itinerary-main">
+      
+      <main
+        className={`dashboard-main itinerary-main ${
+          step === 3 && planningMethod === "manual"
+            ? "itinerary-main--manual"
+            : ""
+        }`}
+      >
+
 
         {/* Top bar */}
         <header className="itinerary-topbar">
@@ -71,7 +84,13 @@ function CreateItinerary() {
 
         {/* Main questionnaire */}
         <div className="itinerary-body">
-          <div className="itinerary-content">
+          <div
+            className={`itinerary-content ${
+              step === 3 && planningMethod === "manual"
+                ? "itinerary-content--manual"
+                : ""
+            }`}
+          >
 
             {step === 1 ? (
               <>
@@ -208,30 +227,35 @@ function CreateItinerary() {
                   </button>
                 </section>
               </>
+
+            ) : planningMethod === "manual" ? (
+              <ManualItineraryEditor
+                trip={selectedTrip}
+                plan={manualPlans[selectedTrip.id]}
+                onChange={(updatedPlan) => {
+                  setManualPlans((previous) => ({
+                    ...previous,
+                    [selectedTrip.id]: updatedPlan,
+                  }));
+                }}
+              />
             ) : (
               <>
-                {/* Temporary Step 3 placeholder */}
+                {/* AI planning placeholder */}
                 <div className="itinerary-heading">
-                  <h1>
-                    {planningMethod === "manual"
-                      ? "Build Your Itinerary"
-                      : "Personalize Your Itinerary"}
-                  </h1>
-
+                  <h1>Personalize Your Itinerary</h1>
                   <p>
                     Planning for {selectedTrip?.name}
                   </p>
                 </div>
 
                 <p>
-                  {planningMethod === "manual"
-                    ? "The manual itinerary editor will be added in a future feature."
-                    : "The AI planning questionnaire will be added in a future feature."}
+                  The AI planning questionnaire will be
+                  added in a future feature.
                 </p>
               </>
             )}
 
-            
           {/* Bottom navigation */}
           <footer className="itinerary-footer">
             {step === 1 ? (
