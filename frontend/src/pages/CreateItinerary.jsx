@@ -17,6 +17,9 @@ function CreateItinerary() {
   // NEW: Track the current questionnaire step.
   const [step, setStep] = useState(1);
 
+  // Stores the selected itinerary planning method
+  const [planningMethod, setPlanningMethod] = useState(null);
+
   // Retrieve saved trips.
   useEffect(() => {
     listTrips()
@@ -144,51 +147,120 @@ function CreateItinerary() {
                   + Create a new trip
                 </Link>
               </>
+            
+            ) : step === 2 ? (
+              <>
+                {/* Step 2: Choose planning method */}
+                <div className="itinerary-heading">
+                  <h1>How would you like to plan?</h1>
+                  <p>
+                    Choose how to build your itinerary
+                    for <strong>{selectedTrip?.name}</strong>.
+                  </p>
+                </div>
+
+                <section
+                  className="itinerary-method-list"
+                  aria-label="Choose your planning method"
+                >
+                  {/* Manual planning card */}
+                  <button
+                    type="button"
+                    className={`itinerary-method-card ${
+                      planningMethod === "manual" ? "is-selected" : ""
+                    }`}
+                    aria-pressed={planningMethod === "manual"}
+                    onClick={() => setPlanningMethod("manual")}
+                  >
+                    <span className="itinerary-method-icon" aria-hidden="true">
+                      ▦
+                    </span>
+
+                    <span className="itinerary-method-info">
+                      <strong>Plan Manually</strong>
+                      <span>
+                        Build your itinerary yourself by adding
+                        activities, restaurants, and places to visit.
+                      </span>
+                    </span>
+                  </button>
+
+                  {/* AI planning card */}
+                  <button
+                    type="button"
+                    className={`itinerary-method-card ${
+                      planningMethod === "ai" ? "is-selected" : ""
+                    }`}
+                    aria-pressed={planningMethod === "ai"}
+                    onClick={() => setPlanningMethod("ai")}
+                  >
+                    <span className="itinerary-method-icon" aria-hidden="true">
+                      ✧
+                    </span>
+
+                    <span className="itinerary-method-info">
+                      <strong>Plan with AI</strong>
+                      <span>
+                        Get personalized itinerary suggestions
+                        based on your interests and travel preferences.
+                      </span>
+                    </span>
+                  </button>
+                </section>
+              </>
             ) : (
               <>
-                {/* Temporary next-step placeholder */}
+                {/* Temporary Step 3 placeholder */}
                 <div className="itinerary-heading">
-                  <h1>Let's plan your itinerary</h1>
+                  <h1>
+                    {planningMethod === "manual"
+                      ? "Build Your Itinerary"
+                      : "Personalize Your Itinerary"}
+                  </h1>
+
                   <p>
-                    Selected trip: {selectedTrip?.name}
+                    Planning for {selectedTrip?.name}
                   </p>
                 </div>
 
                 <p>
-                  Next, you'll choose how you want to
-                  plan this trip.
+                  {planningMethod === "manual"
+                    ? "The manual itinerary editor will be added in a future feature."
+                    : "The AI planning questionnaire will be added in a future feature."}
                 </p>
               </>
             )}
 
-            {/* Bottom navigation */}
-            <footer className="itinerary-footer">
-              {step === 1 ? (
-                <Link
-                  to="/trips"
-                  className="itinerary-back"
-                >
-                  ← Back
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  className="itinerary-back itinerary-back-button"
-                  onClick={() => setStep(1)}
-                >
-                  ← Back
-                </button>
-              )}
-
+            
+          {/* Bottom navigation */}
+          <footer className="itinerary-footer">
+            {step === 1 ? (
+              <Link to="/trips" className="itinerary-back">
+                ← Back
+              </Link>
+            ) : (
               <button
                 type="button"
-                className="itinerary-continue"
-                disabled={step !== 1 || !selectedTrip}
-                onClick={() => setStep(2)}
+                className="itinerary-back itinerary-back-button"
+                onClick={() => setStep(step - 1)}
               >
-                Continue →
+                ← Back
               </button>
-            </footer>
+            )}
+
+            <button
+              type="button"
+              className="itinerary-continue"
+              disabled={
+                step === 3 ||
+                (step === 1 && !selectedTrip) ||
+                (step === 2 && !planningMethod)
+              }
+              onClick={() => setStep(step + 1)}
+            >
+              Continue →
+            </button>
+          </footer>
 
           </div>
         </div>

@@ -348,3 +348,130 @@
 [data-theme="dark"] .itinerary-trip-card:focus-visible {
   outline-color: #c5b0e5;
 }
+
+/* =========================================
+   FEATURE 5: ITINERARY PLANNING METHODS
+========================================= */
+
+/* Two square cards, side by side */
+.itinerary-method-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 20px;
+  overflow-x: auto;
+  padding: 4px;
+}
+
+/* Default card appearance */
+.itinerary-method-card {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+
+  padding: 28px;
+  background: #ffffff;
+  border: 2px solid #d9dfe3;
+  border-radius: 12px;
+
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+/* Hover effect */
+.itinerary-method-card:hover {
+  border-color: #087a70;
+}
+
+/* Selected card */
+.itinerary-method-card.is-selected {
+  background: #dcefe9;
+  border-color: #087a70;
+}
+
+/* Icons */
+.itinerary-method-icon {
+  color: #087a70;
+  font-size: 44px;
+  line-height: 1;
+}
+
+/* Title and description */
+.itinerary-method-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.itinerary-method-info strong {
+  color: #202020;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.itinerary-method-info > span {
+  color: #65717c;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Keyboard accessibility */
+.itinerary-method-card:focus-visible {
+  outline: 3px solid #087a70;
+  outline-offset: 3px;
+}
+
+/* Back button styling */
+.itinerary-back-button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* =========================================
+   EXISTING DARK MODE COMPATIBILITY
+========================================= */
+
+[data-theme="dark"] .itinerary-method-card {
+  background: #353344;
+  border-color: #625b70;
+}
+
+[data-theme="dark"] .itinerary-method-card:hover {
+  border-color: #c5b0e5;
+}
+
+[data-theme="dark"] .itinerary-method-card.is-selected {
+  background: #454155;
+  border-color: #c5b0e5;
+}
+
+[data-theme="dark"] .itinerary-method-icon {
+  color: #c5b0e5;
+}
+
+[data-theme="dark"] .itinerary-method-info strong {
+  color: #f1edf8;
+}
+
+[data-theme="dark"] .itinerary-method-info > span {
+  color: #c5bdd2;
+}
+
+[data-theme="dark"] .itinerary-method-card:focus-visible {
+  outline-color: #c5b0e5;
+}
