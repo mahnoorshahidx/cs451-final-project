@@ -17,6 +17,7 @@ const CATEGORIES = [
   "Sightseeing",
   "Nature",
   "Transportation",
+  "Accommodation",
   "Other",
 ];
 

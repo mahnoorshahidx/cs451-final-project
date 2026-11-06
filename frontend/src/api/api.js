@@ -142,3 +142,9 @@ export const deleteItineraryActivity = (tripId, activityId) =>
   apiFetch(`/api/trips/${tripId}/activities/${activityId}`, {
     method: "DELETE",
   });
+  
+ // ---- Destination photographs ----
+export const getDestinationPhoto = (destination) =>
+  apiFetch(
+    `/api/destination-photo?destination=${encodeURIComponent(destination)}`
+  );

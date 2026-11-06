@@ -1,4 +1,4 @@
-
+import ItineraryViewer from "../components/ItineraryViewer";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
@@ -65,16 +65,15 @@ function CreateItinerary() {
       <aside className="dashboard-sidebar">
         <Sidebar />
       </aside>
-
-      
+    
       <main
-        className={`dashboard-main itinerary-main ${
-          step === 3 && planningMethod === "manual"
+        className={`dashboard-main itinerary-main ${step === 3 && planningMethod === "manual"
             ? "itinerary-main--manual"
-            : ""
-        }`}
+            : step === 4 && planningMethod === "manual"
+              ? "itinerary-main--viewer"
+              : ""
+          }`}
       >
-
 
         {/* Top bar */}
         <header className="itinerary-topbar">
@@ -107,14 +106,17 @@ function CreateItinerary() {
         {/* Main questionnaire */}
         <div className="itinerary-body">
           <div
-            className={`itinerary-content ${
-              step === 3 && planningMethod === "manual"
-                ? "itinerary-content--manual"
+            className={`itinerary-content ${step === 3 && planningMethod === "manual"
+              ? "itinerary-content--manual"
+              : step === 4 && planningMethod === "manual"
+                ? "itinerary-content--viewer"
                 : ""
-            }`}
+              }`}
           >
 
-            {step === 1 ? (
+            {step === 4 && planningMethod === "manual" ? (
+              <ItineraryViewer trip={selectedTrip} />
+            ) : step === 1 ? (
               <>
                 <div className="itinerary-heading">
                   <h1>Which trip are we planning?</h1>
@@ -273,35 +275,43 @@ function CreateItinerary() {
               </>
             )}
 
-          {/* Bottom navigation */}
-          <footer className="itinerary-footer">
-            {step === 1 ? (
-              <Link to="/trips" className="itinerary-back">
-                ← Back
-              </Link>
-            ) : (
-              <button
-                type="button"
-                className="itinerary-back itinerary-back-button"
-                onClick={() => setStep(step - 1)}
-              >
-                ← Back
-              </button>
-            )}
+            {/* Bottom navigation */}
 
-            <button
-              type="button"
-              className="itinerary-continue"
-              disabled={
-                step === 3 ||
-                (step === 1 && !selectedTrip) ||
-                (step === 2 && !planningMethod)
-              }
-              onClick={() => setStep(step + 1)}
-            >
-              Continue →
-            </button>
-          </footer>
+            <footer className="itinerary-footer">
+              {step === 1 ? (
+                <Link to="/trips" className="itinerary-back">
+                  ← Back
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="itinerary-back"
+                  onClick={() => setStep((previous) => Math.max(previous - 1, 1))}
+                >
+                  ← Back
+                </button>
+              )}
+
+              {step < 4 && (
+                <button
+                  type="button"
+                  className="itinerary-next"
+                  disabled={
+                    (step === 1 && selectedTripId === null) ||
+                    (step === 2 && !planningMethod) ||
+                    (step === 3 && planningMethod !== "manual")
+                  }
+                  onClick={() =>
+                    setStep((previous) => Math.min(previous + 1, 4))
+                  }
+                >
+                  {step === 3
+                    ? "Go to Itinerary View →"
+                    : "Continue →"}
+                </button>
+              )}
+            </footer>
+
 
           </div>
         </div>
