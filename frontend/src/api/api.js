@@ -115,3 +115,30 @@ export const addContribution = (tripId, contribution) =>
 
 export const deleteContribution = (tripId, contributionId) =>
   apiFetch(`/api/trips/${tripId}/savings/contributions/${contributionId}`, { method: "DELETE" });
+
+
+ // ---- Itinerary activities ----
+
+// Retrieve all activities for a trip
+export const listItineraryActivities = (tripId) =>
+  apiFetch(`/api/trips/${tripId}/activities`);
+
+// Save a new activity to MySQL
+export const createItineraryActivity = (tripId, activity) =>
+  apiFetch(`/api/trips/${tripId}/activities`, {
+    method: "POST",
+    body: activity,
+  });
+
+// Update an existing activity
+export const updateItineraryActivity = (tripId, activityId, activity) =>
+  apiFetch(`/api/trips/${tripId}/activities/${activityId}`, {
+    method: "PUT",
+    body: activity,
+  });
+
+// Delete an activity
+export const deleteItineraryActivity = (tripId, activityId) =>
+  apiFetch(`/api/trips/${tripId}/activities/${activityId}`, {
+    method: "DELETE",
+  });

@@ -1,6 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ItineraryCalendar from "./ItineraryCalendar";
 import "../styles/ManualItineraryEditor.css";
+
+import {
+  listItineraryActivities,
+  createItineraryActivity,
+  updateItineraryActivity,
+  deleteItineraryActivity,
+} from "../api/api";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -58,8 +65,29 @@ function formatTime(value) {
 function formatTimeRange(start, end) {
   if (!start) return "Flexible time";
   return end
-    ? `${formatTime(start)} – ${formatTime(end)}`
+    ? `${formatTime(start)} â€“ ${formatTime(end)}`
     : formatTime(start);
+}
+
+function toEditorActivity(activity, tripStartDate) {
+  const activityDate = parseTripDate(activity.activityDate);
+
+  const day =
+    Math.round(
+      (activityDate.getTime() - tripStartDate.getTime()) /
+        DAY_MS
+    ) + 1;
+
+  return {
+    id: activity.id,
+    day,
+    title: activity.title,
+    time: activity.startTime?.slice(0, 5) ?? "",
+    endTime: activity.endTime?.slice(0, 5) ?? "",
+    category: activity.category,
+    location: activity.location ?? "",
+    notes: activity.notes ?? "",
+  };
 }
 
 export default function ManualItineraryEditor({ trip, plan, onChange }) {
@@ -73,6 +101,9 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState("");
+  const [loadingActivities, setLoadingActivities] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [activityError, setActivityError] = useState("");
 
   const startDate = parseTripDate(
     trip?.startDate ?? trip?.start_date ?? trip?.departureDate ?? trip?.departure_date
@@ -80,6 +111,49 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
   const endDate = parseTripDate(
     trip?.endDate ?? trip?.end_date ?? trip?.returnDate ?? trip?.return_date
   );
+
+  useEffect(() => {
+    const firstDate = parseTripDate(trip.startDate);
+    const lastDate = parseTripDate(trip.endDate);
+
+    if (!firstDate || !lastDate || lastDate < firstDate) {
+      return;
+    }
+
+    let cancelled = false;
+
+    setLoadingActivities(true);
+    setActivityError("");
+
+    listItineraryActivities(trip.id)
+      .then((savedActivities) => {
+        if (cancelled) return;
+
+        const converted = savedActivities.map((activity) =>
+          toEditorActivity(activity, firstDate)
+        );
+
+        onChange((previous) => ({
+          ...previous,
+          activities: converted,
+        }));
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setActivityError(
+            error.message || "Unable to load saved activities."
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingActivities(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [trip.id, trip.startDate, trip.endDate, onChange]);
+
 
   // Display a clear error rather than inventing dates.
   if (!startDate || !endDate || endDate < startDate) {
@@ -139,58 +213,120 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
     setFormOpen(true);
   }
 
-  function removeActivity(id) {
-    onChange({
-      ...current,
-      activities: activities.filter((activity) => activity.id !== id),
-    });
-    if (editingId === id) closeForm();
+
+  async function removeActivity(id) {
+    if (saving || loadingActivities || activityError) return;
+
+    setSaving(true);
+
+    try {
+      await deleteItineraryActivity(trip.id, id);
+
+      onChange((previous) => ({
+        ...previous,
+        activities: (previous.activities ?? []).filter(
+          (activity) => activity.id !== id
+        ),
+      }));
+
+      if (editingId === id) closeForm();
+    } catch (error) {
+      setActivityError(
+        error.message || "Could not delete the activity."
+      );
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function saveActivity(event) {
+
+  async function saveActivity(event) {
     event.preventDefault();
+
+    if (saving || loadingActivities || activityError) return;
+
     const title = form.title.trim();
     if (!title) return;
 
     if (form.endTime && (!form.time || form.endTime <= form.time)) {
-      setFormError("End time must be later than the start time on the same day.");
+      setFormError(
+        "End time must be later than the start time."
+      );
       return;
     }
 
-    if (editingId !== null) {
-      onChange({
-        ...current,
-        activities: activities.map((activity) =>
-          activity.id === editingId
-            ? { ...activity, ...form, title }
-            : activity
-        ),
+    const request = {
+      activityDate: selectedDate.toISOString().slice(0, 10),
+      title,
+      startTime: form.time ? `${form.time}:00` : null,
+      endTime: form.endTime ? `${form.endTime}:00` : null,
+      category: form.category,
+      location: form.location.trim() || null,
+      notes: form.notes.trim() || null,
+    };
+
+    setSaving(true);
+    setFormError("");
+
+    try {
+      const savedActivity =
+        editingId !== null
+          ? await updateItineraryActivity(
+              trip.id,
+              editingId,
+              request
+            )
+          : await createItineraryActivity(trip.id, request);
+
+      const converted = toEditorActivity(
+        savedActivity,
+        startDate
+      );
+
+      onChange((previous) => {
+        const previousActivities = previous.activities ?? [];
+
+        return {
+          ...previous,
+          activities:
+            editingId !== null
+              ? previousActivities.map((activity) =>
+                  activity.id === editingId
+                    ? converted
+                    : activity
+                )
+              : [...previousActivities, converted],
+        };
       });
-    } else {
-      onChange({
-        ...current,
-        nextId: (current.nextId ?? 1) + 1,
-        activities: [
-          ...activities,
-          {
-            ...form,
-            title,
-            id: current.nextId ?? 1,
-            day: activeDay,
-          },
-        ],
-      });
+
+      closeForm();
+    } catch (error) {
+      setFormError(
+        error.message || "Could not save the activity."
+      );
+    } finally {
+      setSaving(false);
     }
-    closeForm();
   }
+
 
   return (
     <section className="manual-itinerary">
       <div className="manual-itinerary-heading">
         <p className="manual-itinerary-kicker">MANUAL PLANNING</p>
         <h1>Build Your Itinerary</h1>
-        <p>{trip?.name} · Day {activeDay} of {totalDays}</p>
+        <p>{trip?.name} Â· Day {activeDay} of {totalDays}</p>
       </div>
+
+      {loadingActivities && (
+        <p role="status">Loading saved activities...</p>
+      )}
+
+      {activityError && (
+        <div role="alert" className="manual-itinerary-error">
+          {activityError}
+        </div>
+      )}
 
       <div className="manual-itinerary-layout">
         {/* Stationary left panel: header, form, then a separately scrolling list. */}
@@ -208,6 +344,7 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
               type="button"
               className="manual-itinerary-primary"
               onClick={openAddForm}
+              disabled={loadingActivities || saving || !!activityError}
             >
               + Add Activity
             </button>
@@ -286,8 +423,16 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
                 <button type="button" className="manual-itinerary-cancel" onClick={closeForm}>
                   Cancel
                 </button>
-                <button type="submit" className="manual-itinerary-primary">
-                  {editingId !== null ? "Save Changes" : "Add Activity"}
+                <button
+                  type="submit"
+                  className="manual-itinerary-primary"
+                  disabled={saving}
+                >
+                  {saving
+                    ? "Saving..."
+                    : editingId !== null
+                      ? "Save Changes"
+                      : "Add Activity"}
                 </button>
               </div>
             </form>
@@ -318,7 +463,7 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
                   <div className="manual-itinerary-activity-info">
                     <h3>{activity.title}</h3>
                     <span>{activity.category}</span>
-                    {activity.location && <p>📍 {activity.location}</p>}
+                    {activity.location && <p>ðŸ“ {activity.location}</p>}
                     {activity.notes && <p>{activity.notes}</p>}
                   </div>
                 </article>
@@ -339,7 +484,7 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
       </div>
 
       <p className="manual-itinerary-notice">
-        Draft preview only. Activities are not yet saved to your account.
+        Activity changes are saved to your account when the request succeeds.
       </p>
     </section>
   );

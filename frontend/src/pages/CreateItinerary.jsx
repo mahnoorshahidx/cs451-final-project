@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { listTrips } from "../api/api";
@@ -37,6 +37,28 @@ function CreateItinerary() {
   const selectedTrip = trips.find(
     (trip) => trip.id === selectedTripId
   );
+
+  const updateManualPlan = useCallback((change) => {
+    if (selectedTripId == null) return;
+
+    setManualPlans((previous) => {
+      const existing = previous[selectedTripId] ?? {
+        activeDay: 1,
+        activities: [],
+        nextId: 1,
+      };
+
+      const updated =
+        typeof change === "function"
+          ? change(existing)
+          : change;
+
+      return {
+        ...previous,
+        [selectedTripId]: updated,
+      };
+    });
+  }, [selectedTripId]);
 
   return (
     <div className="dashboard-page itinerary-page">
@@ -232,12 +254,7 @@ function CreateItinerary() {
               <ManualItineraryEditor
                 trip={selectedTrip}
                 plan={manualPlans[selectedTrip.id]}
-                onChange={(updatedPlan) => {
-                  setManualPlans((previous) => ({
-                    ...previous,
-                    [selectedTrip.id]: updatedPlan,
-                  }));
-                }}
+                onChange={updateManualPlan}
               />
             ) : (
               <>
