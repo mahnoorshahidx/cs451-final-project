@@ -37,41 +37,33 @@
   z-index: 0;
 }
 
-/* LEFT SIDE */
+
+
+/* LEFT SIDE - Seamless Travel Slideshow */
 .login-left {
   width: 50%;
   min-height: 100vh;
-
-  background: linear-gradient(
-    145deg,
-    #DCE8F1,
-    #C6DAE9,
-    #EAF3FA
-  );
-
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
+
+  /* Smoothly fade photo into background */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    black 0%,
+    black 70%,
+    transparent 100%
+  );
+
+  mask-image: linear-gradient(
+    to right,
+    black 0%,
+    black 70%,
+    transparent 100%
+  );
 }
 
-/* Subtle liquid glass reflection */
-.login-left::before {
-  content: "";
-  position: absolute;
-  width: 440px;
-  height: 440px;
-  border-radius: 50%;
 
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.45);
-
-  box-shadow:
-    inset 0 2px 8px rgba(255, 255, 255, 0.6),
-    0 20px 60px rgba(52, 78, 104, 0.06);
-
-  top: 15%;
-  left: -140px;
-  transform: rotate(-20deg);
-}
 
 /* RIGHT SIDE */
 .login-right {

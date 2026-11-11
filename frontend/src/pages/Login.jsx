@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { login } from "../api/api";
 import { clearSession, saveSession } from "../api/client";
+import TravelSlideshow from "../components/TravelSlideshow";
 
 function Login() {
     const navigate = useNavigate();
@@ -38,8 +39,9 @@ function Login() {
     return (
         <div className="login-page">
 
-            {/* Left side - Travel image */}
+            {/* Left side - Rotating travel photos */}
             <section className="login-left">
+                <TravelSlideshow />
             </section>
 
             {/* Right side - Login form */}

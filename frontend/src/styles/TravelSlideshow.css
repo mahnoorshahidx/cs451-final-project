@@ -1,0 +1,58 @@
+
+.travel-slideshow {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+  background-color: #dce8ed;
+  isolation: isolate;
+}
+
+.travel-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
+}
+
+.travel-slide.active {
+  opacity: 1;
+}
+
+.travel-slide-dots {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+}
+
+.travel-slide-dots button {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.travel-slide-dots button.active {
+  width: 26px;
+  border-radius: 20px;
+  background: white;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .travel-slide,
+  .travel-slide-dots button {
+    transition: none;
+  }
+}

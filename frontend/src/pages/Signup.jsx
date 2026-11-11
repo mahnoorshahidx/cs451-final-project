@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { register } from "../api/api";
 import "../styles/SignUp.css";
 
+import TravelSlideshow from "../components/TravelSlideshow";
+
 function Signup() {
   const navigate = useNavigate();
 
@@ -78,8 +80,10 @@ function Signup() {
   return (
     <div className="signup-page">
 
-      {/* Left side */}
-      <section className="signup-left"></section>
+      {/* Left side - Rotating travel slideshow */}
+      <section className="signup-left">
+        <TravelSlideshow />
+      </section>
 
       {/* Right side */}
       <section className="signup-right">
