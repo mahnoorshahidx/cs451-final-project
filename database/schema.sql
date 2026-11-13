@@ -133,3 +133,21 @@ CREATE TABLE IF NOT EXISTS notifications (
     CONSTRAINT fk_notifications_trip
         FOREIGN KEY (trip_id) REFERENCES trips(id)
 );
+
+-- Stores scheduled activities for each trip.
+-- Each activity belongs to an existing trip.
+CREATE TABLE IF NOT EXISTS itinerary_activities (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    trip_id BIGINT NOT NULL,
+    activity_date DATE NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    start_time TIME,
+    end_time TIME,
+    category VARCHAR(100) NOT NULL DEFAULT 'Activity',
+    location VARCHAR(255),
+    notes TEXT,
+
+    CONSTRAINT fk_itinerary_activities_trip
+        FOREIGN KEY (trip_id) REFERENCES trips(id)
+        ON DELETE CASCADE
+);
