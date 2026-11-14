@@ -1,0 +1,491 @@
+
+/* =========================================
+   AI ITINERARY QUESTIONNAIRE
+   Light mode: teal | Dark mode: lavender
+========================================= */
+
+.ai-questionnaire {
+  --ai-accent: #087a70;
+  --ai-accent-hover: #06665e;
+  --ai-accent-soft: #e5f3ef;
+  --ai-text: #273c45;
+  --ai-muted: #667781;
+  --ai-card: #ffffff;
+  --ai-input: #fbfdfc;
+  --ai-border: #dce5e4;
+  --ai-shadow: 0 8px 28px rgba(23, 55, 55, 0.055);
+
+  width: 100%;
+  padding-bottom: 48px;
+  color: var(--ai-text);
+}
+
+.ai-questionnaire .itinerary-heading {
+  margin-top: 34px;
+  margin-bottom: 28px;
+}
+
+.ai-questionnaire .itinerary-heading h1 {
+  color: var(--ai-text);
+}
+
+.ai-questionnaire-kicker {
+  color: var(--ai-accent) !important;
+  font-size: 12px !important;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  margin-bottom: 12px !important;
+}
+
+/* Progress */
+
+.ai-questionnaire-progress {
+  margin-bottom: 25px;
+  background: var(--ai-card);
+  border: 1px solid var(--ai-border);
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+
+.ai-questionnaire-progress-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.ai-questionnaire-progress-label strong {
+  color: var(--ai-text);
+  font-weight: 700;
+}
+
+.ai-questionnaire-progress-label span {
+  color: var(--ai-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.ai-questionnaire-progress-track {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.ai-questionnaire-progress-track span {
+  height: 7px;
+  border-radius: 50px;
+  background: var(--ai-border);
+}
+
+.ai-questionnaire-progress-track span.is-active {
+  background: var(--ai-accent);
+}
+
+/* Main form */
+
+.ai-questionnaire-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.ai-questionnaire-section {
+  background: var(--ai-card);
+  border: 1px solid var(--ai-border);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: var(--ai-shadow);
+
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.ai-questionnaire-section h2 {
+  margin: 0;
+  color: var(--ai-text);
+  font-size: 22px;
+  font-weight: 750;
+}
+
+.ai-questionnaire-section > p {
+  color: var(--ai-muted);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: -14px 0 0;
+}
+
+.ai-questionnaire-section label {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--ai-text);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+/* Text inputs */
+
+.ai-questionnaire-section input:not([type="range"]),
+.ai-questionnaire-section select,
+.ai-questionnaire-section textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--ai-border);
+  border-radius: 10px;
+  background: var(--ai-input);
+  color: var(--ai-text);
+  font: inherit;
+  font-weight: 400;
+  padding: 14px 16px;
+  min-height: 48px;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.ai-questionnaire-section textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.ai-questionnaire-section input:focus,
+.ai-questionnaire-section textarea:focus {
+  outline: none;
+  border-color: var(--ai-accent);
+  box-shadow: 0 0 0 3px var(--ai-accent-soft);
+}
+
+/* Selectable interest and dietary chips */
+
+.ai-questionnaire-interests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ai-questionnaire-interest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 12px 19px;
+  min-height: 45px;
+  border: 1.5px solid var(--ai-border);
+  border-radius: 50px;
+  background: var(--ai-input);
+  color: var(--ai-text);
+
+  font: inherit;
+  font-size: 14px;
+  font-weight: 550;
+  cursor: pointer;
+
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    transform 0.18s;
+}
+
+.ai-questionnaire-interest:hover {
+  border-color: var(--ai-accent);
+  transform: translateY(-1px);
+}
+
+.ai-questionnaire-interest.is-selected {
+  background: var(--ai-accent-soft);
+  border-color: var(--ai-accent);
+  color: var(--ai-accent);
+  font-weight: 700;
+}
+
+.ai-questionnaire-interest.is-selected::before {
+  content: "✓";
+  font-weight: 800;
+}
+
+/* Travel style and activity pace sliders */
+
+.ai-questionnaire-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 23px 24px;
+  background: var(--ai-input);
+  border: 1px solid var(--ai-border);
+  border-radius: 12px;
+}
+
+.ai-questionnaire-current-choice {
+  text-align: center;
+  color: var(--ai-accent);
+  font-size: 20px;
+  font-weight: 750;
+  margin: 4px 0;
+}
+
+.ai-questionnaire-section
+.ai-questionnaire-slider input[type="range"] {
+  display: block;
+  width: 100%;
+  height: 30px;
+  padding: 0;
+  margin: 6px 0;
+  border: none;
+  background: transparent;
+  accent-color: var(--ai-accent);
+  cursor: pointer;
+}
+
+.ai-questionnaire-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--ai-muted);
+  font-size: 12px;
+}
+
+.ai-questionnaire-slider-labels span {
+  flex: 1;
+  text-align: center;
+}
+
+.ai-questionnaire-slider-labels span:first-child {
+  text-align: left;
+}
+
+.ai-questionnaire-slider-labels span:last-child {
+  text-align: right;
+}
+
+/* Star ratings */
+
+.ai-questionnaire-rating {
+  padding: 23px 24px;
+  background: var(--ai-input);
+  border: 1px solid var(--ai-border);
+  border-radius: 12px;
+}
+
+.ai-questionnaire-field-label {
+  color: var(--ai-text);
+  font-size: 14px;
+  font-weight: 650;
+  margin: 0 0 14px;
+}
+
+.ai-questionnaire-stars {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.ai-questionnaire-star {
+  position: relative;
+  display: inline-block;
+  width: 47px;
+  height: 52px;
+  flex-shrink: 0;
+  font-family: Arial, sans-serif;
+  font-size: 42px;
+  line-height: 52px;
+}
+
+.ai-star-empty,
+.ai-star-filled {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.ai-star-empty {
+  color: #c9d4d2;
+}
+
+.ai-star-filled {
+  color: var(--ai-accent);
+}
+
+.ai-star-hit {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ai-star-half {
+  left: 0;
+}
+
+.ai-star-full {
+  right: 0;
+}
+
+.ai-questionnaire-rating-value {
+  color: var(--ai-accent);
+  font-size: 16px;
+  font-weight: 750;
+  margin: 10px 0;
+}
+
+.ai-questionnaire-clear {
+  padding: 5px 0;
+  border: none;
+  background: transparent;
+  color: var(--ai-accent);
+  text-decoration: underline;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.ai-questionnaire-help {
+  color: var(--ai-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 10px 0 0;
+}
+
+.ai-questionnaire-dietary > p:not(.ai-questionnaire-field-label) {
+  color: var(--ai-muted);
+  font-size: 13px;
+  margin: -6px 0 16px;
+}
+
+/* Navigation buttons */
+
+.ai-questionnaire-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 4px;
+}
+
+.ai-questionnaire-back,
+.ai-questionnaire-submit {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 48px;
+  border-radius: 10px;
+  padding: 13px 25px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.18s;
+}
+
+.ai-questionnaire-back {
+  background: var(--ai-card);
+  color: var(--ai-text);
+  border: 1px solid var(--ai-border);
+}
+
+.ai-questionnaire-back:hover {
+  background: var(--ai-accent-soft);
+}
+
+.ai-questionnaire-submit {
+  margin-left: auto;
+  color: white;
+  border: 1px solid var(--ai-accent);
+  background: var(--ai-accent);
+}
+
+.ai-questionnaire-submit:hover {
+  background: var(--ai-accent-hover);
+  transform: translateY(-1px);
+}
+
+.ai-questionnaire button:focus-visible {
+  outline: 3px solid var(--ai-accent);
+  outline-offset: 3px;
+}
+
+.ai-questionnaire-error {
+  color: #b3261e;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ai-questionnaire-saved {
+  color: var(--ai-accent);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+/* Dark mode */
+
+[data-theme="dark"] .ai-questionnaire {
+  --ai-accent: #c5b0e5;
+  --ai-accent-hover: #81729d;
+  --ai-accent-soft: #454155;
+  --ai-text: #f1edf8;
+  --ai-muted: #c5bdd2;
+  --ai-card: #353344;
+  --ai-input: #292733;
+  --ai-border: #625b70;
+  --ai-shadow: none;
+}
+
+[data-theme="dark"] .ai-questionnaire-submit {
+  color: #ffffff;
+  background: #71658e;
+  border-color: #71658e;
+}
+
+[data-theme="dark"] .ai-questionnaire-submit:hover {
+  background: #81729d;
+}
+
+/* Responsive layout */
+
+@media (max-width: 700px) {
+  .ai-questionnaire-section {
+    padding: 22px 18px;
+  }
+
+  .ai-questionnaire-progress {
+    padding: 17px;
+  }
+
+  .ai-questionnaire-slider,
+  .ai-questionnaire-rating {
+    padding: 18px;
+  }
+
+  .ai-questionnaire-star {
+    width: 38px;
+    font-size: 34px;
+  }
+
+  .ai-questionnaire-actions {
+    gap: 10px;
+  }
+
+  .ai-questionnaire-back,
+  .ai-questionnaire-submit {
+    padding: 12px 15px;
+  }
+}
+
+/* Four questionnaire screens */
+.ai-questionnaire-progress-track {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Dark mustard yellow stars */
+.ai-questionnaire .ai-star-filled,
+[data-theme="dark"] .ai-questionnaire .ai-star-filled {
+  color: #B8860B;
+}

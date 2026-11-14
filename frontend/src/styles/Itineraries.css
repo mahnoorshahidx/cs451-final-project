@@ -1,0 +1,39 @@
+/* Reuses the My Trips card styling and light/dark theme. */
+.itinerary-list-page .itinerary-list-card {
+  gap: 12px;
+}
+
+.itinerary-list-page .itinerary-list-card .trip-card-actions {
+  padding-top: 12px;
+  border-top: 1px solid #e6e6e6;
+}
+
+.itinerary-list-page .itinerary-list-card .trip-card-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+.itinerary-list-page .trips-new-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme="dark"] .itinerary-list-page .itinerary-list-card .trip-card-actions {
+  border-top-color: #625b70;
+}
+
+/* The existing day-by-day viewer fills the main content area. */
+.itinerary-page .itinerary-main--viewer .itinerary-body {
+  padding-top: 24px;
+  padding-bottom: 32px;
+}
+
+@media (max-width: 600px) {
+  .itinerary-list-page .trips-section-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+}

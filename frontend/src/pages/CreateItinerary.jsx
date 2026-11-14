@@ -6,6 +6,7 @@ import { listTrips } from "../api/api";
 import "../styles/Dashboard.css";
 import "../styles/CreateItinerary.css";
 import ManualItineraryEditor from "../components/ManualItineraryEditor";
+import AIItineraryQuestionnaire from "../components/AIItineraryQuestionnaire";
 
 function CreateItinerary() {
 
@@ -24,6 +25,7 @@ function CreateItinerary() {
 
   // Stores the selected itinerary planning method
   const [planningMethod, setPlanningMethod] = useState(null);
+  const [aiPreferences, setAiPreferences] = useState({});
 
   // Retrieve saved trips.
   useEffect(() => {
@@ -65,19 +67,19 @@ function CreateItinerary() {
       <aside className="dashboard-sidebar">
         <Sidebar />
       </aside>
-    
+
       <main
         className={`dashboard-main itinerary-main ${step === 3 && planningMethod === "manual"
-            ? "itinerary-main--manual"
-            : step === 4 && planningMethod === "manual"
-              ? "itinerary-main--viewer"
-              : ""
+          ? "itinerary-main--manual"
+          : step === 4 && planningMethod === "manual"
+            ? "itinerary-main--viewer"
+            : ""
           }`}
       >
 
         {/* Top bar */}
         <header className="itinerary-topbar">
-          <Link to="/trips" className="itinerary-exit">
+          <Link to="/itineraries" className="itinerary-exit">
             × &nbsp; Exit
           </Link>
         </header>
@@ -190,7 +192,7 @@ function CreateItinerary() {
                   + Create a new trip
                 </Link>
               </>
-            
+
             ) : step === 2 ? (
               <>
                 {/* Step 2: Choose planning method */}
@@ -209,9 +211,8 @@ function CreateItinerary() {
                   {/* Manual planning card */}
                   <button
                     type="button"
-                    className={`itinerary-method-card ${
-                      planningMethod === "manual" ? "is-selected" : ""
-                    }`}
+                    className={`itinerary-method-card ${planningMethod === "manual" ? "is-selected" : ""
+                      }`}
                     aria-pressed={planningMethod === "manual"}
                     onClick={() => setPlanningMethod("manual")}
                   >
@@ -231,9 +232,8 @@ function CreateItinerary() {
                   {/* AI planning card */}
                   <button
                     type="button"
-                    className={`itinerary-method-card ${
-                      planningMethod === "ai" ? "is-selected" : ""
-                    }`}
+                    className={`itinerary-method-card ${planningMethod === "ai" ? "is-selected" : ""
+                      }`}
                     aria-pressed={planningMethod === "ai"}
                     onClick={() => setPlanningMethod("ai")}
                   >
@@ -258,26 +258,42 @@ function CreateItinerary() {
                 plan={manualPlans[selectedTrip.id]}
                 onChange={updateManualPlan}
               />
+
             ) : (
               <>
-                {/* AI planning placeholder */}
-                <div className="itinerary-heading">
-                  <h1>Personalize Your Itinerary</h1>
-                  <p>
-                    Planning for {selectedTrip?.name}
-                  </p>
-                </div>
+                <AIItineraryQuestionnaire
+                  key={selectedTrip.id}
+                  trip={selectedTrip}
+                  initialPreferences={aiPreferences[selectedTrip.id]}
+                  onBack={() => setStep(2)}
+                  onSave={(preferences) => {
+                    setAiPreferences((previous) => ({
+                      ...previous,
+                      [selectedTrip.id]: preferences,
+                    }));
+                  }}
+                />
 
-                <p>
-                  The AI planning questionnaire will be
-                  added in a future feature.
-                </p>
+                {aiPreferences[selectedTrip.id] && (
+                  <p role="status" className="ai-questionnaire-saved">
+                    Preferences saved for this session.
+                    AI itinerary generation will be connected next.
+                  </p>
+                )}
               </>
             )}
 
+
             {/* Bottom navigation */}
 
-            <footer className="itinerary-footer">
+            <footer
+              className="itinerary-footer"
+              style={
+                step === 3 && planningMethod === "ai"
+                  ? { display: "none" }
+                  : undefined
+              }
+            >
               {step === 1 ? (
                 <Link to="/trips" className="itinerary-back">
                   ← Back
@@ -292,7 +308,7 @@ function CreateItinerary() {
                 </button>
               )}
 
-              {step < 4 && (
+              {step < 4 && !(step === 3 && planningMethod === "ai") && (
                 <button
                   type="button"
                   className="itinerary-next"

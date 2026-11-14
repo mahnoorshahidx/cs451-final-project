@@ -1,8 +1,6 @@
-
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { getProfile } from "./api/api";
-
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
@@ -13,6 +11,8 @@ import Settings from "./pages/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import EditTrip from "./pages/EditTrip";
 import BudgetDashboard from "./pages/BudgetDashboard";
+import MyItineraries from "./pages/MyItineraries";
+import ViewItinerary from "./pages/ViewItinerary";
 
 function App() {
 
@@ -118,10 +118,30 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="*"
           element={<Navigate to="/dashboard" replace />}
+        />
+
+        {/* Saved itinerary listing */}
+        <Route
+          path="/itineraries"
+          element={
+            <ProtectedRoute>
+              <MyItineraries />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* View a saved itinerary */}
+        <Route
+          path="/itineraries/:tripId"
+          element={
+            <ProtectedRoute>
+              <ViewItinerary />
+            </ProtectedRoute>
+          }
         />
 
       </Routes>

@@ -109,7 +109,7 @@ function sameActivity(activity, request) {
     (activity.notes ?? null) === request.notes;
 }
 
-export default function ItineraryViewer({ trip }) {
+export default function ItineraryViewer({ trip, standalone = false }) {
   const [activities, setActivities] = useState([]);
   const [photo, setPhoto] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -316,7 +316,7 @@ export default function ItineraryViewer({ trip }) {
 
         <div className="itinerary-viewer-hero-copy">
           <p className="itinerary-viewer-eyebrow">
-            YOUR ITINERARY · STEP 4 OF 4
+            {standalone ? "SAVED ITINERARY" : "YOUR ITINERARY · STEP 4 OF 4"}
           </p>
 
           <h1>{trip.name}</h1>
