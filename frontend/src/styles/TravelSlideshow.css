@@ -1,58 +1,221 @@
-
-.travel-slideshow {
+/* The photographs cover the ENTIRE auth page. No half-width photo column. */
+.travel-auth-page {
   position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 100%;
-  overflow: hidden;
-  background-color: #dce8ed;
   isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: #172332;
+  /* Do not set inherited typography or color here: preserve the existing form UI. */
 }
-
-.travel-slide {
+.travel-auth-carousel__photos,
+.travel-auth-carousel__scrim,
+.travel-auth-carousel__photo {
   position: absolute;
   inset: 0;
-  background-size: cover;
-  background-position: center;
+  width: 100%;
+  height: 100%;
+}
+.travel-auth-carousel__photos { z-index: 0; pointer-events: none; }
+.travel-auth-carousel__photo {
+  display: block;
+  object-fit: cover;
   opacity: 0;
-  transition: opacity 1.5s ease-in-out;
+  transition: opacity 900ms ease-in-out; /* fade, never slide */
+}
+.travel-auth-carousel__photo--active { opacity: 1; }
+.travel-auth-carousel__scrim {
+  background:
+    linear-gradient(0deg, rgba(2, 6, 23, .82) 0%, rgba(2, 6, 23, .27) 34%, rgba(2, 6, 23, .12) 75%, rgba(2, 6, 23, .32) 100%),
+    linear-gradient(90deg, rgba(2, 6, 23, .14), transparent 75%);
 }
 
-.travel-slide.active {
-  opacity: 1;
-}
-
-.travel-slide-dots {
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
+/* Controls follow the Figma top and bottom bar layout. */
+.travel-auth-carousel__topbar {
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
-  gap: 10px;
-  z-index: 2;
+  justify-content: space-between;
+  gap: 20px;
+  padding: clamp(20px, 3vw, 38px);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  pointer-events: none;
 }
-
-.travel-slide-dots button {
-  width: 9px;
-  height: 9px;
-  padding: 0;
-  border: none;
+.travel-auth-carousel__category {
+  border-radius: 999px;
+  background: rgba(27, 41, 58, .86);
+  border: 1px solid rgba(148, 163, 184, .22);
+  padding: 8px 14px;
+  color: #e2e8f0;
+  font: 600 11px/16px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+.travel-auth-carousel__playback {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+}
+.travel-auth-carousel__counter {
+  font: 600 12px/18px "Courier New", Courier, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .06em;
+  color: #e2e8f0;
+}
+.travel-auth-carousel__round-button {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(203, 213, 225, .24);
+  color: #fff;
+  background: rgba(30, 41, 59, .78);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 180ms ease;
+}
+.travel-auth-carousel__round-button:hover { background: rgba(51, 65, 85, .95); }
+.travel-auth-carousel__round-button:focus-visible,
+.travel-auth-carousel__dot:focus-visible {
+  outline: 2px solid #9cf2e8;
+  outline-offset: 3px;
+}
+.travel-auth-carousel__round-button svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.travel-slide-dots button.active {
-  width: 26px;
-  border-radius: 20px;
-  background: white;
+/* Place the EXISTING auth card in this layer; do not replace its forms. */
+.travel-auth-page__form-layer {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Figma card is on the left */
+  width: 100%;
+  min-height: 0;
+  padding: 24px clamp(24px, 6.5vw, 104px) 130px;
+  background: transparent;
 }
+.travel-auth-page__form-layer > * { max-width: 100%; }
 
-@media (prefers-reduced-motion: reduce) {
-  .travel-slide,
-  .travel-slide-dots button {
-    transition: none;
+/* Bottom-right follows the actual Figma layout; pass captionSide="left" to switch. */
+.travel-auth-carousel__copy {
+  position: absolute;
+  z-index: 1;
+  right: clamp(24px, 4vw, 64px);
+  bottom: 94px;
+  max-width: min(42vw, 520px);
+  text-align: right;
+  color: #fff;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .3);
+  pointer-events: none;
+}
+.travel-auth-page--caption-left .travel-auth-carousel__copy {
+  left: clamp(24px, 4vw, 64px);
+  right: auto;
+  text-align: left;
+}
+.travel-auth-carousel__location {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 17px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #e2e8f0;
+}
+.travel-auth-carousel__headline {
+  margin: 0;
+  font-size: clamp(22px, 2.6vw, 36px);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+}
+.travel-auth-carousel__headline strong { font-weight: 700; }
+.travel-auth-carousel__headline span { font-weight: 700; color: #9cf2e8; }
+
+.travel-auth-carousel__footer {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  padding: 0 clamp(20px, 3vw, 38px) 22px;
+}
+.travel-auth-carousel__dots { display: flex; align-items: center; gap: 3px; }
+.travel-auth-carousel__dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 12px;
+  height: 28px;
+  padding: 4px 2px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.travel-auth-carousel__dot span {
+  width: 7px;
+  height: 7px;
+  background: #82919e;
+  border-radius: 999px;
+  transition: width 240ms ease, background-color 240ms ease;
+}
+.travel-auth-carousel__dot--active span { width: 26px; background: #9cf2e8; }
+.travel-auth-carousel__arrows { display: flex; gap: 8px; }
+
+@media (max-width: 950px) {
+  .travel-auth-page__form-layer { padding-bottom: 175px; }
+  .travel-auth-carousel__copy { max-width: 43%; bottom: 100px; }
+  .travel-auth-carousel__headline { font-size: clamp(20px, 2.5vw, 28px); }
+}
+@media (max-width: 720px) {
+  .travel-auth-page__form-layer {
+    justify-content: center;
+    padding: 30px 18px 40px;
   }
+  /* Place captions below the card on narrow screens rather than over its inputs. */
+  .travel-auth-carousel__copy,
+  .travel-auth-page--caption-left .travel-auth-carousel__copy {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    z-index: 2;
+    width: 100%;
+    max-width: 100%;
+    text-align: left;
+    padding: 12px 24px 28px;
+  }
+  .travel-auth-carousel__headline { font-size: clamp(24px, 5.2vw, 32px); }
+  .travel-auth-carousel__footer { flex-wrap: wrap; }
+   .travel-auth-carousel__arrows { margin-left: auto; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .travel-auth-carousel__photo,
+  .travel-auth-carousel__dot span,
+  .travel-auth-carousel__round-button { transition: none; }
+}
+
+/* Avoid covering the form when its own container is narrower than the viewport. */
+.travel-auth-page, .travel-auth-page * { box-sizing: border-box; }
