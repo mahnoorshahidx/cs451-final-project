@@ -4,8 +4,7 @@ import Sidebar from "../components/Sidebar";
 import ItineraryViewer from "../components/ItineraryViewer";
 import { getTrip } from "../api/api";
 import "../styles/Dashboard.css";
-import "../styles/CreateItinerary.css";
-import "../styles/Itineraries.css";
+import "../styles/Itinerary.css";
 
 export default function ViewItinerary() {
   const { tripId } = useParams();

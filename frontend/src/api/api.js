@@ -90,9 +90,6 @@ export const recommendTiming = (body) =>
 export const recommendBudget = (body) =>
   apiFetch("/api/recommendations/budget", { method: "POST", body });
 
-// Paste at the end of frontend/src/api/api.js
-// (apiFetch and ApiError are already imported at the top of that file)
-
 // ---- Budget page & savings ----
 // Every trip with its budget total and savings progress
 export const getBudgetOverview = () => apiFetch("/api/budget-overview");
@@ -141,6 +138,16 @@ export const updateItineraryActivity = (tripId, activityId, activity) =>
 export const deleteItineraryActivity = (tripId, activityId) =>
   apiFetch(`/api/trips/${tripId}/activities/${activityId}`, {
     method: "DELETE",
+  });
+
+// AI: generate and save suggested activities from the questionnaire answers.
+// preferences: { pace: "relaxed" | "balanced" | "packed", foodPreferences: [], interests: [],
+//                specialRequests: "", replaceExisting: false }
+// Returns the new activities. Throws ApiError with status 503 if the AI isn't available.
+export const generateItinerary = (tripId, preferences) =>
+  apiFetch(`/api/trips/${tripId}/activities/generate`, {
+    method: "POST",
+    body: preferences,
   });
   
  // ---- Destination photographs ----

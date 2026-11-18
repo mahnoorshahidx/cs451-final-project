@@ -2,9 +2,9 @@ import ItineraryViewer from "../components/ItineraryViewer";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import { listTrips } from "../api/api";
+import { listTrips, listItineraryActivities, generateItinerary } from "../api/api";
 import "../styles/Dashboard.css";
-import "../styles/CreateItinerary.css";
+import "../styles/Itinerary.css";
 import ManualItineraryEditor from "../components/ManualItineraryEditor";
 import AIItineraryQuestionnaire from "../components/AIItineraryQuestionnaire";
 
@@ -26,6 +26,10 @@ function CreateItinerary() {
   // Stores the selected itinerary planning method
   const [planningMethod, setPlanningMethod] = useState(null);
   const [aiPreferences, setAiPreferences] = useState({});
+
+  // AI itinerary generation
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState("");
 
   // Retrieve saved trips.
   useEffect(() => {
@@ -62,6 +66,52 @@ function CreateItinerary() {
     });
   }, [selectedTripId]);
 
+  // Sends the questionnaire answers to the AI, which saves the suggested activities on the trip.
+  // On success, opens the itinerary view (step 4) so the user can see and edit them.
+  async function handleGenerate(preferences) {
+    const tripId = selectedTrip.id;
+    setAiPreferences((previous) => ({ ...previous, [tripId]: preferences }));
+    setGenerateError("");
+
+    // If the trip already has activities, ask whether to replace them or add to them
+    let replaceExisting = false;
+    try {
+      const existing = await listItineraryActivities(tripId);
+      if (existing.length > 0) {
+        replaceExisting = window.confirm(
+          `${selectedTrip.name} already has ${existing.length} ` +
+          `${existing.length === 1 ? "activity" : "activities"}.\n\n` +
+          "OK: replace them with the AI itinerary\n" +
+          "Cancel: keep them and add the AI suggestions"
+        );
+      }
+    } catch {
+      // Couldn't check; just add to whatever is there
+    }
+
+    setGenerating(true);
+    try {
+      await generateItinerary(tripId, {
+        dailyBudget: Number(preferences.dailyBudget) || null,
+        currency: preferences.currency,
+        travelStyle: preferences.travelStyle,
+        minimumRating: preferences.minimumRating,
+        interests: preferences.interests,
+        pace: preferences.pace,
+        foodPreferences: preferences.diningPreferences,
+        specialRequests: preferences.specialRequests,
+        replaceExisting,
+      });
+      setStep(4);
+    } catch (err) {
+      setGenerateError(
+        err.message || "We couldn't generate your itinerary. Please try again."
+      );
+    } finally {
+      setGenerating(false);
+    }
+  }
+
   return (
     <div className="dashboard-page itinerary-page">
       <aside className="dashboard-sidebar">
@@ -71,7 +121,7 @@ function CreateItinerary() {
       <main
         className={`dashboard-main itinerary-main ${step === 3 && planningMethod === "manual"
           ? "itinerary-main--manual"
-          : step === 4 && planningMethod === "manual"
+          : step === 4
             ? "itinerary-main--viewer"
             : ""
           }`}
@@ -110,13 +160,13 @@ function CreateItinerary() {
           <div
             className={`itinerary-content ${step === 3 && planningMethod === "manual"
               ? "itinerary-content--manual"
-              : step === 4 && planningMethod === "manual"
+              : step === 4
                 ? "itinerary-content--viewer"
                 : ""
               }`}
           >
 
-            {step === 4 && planningMethod === "manual" ? (
+            {step === 4 ? (
               <ItineraryViewer trip={selectedTrip} />
             ) : step === 1 ? (
               <>
@@ -260,27 +310,15 @@ function CreateItinerary() {
               />
 
             ) : (
-              <>
-                <AIItineraryQuestionnaire
-                  key={selectedTrip.id}
-                  trip={selectedTrip}
-                  initialPreferences={aiPreferences[selectedTrip.id]}
-                  onBack={() => setStep(2)}
-                  onSave={(preferences) => {
-                    setAiPreferences((previous) => ({
-                      ...previous,
-                      [selectedTrip.id]: preferences,
-                    }));
-                  }}
-                />
-
-                {aiPreferences[selectedTrip.id] && (
-                  <p role="status" className="ai-questionnaire-saved">
-                    Preferences saved for this session.
-                    AI itinerary generation will be connected next.
-                  </p>
-                )}
-              </>
+              <AIItineraryQuestionnaire
+                key={selectedTrip.id}
+                trip={selectedTrip}
+                initialPreferences={aiPreferences[selectedTrip.id]}
+                onBack={() => setStep(2)}
+                onSave={handleGenerate}
+                generating={generating}
+                generateError={generateError}
+              />
             )}
 
 

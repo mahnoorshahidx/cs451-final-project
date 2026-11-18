@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getProfile } from "../api/api";
-import "../styles/AIItineraryQuestionnaire.css";
+import "../styles/Itinerary.css";
 
 const INTERESTS = [
   "Food & Drink",
@@ -53,11 +53,15 @@ const DEFAULT_PREFERENCES = {
   specialRequests: "",
 };
 
+// onSave(preferences) runs on the last page and generates the itinerary.
+// generating: true while the AI works. generateError: message to show if it failed.
 export default function AIItineraryQuestionnaire({
   trip,
   initialPreferences,
   onSave,
   onBack,
+  generating = false,
+  generateError = "",
 }) {
   const [page, setPage] = useState(0);
   const headingRef = useRef(null);
@@ -93,12 +97,10 @@ export default function AIItineraryQuestionnaire({
         : ["No restrictions"],
   }));
   const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
 
   function updateField(field, value) {
     setPreferences((previous) => ({ ...previous, [field]: value }));
     setError("");
-    setSaved(false);
   }
 
   function toggleInterest(interest) {
@@ -132,7 +134,6 @@ export default function AIItineraryQuestionnaire({
   function goToPage(nextPage) {
     setPage(nextPage);
     setError("");
-    setSaved(false);
     headingRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -141,6 +142,7 @@ export default function AIItineraryQuestionnaire({
 
   function handleSubmit(event) {
     event.preventDefault();
+    if (generating) return;
 
     if (page === 0) {
       if (!currency) {
@@ -173,9 +175,8 @@ export default function AIItineraryQuestionnaire({
       return;
     }
 
-    onSave({ ...preferences, currency });
-    setSaved(true);
     setError("");
+    onSave({ ...preferences, currency });
   }
 
   const rating = preferences.minimumRating === "any"
@@ -419,22 +420,33 @@ export default function AIItineraryQuestionnaire({
 
         {currencyError && <p className="ai-questionnaire-error" role="alert">{currencyError}</p>}
         {error && <p className="ai-questionnaire-error" role="alert">{error}</p>}
-        {saved && (
-          <p className="ai-questionnaire-saved" role="status">
-            Preferences saved for this session.
-          </p>
+        {generating && (
+          <div className="itinerary-ai-status" role="status">
+            <span className="itinerary-ai-spinner" aria-hidden="true" />
+            Planning your trip to {trip.destination || trip.name}. This can take up to 30 seconds...
+          </div>
+        )}
+        {!generating && generateError && (
+          <p className="itinerary-ai-error" role="alert">{generateError}</p>
         )}
 
         <div className="ai-questionnaire-actions">
           <button
             type="button"
             className="ai-questionnaire-back"
+            disabled={generating}
             onClick={() => (page === 0 ? onBack?.() : goToPage(page - 1))}
           >
             {page === 0 ? "← Planning Methods" : "← Back"}
           </button>
-          <button type="submit" className="ai-questionnaire-submit">
-            {page === 3 ? "Save Preferences" : "Continue →"}
+          <button type="submit" className="ai-questionnaire-submit" disabled={generating}>
+            {page < 3
+              ? "Continue →"
+              : generating
+                ? "Generating..."
+                : generateError
+                  ? "Try Again"
+                  : "Generate Itinerary ✧"}
           </button>
         </div>
       </form>

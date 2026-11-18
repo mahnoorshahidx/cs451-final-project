@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../styles/ItineraryCalendar.css";
+import "../styles/Itinerary.css";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);

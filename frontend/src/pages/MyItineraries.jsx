@@ -4,7 +4,7 @@ import Sidebar from "../components/Sidebar";
 import { listTrips, listItineraryActivities } from "../api/api";
 import "../styles/Dashboard.css";
 import "../styles/Trips.css";
-import "../styles/Itineraries.css";
+import "../styles/Itinerary.css";
 
 function formatTripDate(value) {
   if (!value) return "";

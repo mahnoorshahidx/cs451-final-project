@@ -6,7 +6,7 @@ import {
   deleteItineraryActivity,
   getDestinationPhoto,
 } from "../api/api";
-import "../styles/ItineraryViewer.css";
+import "../styles/Itinerary.css";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CATEGORIES = [

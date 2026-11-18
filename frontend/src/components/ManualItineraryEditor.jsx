@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ItineraryCalendar from "./ItineraryCalendar";
-import "../styles/ManualItineraryEditor.css";
+import "../styles/Itinerary.css";
 
 import {
   listItineraryActivities,
