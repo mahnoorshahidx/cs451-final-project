@@ -13,6 +13,7 @@ import EditTrip from "./pages/EditTrip";
 import BudgetDashboard from "./pages/BudgetDashboard";
 import MyItineraries from "./pages/MyItineraries";
 import ViewItinerary from "./pages/ViewItinerary";
+import SharedTrips from "./pages/SharedTrips";
 
 function App() {
 
@@ -68,6 +69,15 @@ function App() {
           element={
             <ProtectedRoute>
               <MyTrips />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/shared-trips"
+          element={
+            <ProtectedRoute>
+              <SharedTrips />
             </ProtectedRoute>
           }
         />
