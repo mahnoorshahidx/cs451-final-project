@@ -31,8 +31,7 @@ function Sidebar() {
     { name: "My Trips", path: "/trips", icon: "✈" },
     { name: "Itinerary", path: "/itineraries", icon: <CalendarDays size={21} strokeWidth={2} /> },
     { name: "Savings Planner", path: "/savings", icon: "$" },
-    { name: "Shared Trips", path: "/shared-trips", icon: <UsersIcon /> },
-    { name: "Settings", path: "/settings", icon: "⚙" },
+    { name: "Shared Trips", path: "/shared-trips", icon: <SharedTripsIcon /> }, { name: "Settings", path: "/settings", icon: "⚙" },
   ];
 
   return (
