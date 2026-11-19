@@ -30,9 +30,14 @@ function Sidebar() {
     { name: "Dashboard", path: "/dashboard", icon: "⌂" },
     { name: "My Trips", path: "/trips", icon: "✈" },
     { name: "Itinerary", path: "/itineraries", icon: <CalendarDays size={21} strokeWidth={2} /> },
-    { name: "Savings Planner", path: "/savings", icon: "$" },
-    { name: "Shared Trips", path: "/shared-trips", icon: <SharedTripsIcon /> }, { name: "Settings", path: "/settings", icon: "⚙" },
+    { name: "Savings Planner (Old)", path: "/savings", icon: "$" },
+    { name: "Budget Planner", path: "/budget-planner", icon: "$" },
+    { name: "Savings Planner", path: "/savings-planner", icon: "◈" },
+    { name: "Shared Trips", path: "/shared-trips", icon: <SharedTripsIcon /> },
+    { name: "Settings", path: "/settings", icon: "⚙" },
   ];
+
+
 
   return (
     <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>

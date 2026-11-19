@@ -14,6 +14,8 @@ import BudgetDashboard from "./pages/BudgetDashboard";
 import MyItineraries from "./pages/MyItineraries";
 import ViewItinerary from "./pages/ViewItinerary";
 import SharedTrips from "./pages/SharedTrips";
+import BudgetPlanner from "./pages/BudgetPlanner";
+import SavingsPlanner from "./pages/SavingsPlanner";
 
 function App() {
 
@@ -119,6 +121,7 @@ function App() {
 
         <Route path="/budget" element={<ProtectedRoute><BudgetDashboard /></ProtectedRoute>} />
         <Route path="/budget/:tripId" element={<ProtectedRoute><BudgetDashboard /></ProtectedRoute>} />
+        
         {/* Savings Planner */}
         <Route
           path="/savings"
@@ -128,6 +131,24 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+        path="/budget-planner"
+        element={
+          <ProtectedRoute>
+            <BudgetPlanner />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/savings-planner"
+        element={
+          <ProtectedRoute>
+            <SavingsPlanner />
+          </ProtectedRoute>
+        }
+      />
 
         <Route
           path="*"
