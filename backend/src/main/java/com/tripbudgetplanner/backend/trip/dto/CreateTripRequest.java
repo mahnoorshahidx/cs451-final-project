@@ -29,6 +29,12 @@ public class CreateTripRequest {
     @Min(value = 1, message = "At least one traveler is required")
     private Integer numberOfTravelers;
 
+    // Optional currency code like "USD" or "JPY".
+    // TripService checks it is one of the 8 supported currencies.
+    // Create: if empty, the user's preferred currency (or USD) is used.
+    // Edit: if empty, the trip keeps its current currency.
+    private String currency;
+
     // Getters and setters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -46,4 +52,7 @@ public class CreateTripRequest {
     public void setNumberOfTravelers(Integer numberOfTravelers) {
         this.numberOfTravelers = numberOfTravelers;
     }
+
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
 }
