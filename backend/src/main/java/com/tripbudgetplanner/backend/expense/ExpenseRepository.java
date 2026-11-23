@@ -12,4 +12,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     // Find a specific expense belonging to a trip.
     Optional<Expense> findByIdAndTripId(Long id, Long tripId);
+
+    // True if the trip has at least one expense (a quick check, doesn't load the expenses).
+    boolean existsByTripId(Long tripId);
 }
