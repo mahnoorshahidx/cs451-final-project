@@ -35,6 +35,13 @@ public class ExpenseController {
         return service.summary(tripId, userId);
     }
 
+    // UC11: compare actual spending with the planned budget, overall and by category.
+    @GetMapping("/comparison")
+    public BudgetComparisonResponse comparison(@PathVariable Long tripId,
+            @AuthenticationPrincipal Long userId) {
+        return service.compareToBudget(tripId, userId);
+    }
+
     // Get a specific expense.
     @GetMapping("/{expenseId}")
     public ExpenseResponse get(@PathVariable Long tripId,
