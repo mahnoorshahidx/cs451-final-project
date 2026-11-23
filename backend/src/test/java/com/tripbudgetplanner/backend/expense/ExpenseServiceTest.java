@@ -15,6 +15,9 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.tripbudgetplanner.backend.budget.TripBudgetRepository;
+import com.tripbudgetplanner.backend.currency.CurrencyService;
+import com.tripbudgetplanner.backend.currency.FixedExchangeRateProvider;
 import com.tripbudgetplanner.backend.expense.dto.ExpenseRequest;
 import com.tripbudgetplanner.backend.trip.Trip;
 import com.tripbudgetplanner.backend.trip.TripRepository;
@@ -35,8 +38,12 @@ class ExpenseServiceTest {
         expenseRepository = mock(ExpenseRepository.class);
         tripRepository = mock(TripRepository.class);
 
+        // The budget repository and currency service are only used by the
+        // budget comparison, which has its own test class.
         service = new ExpenseService(
-            expenseRepository, tripRepository
+            expenseRepository, tripRepository,
+            mock(TripBudgetRepository.class),
+            new CurrencyService(new FixedExchangeRateProvider(), new FixedExchangeRateProvider(), "fixed", 60)
         );
 
         trip = mock(Trip.class);
