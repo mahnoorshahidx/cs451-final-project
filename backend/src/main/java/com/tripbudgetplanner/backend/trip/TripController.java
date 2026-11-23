@@ -69,6 +69,7 @@ public class TripController {
     private TripResponse toResponse(Trip trip) {
         return new TripResponse(
                 trip.getId(), trip.getName(), trip.getDestination(),
-                trip.getStartDate(), trip.getEndDate(), trip.getNumberOfTravelers());
+                trip.getStartDate(), trip.getEndDate(), trip.getNumberOfTravelers(),
+                trip.getCurrency());
     }
 }
