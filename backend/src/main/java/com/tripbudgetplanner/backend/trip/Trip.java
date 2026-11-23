@@ -35,6 +35,11 @@ public class Trip {
     @Column(nullable = false)
     private int numberOfTravelers;
 
+    // The trip's currency (one of the 8 supported codes, e.g. "USD").
+    // The column default fills in "USD" for trips created before this column existed.
+    @Column(nullable = false, length = 3, columnDefinition = "CHAR(3) DEFAULT 'USD'")
+    private String currency = "USD";
+
     // Links each trip to the user who created it
     // One user can create multiple trips
     @ManyToOne
@@ -63,6 +68,12 @@ public class Trip {
     public void setNumberOfTravelers(int numberOfTravelers) {
         this.numberOfTravelers = numberOfTravelers;
     }
+
+    // Old rows with an empty value are treated as USD
+    public String getCurrency() {
+        return currency == null || currency.isBlank() ? "USD" : currency;
+    }
+    public void setCurrency(String currency) { this.currency = currency; }
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
