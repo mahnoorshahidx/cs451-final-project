@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS trips (
     name VARCHAR(255) NOT NULL,
     number_of_travelers INT NOT NULL,
     start_date DATE NOT NULL,
+    -- One of the 8 supported currencies: USD, EUR, GBP, JPY, CAD, AUD, INR, KRW
+    currency CHAR(3) NOT NULL DEFAULT 'USD',
     user_id BIGINT NOT NULL,
     CONSTRAINT fk_trips_user FOREIGN KEY (user_id) REFERENCES users (id)
 );
