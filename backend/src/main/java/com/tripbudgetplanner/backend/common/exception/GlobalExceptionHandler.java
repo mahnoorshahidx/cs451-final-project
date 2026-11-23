@@ -13,6 +13,7 @@ import com.tripbudgetplanner.backend.auth.exception.EmailAlreadyExistsException;
 import com.tripbudgetplanner.backend.auth.exception.InvalidCredentialsException;
 import com.tripbudgetplanner.backend.bank.exception.BankAccountAlreadyConnectedException;
 import com.tripbudgetplanner.backend.bank.exception.BankAccountNotFoundException;
+import com.tripbudgetplanner.backend.trip.exception.TripCurrencyChangeException;
 import com.tripbudgetplanner.backend.trip.exception.TripNotFoundException;
 
 @RestControllerAdvice
@@ -44,6 +45,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BankAccountAlreadyConnectedException.class)
     public ResponseEntity<Map<String, String>> handleBankDuplicate(BankAccountAlreadyConnectedException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", ex.getMessage()));
+    }
+
+    // 409: the trip's currency can't change because it already has budget, expense or savings amounts
+    @ExceptionHandler(TripCurrencyChangeException.class)
+    public ResponseEntity<Map<String, String>> handleCurrencyChange(TripCurrencyChangeException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", ex.getMessage()));
     }
 
