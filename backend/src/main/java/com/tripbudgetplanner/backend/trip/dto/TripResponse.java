@@ -9,5 +9,6 @@ public record TripResponse(
     String destination,
     LocalDate startDate,
     LocalDate endDate,
-    int numberOfTravelers
+    int numberOfTravelers,
+    String currency
 ) {}
