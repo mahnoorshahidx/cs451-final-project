@@ -97,6 +97,15 @@ public class CurrencyService {
 
     // Converts an amount. Other services (e.g. expense vs. budget) can call this directly.
     public ConversionResponse convert(BigDecimal amount, SupportedCurrency from, SupportedCurrency to) {
+        // Same currency: no rates needed, so don't load them
+        return convert(amount, from, to, from == to ? null : currentRates());
+    }
+
+    // Converts an amount using rates the caller already loaded with currentRates().
+    // Use this to convert several amounts with the same rates (one snapshot),
+    // e.g. a budget's total and each of its categories.
+    public ConversionResponse convert(BigDecimal amount, SupportedCurrency from, SupportedCurrency to,
+                                      ExchangeRates rates) {
         validateAmount(amount);
 
         // Same currency: nothing to look up, the rate is exactly 1
@@ -105,8 +114,10 @@ public class CurrencyService {
             return new ConversionResponse(from.name(), to.name(), amount,
                 BigDecimal.ONE.setScale(RATE_SCALE), same, null, "none", null);
         }
+        if (rates == null) {
+            throw new IllegalArgumentException("Exchange rates are required to convert between currencies");
+        }
 
-        ExchangeRates rates = currentRates();
         BigDecimal fromRate = rates.rateFor(from);   // 1 USD = fromRate "from"
         BigDecimal toRate = rates.rateFor(to);       // 1 USD = toRate "to"
 
@@ -145,9 +156,10 @@ public class CurrencyService {
 
     // ---------- Rates and cache ----------
 
-    // Returns the rates to use right now.
+    // Returns the rates to use right now (live, cached, or the fixed demo rates).
+    // Public so a service can load them once and pass them to convert(..., rates).
     // synchronized so two requests at the same moment don't both call the API.
-    synchronized ExchangeRates currentRates() {
+    public synchronized ExchangeRates currentRates() {
         if (!useLiveRates) {
             return fallbackProvider.fetchRates();
         }
