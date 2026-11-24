@@ -1,7 +1,7 @@
 package com.tripbudgetplanner.backend.budget;
 
 import com.tripbudgetplanner.backend.budget.dto.BudgetRequest;
-import com.tripbudgetplanner.backend.trip.TripService;
+import com.tripbudgetplanner.backend.trip.TripAccessService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,25 +12,26 @@ import java.util.Optional;
 public class TripBudgetService {
 
     private final TripBudgetRepository budgetRepository;
-    private final TripService tripService;
+    private final TripAccessService tripAccess;
 
-    public TripBudgetService(TripBudgetRepository budgetRepository, TripService tripService) {
+    public TripBudgetService(TripBudgetRepository budgetRepository, TripAccessService tripAccess) {
         this.budgetRepository = budgetRepository;
-        this.tripService = tripService;
+        this.tripAccess = tripAccess;
     }
 
     // Returns the trip's budget, or empty if none is saved yet.
-    // getTrip throws TripNotFoundException (404) if the trip isn't this user's.
+    // Any trip member can view it; 404 if the user has no access to the trip.
     @Transactional(readOnly = true)
     public Optional<TripBudget> getBudget(Long tripId, Long userId) {
-        tripService.getTrip(tripId, userId);
+        tripAccess.viewableTrip(tripId, userId);
         return budgetRepository.findByTripId(tripId);
     }
 
     // Creates the budget, or replaces it if it already exists
     @Transactional
     public TripBudget saveBudget(Long tripId, BudgetRequest request, Long userId) {
-        tripService.getTrip(tripId, userId);
+        // Owner or editor (403 for viewers)
+        tripAccess.editableTrip(tripId, userId);
 
         BigDecimal allocated = request.allocations().values().stream()
             .reduce(BigDecimal.ZERO, BigDecimal::add);
