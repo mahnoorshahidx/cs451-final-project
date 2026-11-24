@@ -18,6 +18,8 @@ import com.tripbudgetplanner.backend.budget.TripBudget;
 import com.tripbudgetplanner.backend.budget.TripBudgetRepository;
 import com.tripbudgetplanner.backend.currency.exception.UnsupportedCurrencyException;
 import com.tripbudgetplanner.backend.expense.ExpenseRepository;
+import com.tripbudgetplanner.backend.member.TripInvitationRepository;
+import com.tripbudgetplanner.backend.member.TripMemberRepository;
 import com.tripbudgetplanner.backend.savings.SavingsGoal;
 import com.tripbudgetplanner.backend.savings.SavingsContributionRepository;
 import com.tripbudgetplanner.backend.savings.SavingsGoalRepository;
@@ -28,6 +30,11 @@ import com.tripbudgetplanner.backend.user.UserRepository;
 
 public class TripServiceTest {
 
+	// Real access checks on top of the mocked trip repository (owners use the same query as before)
+	private static TripAccessService accessFor(TripRepository tripRepository) {
+		return new TripAccessService(tripRepository, mock(TripMemberRepository.class));
+	}
+
 	@Test
 	void createTripSuccessfully() {
 
@@ -37,7 +44,8 @@ public class TripServiceTest {
 
 		TripService tripService = new TripService(tripRepository, userRepository,
         mock(SavingsGoalRepository.class), mock(SavingsContributionRepository.class),
-        mock(TripBudgetRepository.class), mock(ExpenseRepository.class));
+        mock(TripBudgetRepository.class), mock(ExpenseRepository.class),
+        accessFor(tripRepository), mock(TripMemberRepository.class), mock(TripInvitationRepository.class));
 
 		// Create sample trip information
 		CreateTripRequest request = new CreateTripRequest();
@@ -78,7 +86,8 @@ public class TripServiceTest {
 
 		TripService tripService = new TripService(tripRepository, userRepository,
         mock(SavingsGoalRepository.class), mock(SavingsContributionRepository.class),
-        mock(TripBudgetRepository.class), mock(ExpenseRepository.class));
+        mock(TripBudgetRepository.class), mock(ExpenseRepository.class),
+        accessFor(tripRepository), mock(TripMemberRepository.class), mock(TripInvitationRepository.class));
 
 		// Create a trip with a return date before the departure date
 		CreateTripRequest request = new CreateTripRequest();
@@ -104,7 +113,8 @@ public class TripServiceTest {
 
 		TripService tripService = new TripService(tripRepository, userRepository,
         mock(SavingsGoalRepository.class), mock(SavingsContributionRepository.class),
-        mock(TripBudgetRepository.class), mock(ExpenseRepository.class));
+        mock(TripBudgetRepository.class), mock(ExpenseRepository.class),
+        accessFor(tripRepository), mock(TripMemberRepository.class), mock(TripInvitationRepository.class));
 
 		// Create sample trip information
 		CreateTripRequest request = new CreateTripRequest();
@@ -141,7 +151,8 @@ public class TripServiceTest {
 	private static TripService service(TripRepository tripRepository, UserRepository userRepository) {
 		return new TripService(tripRepository, userRepository,
 			mock(SavingsGoalRepository.class), mock(SavingsContributionRepository.class),
-        mock(TripBudgetRepository.class), mock(ExpenseRepository.class));
+        mock(TripBudgetRepository.class), mock(ExpenseRepository.class),
+        accessFor(tripRepository), mock(TripMemberRepository.class), mock(TripInvitationRepository.class));
 	}
 
 	@Test
@@ -217,7 +228,8 @@ public class TripServiceTest {
 		final Trip trip = new Trip();
 		final TripService service = new TripService(tripRepository, mock(UserRepository.class),
 			savingsGoalRepository, mock(SavingsContributionRepository.class),
-			tripBudgetRepository, expenseRepository);
+			tripBudgetRepository, expenseRepository,
+			accessFor(tripRepository), mock(TripMemberRepository.class), mock(TripInvitationRepository.class));
 
 		UpdateSetup() {
 			trip.setCurrency("USD");
