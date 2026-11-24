@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tripbudgetplanner.backend.member.TripRole;
 import com.tripbudgetplanner.backend.trip.dto.CreateTripRequest;
 import com.tripbudgetplanner.backend.trip.dto.TripResponse;
 
@@ -25,9 +26,11 @@ import jakarta.validation.Valid;
 public class TripController {
 
     private final TripService tripService;
+    private final TripAccessService tripAccess;
 
-    public TripController(TripService tripService) {
+    public TripController(TripService tripService, TripAccessService tripAccess) {
         this.tripService = tripService;
+        this.tripAccess = tripAccess;
     }
 
     // Creates a new trip for the logged-in user (id comes from the JWT)
@@ -36,40 +39,54 @@ public class TripController {
             @Valid @RequestBody CreateTripRequest request,
             @AuthenticationPrincipal Long userId) {
         Trip trip = tripService.createTrip(request, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(trip));
+        return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(trip, TripRole.OWNER));
     }
 
-    // Lists the logged-in user's trips (dashboard)
+    // Lists the logged-in user's own trips (dashboard). Shared trips are in /shared.
     @GetMapping
     public List<TripResponse> listTrips(@AuthenticationPrincipal Long userId) {
-        return tripService.listTrips(userId).stream().map(this::toResponse).toList();
+        return tripService.listTrips(userId).stream()
+            .map(trip -> toResponse(trip, TripRole.OWNER))
+            .toList();
     }
 
-    // Views one trip
+    // UC9: trips other people shared with the logged-in user, with their role
+    @GetMapping("/shared")
+    public List<TripResponse> listSharedTrips(@AuthenticationPrincipal Long userId) {
+        return tripService.listSharedTrips(userId).stream()
+            .map(member -> toResponse(member.getTrip(), member.getRole()))
+            .toList();
+    }
+
+    // Views one trip (owner, editor or viewer)
     @GetMapping("/{id}")
     public TripResponse getTrip(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
-        return toResponse(tripService.getTrip(id, userId));
+        Trip trip = tripService.getTrip(id, userId);
+        return toResponse(trip, tripAccess.roleOf(trip, userId));
     }
 
-    // Edits a trip
+    // Edits a trip (owner or editor)
     @PutMapping("/{id}")
     public TripResponse updateTrip(@PathVariable Long id,
                                    @Valid @RequestBody CreateTripRequest request,
                                    @AuthenticationPrincipal Long userId) {
-        return toResponse(tripService.updateTrip(id, request, userId));
+        Trip trip = tripService.updateTrip(id, request, userId);
+        return toResponse(trip, tripAccess.roleOf(trip, userId));
     }
 
-    // Deletes a trip
+    // Deletes a trip (owner only)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTrip(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
         tripService.deleteTrip(id, userId);
         return ResponseEntity.noContent().build();
     }
 
-    private TripResponse toResponse(Trip trip) {
+    private TripResponse toResponse(Trip trip, TripRole role) {
         return new TripResponse(
                 trip.getId(), trip.getName(), trip.getDestination(),
                 trip.getStartDate(), trip.getEndDate(), trip.getNumberOfTravelers(),
-                trip.getCurrency());
+                trip.getCurrency(),
+                role == null ? null : role.name(),
+                trip.getUser() == null ? null : trip.getUser().getName());
     }
 }
