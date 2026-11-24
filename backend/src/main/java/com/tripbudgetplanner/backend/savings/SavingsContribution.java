@@ -30,14 +30,21 @@ public class SavingsContribution {
     @Column(length = 255)
     private String description;
 
+    // Who added this contribution (UC9). Older rows were filled in with the trip owner
+    // by the migration; if it is still null, the trip owner is treated as the creator.
+    @Column(name = "created_by_user_id")
+    private Long createdByUserId;
+
     protected SavingsContribution() {}
 
-    public SavingsContribution(Long savingsGoalId, Long bankAccountId, BigDecimal amount, LocalDate transactionDate, String description) {
+    public SavingsContribution(Long savingsGoalId, Long bankAccountId, BigDecimal amount, LocalDate transactionDate,
+                               String description, Long createdByUserId) {
         this.savingsGoalId = savingsGoalId;
         this.bankAccountId = bankAccountId;
         this.amount = amount;
         this.transactionDate = transactionDate;
         this.description = description;
+        this.createdByUserId = createdByUserId;
     }
 
     public Long getId() { return id; }
@@ -46,4 +53,5 @@ public class SavingsContribution {
     public BigDecimal getAmount() { return amount; }
     public LocalDate getTransactionDate() { return transactionDate; }
     public String getDescription() { return description; }
+    public Long getCreatedByUserId() { return createdByUserId; }
 }
