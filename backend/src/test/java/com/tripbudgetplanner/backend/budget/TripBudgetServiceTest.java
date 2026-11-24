@@ -2,7 +2,7 @@
 package com.tripbudgetplanner.backend.budget;
 
 import com.tripbudgetplanner.backend.budget.dto.BudgetRequest;
-import com.tripbudgetplanner.backend.trip.TripService;
+import com.tripbudgetplanner.backend.trip.TripAccessService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,8 +24,9 @@ class TripBudgetServiceTest {
     @Mock
     private TripBudgetRepository budgetRepository;
 
+    // Trip access checks (UC9). As a mock it allows every call, like the old mocked TripService did.
     @Mock
-    private TripService tripService;
+    private TripAccessService tripAccessService;
 
     @InjectMocks
     private TripBudgetService budgetService;
