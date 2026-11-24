@@ -20,5 +20,8 @@ public record SavingsResponse(
     String status,                 // FUNDED, ON_TRACK, BEHIND, NO_PLAN, PAST_DUE
     List<Contribution> contributions
 ) {
-    public record Contribution(Long id, BigDecimal amount, LocalDate date, String description, Long bankAccountId) {}
+    // bankAccountId is only shown to the person who owns that bank account; others get null.
+    // addedByYou / canDelete tell the page whether to show a delete button (UC9).
+    public record Contribution(Long id, BigDecimal amount, LocalDate date, String description, Long bankAccountId,
+                               boolean addedByYou, boolean canDelete) {}
 }
