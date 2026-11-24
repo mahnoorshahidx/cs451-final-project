@@ -5,7 +5,7 @@ import com.tripbudgetplanner.backend.ai.AnthropicClient;
 import com.tripbudgetplanner.backend.itinerary.dto.ItineraryActivityResponse;
 import com.tripbudgetplanner.backend.itinerary.dto.ItineraryGenerationRequest;
 import com.tripbudgetplanner.backend.trip.Trip;
-import com.tripbudgetplanner.backend.trip.TripService;
+import com.tripbudgetplanner.backend.trip.TripAccessService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -49,21 +49,21 @@ public class ItineraryGenerationService {
     private static final Duration TIMEOUT = Duration.ofSeconds(60);
 
     private final AnthropicClient ai;
-    private final TripService tripService;
+    private final TripAccessService tripAccess;
     private final ItineraryActivityRepository activityRepository;
 
     public ItineraryGenerationService(
             AnthropicClient ai,
-            TripService tripService,
+            TripAccessService tripAccess,
             ItineraryActivityRepository activityRepository) {
         this.ai = ai;
-        this.tripService = tripService;
+        this.tripAccess = tripAccess;
         this.activityRepository = activityRepository;
     }
 
     public List<ItineraryActivityResponse> generate(Long tripId, ItineraryGenerationRequest request, Long userId) {
-        // Also checks that the logged-in user owns the trip
-        Trip trip = tripService.getTrip(tripId, userId);
+        // Owner or editor can add AI activities (403 for viewers, 404 without access)
+        Trip trip = tripAccess.editableTrip(tripId, userId);
 
         if (!ai.isEnabled()) {
             throw unavailable();
