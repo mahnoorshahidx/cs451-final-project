@@ -1,5 +1,6 @@
 package com.tripbudgetplanner.backend.savings;
 
+import com.tripbudgetplanner.backend.bank.BankAccount;
 import com.tripbudgetplanner.backend.bank.BankAccountRepository;
 import com.tripbudgetplanner.backend.budget.TripBudget;
 import com.tripbudgetplanner.backend.budget.TripBudgetRepository;
@@ -9,7 +10,11 @@ import com.tripbudgetplanner.backend.savings.dto.ContributionRequest;
 import com.tripbudgetplanner.backend.savings.dto.SavingsGoalRequest;
 import com.tripbudgetplanner.backend.savings.dto.SavingsResponse;
 import com.tripbudgetplanner.backend.trip.Trip;
+import com.tripbudgetplanner.backend.member.TripRole;
+import com.tripbudgetplanner.backend.trip.TripAccessService;
+import com.tripbudgetplanner.backend.trip.TripAccessService.TripAccess;
 import com.tripbudgetplanner.backend.trip.TripService;
+import com.tripbudgetplanner.backend.trip.exception.TripAccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +25,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,32 +38,36 @@ public class SavingsService {
     private final TripService tripService;
     private final TripBudgetRepository budgetRepository;
     private final BankAccountRepository bankAccountRepository;
+    private final TripAccessService tripAccess;
 
     public SavingsService(SavingsGoalRepository goalRepository,
                           SavingsContributionRepository contributionRepository,
                           TripService tripService,
                           TripBudgetRepository budgetRepository,
-                          BankAccountRepository bankAccountRepository) {
+                          BankAccountRepository bankAccountRepository,
+                          TripAccessService tripAccess) {
         this.goalRepository = goalRepository;
         this.contributionRepository = contributionRepository;
         this.tripService = tripService;
         this.budgetRepository = budgetRepository;
         this.bankAccountRepository = bankAccountRepository;
+        this.tripAccess = tripAccess;
     }
 
     // ---------- Goal ----------
 
-    // Empty if the trip has no goal yet. Throws 404 if the trip isn't this user's.
+    // Empty if the trip has no goal yet. Any trip member can view it; 404 without access.
     @Transactional(readOnly = true)
     public Optional<SavingsResponse> getSavings(Long tripId, Long userId) {
-        tripService.getTrip(tripId, userId);
-        return goalRepository.findByTripId(tripId).map(this::toResponse);
+        TripAccess access = tripAccess.requireRole(tripId, userId, TripRole.VIEWER);
+        return goalRepository.findByTripId(tripId).map(goal -> toResponse(goal, access, userId));
     }
 
     // Creates the goal, or updates it if it exists
     @Transactional
     public SavingsResponse saveGoal(Long tripId, SavingsGoalRequest request, Long userId) {
-        tripService.getTrip(tripId, userId);
+        // Owner or editor (403 for viewers)
+        TripAccess access = tripAccess.requireRole(tripId, userId, TripRole.EDITOR);
 
         SavingsGoal goal = goalRepository.findByTripId(tripId)
             .orElseGet(() -> new SavingsGoal(tripId));
@@ -67,18 +77,20 @@ public class SavingsService {
         goal.setTargetDate(request.targetDate());
         goal.setPlannedMonthlyContribution(request.plannedMonthlyContribution());
 
-        return toResponse(goalRepository.save(goal));
+        return toResponse(goalRepository.save(goal), access, userId);
     }
 
     // ---------- Contributions ----------
 
     @Transactional
     public SavingsResponse addContribution(Long tripId, ContributionRequest request, Long userId) {
-        tripService.getTrip(tripId, userId);
+        // Owner or editor (403 for viewers)
+        TripAccess access = tripAccess.requireRole(tripId, userId, TripRole.EDITOR);
         SavingsGoal goal = goalRepository.findByTripId(tripId)
             .orElseThrow(() -> new IllegalArgumentException("Set a savings goal for this trip first"));
 
-        // A linked bank account must belong to the same user
+        // A linked bank account must belong to the user adding the contribution,
+        // so members can never use (or see) someone else's bank account
         if (request.bankAccountId() != null
                 && bankAccountRepository.findByIdAndUserId(request.bankAccountId(), userId).isEmpty()) {
             throw new IllegalArgumentException("Bank account not found");
@@ -93,22 +105,45 @@ public class SavingsService {
             request.bankAccountId(),
             request.amount(),
             request.date() == null ? LocalDate.now() : request.date(),
-            description));
+            description,
+            userId));
 
-        return toResponse(goal);
+        return toResponse(goal, access, userId);
     }
 
     @Transactional
     public SavingsResponse deleteContribution(Long tripId, Long contributionId, Long userId) {
-        tripService.getTrip(tripId, userId);
+        // Owner or editor (403 for viewers)
+        TripAccess access = tripAccess.requireRole(tripId, userId, TripRole.EDITOR);
         SavingsGoal goal = goalRepository.findByTripId(tripId)
             .orElseThrow(() -> new IllegalArgumentException("This trip has no savings goal"));
 
         SavingsContribution contribution = contributionRepository.findByIdAndSavingsGoalId(contributionId, goal.getId())
             .orElseThrow(() -> new IllegalArgumentException("Contribution not found"));
+
+        // Editors can only delete contributions they added; the owner can delete any
+        if (!canDelete(contribution, access, userId)) {
+            throw new TripAccessDeniedException("You can only delete contributions you added.");
+        }
         contributionRepository.delete(contribution);
 
-        return toResponse(goal);
+        return toResponse(goal, access, userId);
+    }
+
+    // ---------- Who added a contribution (UC9) ----------
+
+    // Contributions saved before sharing existed have no creator; only the owner could add them then
+    private static Long creatorOf(SavingsContribution contribution, Trip trip) {
+        return contribution.getCreatedByUserId() != null
+            ? contribution.getCreatedByUserId()
+            : trip.getUser().getId();
+    }
+
+    private static boolean canDelete(SavingsContribution contribution, TripAccess access, Long userId) {
+        if (access.role() == TripRole.OWNER) {
+            return true;
+        }
+        return access.role() == TripRole.EDITOR && userId.equals(creatorOf(contribution, access.trip()));
     }
 
     // ---------- Budget page overview: every trip with its budget and savings ----------
@@ -184,12 +219,26 @@ public class SavingsService {
         return new Progress(contributed, saved, remaining, percent, requiredMonthly, requiredWeekly, status);
     }
 
-    private SavingsResponse toResponse(SavingsGoal goal) {
+    // Builds the response for the user who asked.
+    // A contribution's bank account ID is only shown if it is one of this user's own accounts,
+    // so members never see each other's banking details.
+    private SavingsResponse toResponse(SavingsGoal goal, TripAccess access, Long userId) {
         Progress p = progress(goal);
+        Set<Long> myAccountIds = bankAccountRepository.findByUserId(userId).stream()
+            .map(BankAccount::getId)
+            .collect(Collectors.toSet());
+
         List<SavingsResponse.Contribution> history = contributionRepository
             .findBySavingsGoalIdOrderByTransactionDateDescIdDesc(goal.getId())
             .stream()
-            .map(c -> new SavingsResponse.Contribution(c.getId(), c.getAmount(), c.getTransactionDate(), c.getDescription(), c.getBankAccountId()))
+            .map(c -> new SavingsResponse.Contribution(
+                c.getId(),
+                c.getAmount(),
+                c.getTransactionDate(),
+                c.getDescription(),
+                myAccountIds.contains(c.getBankAccountId()) ? c.getBankAccountId() : null,
+                userId.equals(creatorOf(c, access.trip())),
+                canDelete(c, access, userId)))
             .toList();
 
         return new SavingsResponse(
