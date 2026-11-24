@@ -35,7 +35,9 @@ import com.tripbudgetplanner.backend.currency.SupportedCurrency;
 import com.tripbudgetplanner.backend.expense.dto.BudgetComparisonResponse;
 import com.tripbudgetplanner.backend.expense.dto.BudgetComparisonResponse.CategoryComparison;
 import com.tripbudgetplanner.backend.trip.Trip;
+import com.tripbudgetplanner.backend.trip.TripAccessService;
 import com.tripbudgetplanner.backend.trip.TripRepository;
+import com.tripbudgetplanner.backend.member.TripMemberRepository;
 import com.tripbudgetplanner.backend.trip.exception.TripNotFoundException;
 
 // UC11: actual expenses vs. the planned budget
@@ -403,7 +405,8 @@ class ExpenseBudgetComparisonTest {
     }
 
     private ExpenseService serviceWith(CurrencyService currencyService) {
-        return new ExpenseService(expenseRepository, tripRepository, budgetRepository, currencyService);
+        return new ExpenseService(expenseRepository,
+            new TripAccessService(tripRepository, mock(TripMemberRepository.class)), budgetRepository, currencyService);
     }
 
     private static CurrencyService fixedRates() {
