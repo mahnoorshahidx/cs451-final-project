@@ -11,11 +11,13 @@ import com.tripbudgetplanner.backend.budget.TripBudget;
 import com.tripbudgetplanner.backend.budget.TripBudgetRepository;
 import com.tripbudgetplanner.backend.currency.SupportedCurrency;
 import com.tripbudgetplanner.backend.expense.ExpenseRepository;
+import com.tripbudgetplanner.backend.member.TripInvitationRepository;
+import com.tripbudgetplanner.backend.member.TripMember;
+import com.tripbudgetplanner.backend.member.TripMemberRepository;
 import com.tripbudgetplanner.backend.savings.SavingsContributionRepository;
 import com.tripbudgetplanner.backend.savings.SavingsGoalRepository;
 import com.tripbudgetplanner.backend.trip.dto.CreateTripRequest;
 import com.tripbudgetplanner.backend.trip.exception.TripCurrencyChangeException;
-import com.tripbudgetplanner.backend.trip.exception.TripNotFoundException;
 import com.tripbudgetplanner.backend.user.User;
 import com.tripbudgetplanner.backend.user.UserRepository;
 
@@ -29,22 +31,32 @@ public class TripService {
     private final SavingsContributionRepository savingsContributionRepository;
     private final TripBudgetRepository tripBudgetRepository;
     private final ExpenseRepository expenseRepository;
+    private final TripAccessService tripAccess;
+    private final TripMemberRepository memberRepository;
+    private final TripInvitationRepository invitationRepository;
 
     // Connects the service to the trip, user, savings, budget and expense repositories.
     // Budget and expense repositories are used to check for money already recorded
     // before a trip's currency can change.
+    // TripAccessService decides who can view, edit or delete a trip (UC9).
     public TripService(TripRepository tripRepository,
                        UserRepository userRepository,
                        SavingsGoalRepository savingsGoalRepository,
                        SavingsContributionRepository savingsContributionRepository,
                        TripBudgetRepository tripBudgetRepository,
-                       ExpenseRepository expenseRepository) {
+                       ExpenseRepository expenseRepository,
+                       TripAccessService tripAccess,
+                       TripMemberRepository memberRepository,
+                       TripInvitationRepository invitationRepository) {
         this.tripRepository = tripRepository;
         this.userRepository = userRepository;
         this.savingsGoalRepository = savingsGoalRepository;
         this.savingsContributionRepository = savingsContributionRepository;
         this.tripBudgetRepository = tripBudgetRepository;
         this.expenseRepository = expenseRepository;
+        this.tripAccess = tripAccess;
+        this.memberRepository = memberRepository;
+        this.invitationRepository = invitationRepository;
     }
 
     // Validates the trip information and saves a new trip
@@ -86,10 +98,15 @@ public class TripService {
         return tripRepository.findByUserIdOrderByStartDateAsc(userId);
     }
 
-    // Finds one trip, but only if it belongs to this user
+    // Trips other people shared with this user (UC9), newest first
+    public List<TripMember> listSharedTrips(Long userId) {
+        return memberRepository.findByUserIdOrderByJoinedAtDesc(userId);
+    }
+
+    // Finds one trip the user can view: their own, or one shared with them.
+    // 404 if they have no access.
     public Trip getTrip(Long tripId, Long userId) {
-        return tripRepository.findByIdAndUserId(tripId, userId)
-            .orElseThrow(TripNotFoundException::new);
+        return tripAccess.viewableTrip(tripId, userId);
     }
 
     // Updates the trip's details (UC10)
@@ -107,7 +124,8 @@ public class TripService {
             ? SupportedCurrency.fromCode(request.getCurrency()).name()
             : null;
 
-        Trip trip = getTrip(tripId, userId);
+        // Owner or editor (403 for viewers)
+        Trip trip = tripAccess.editableTrip(tripId, userId);
 
         // Only a real change needs the money check. An empty currency keeps the
         // current one (the Edit Trip page doesn't send it), and sending the same
@@ -182,10 +200,15 @@ public class TripService {
         return value != null && !value.isBlank();
     }
 
-    // Deletes the trip (UC12)
+    // Deletes the trip (UC12). Only the owner can delete (403 for editors and viewers).
     @Transactional
     public void deleteTrip(Long tripId, Long userId) {
-        Trip trip = getTrip(tripId, userId);
+        Trip trip = tripAccess.ownedTrip(tripId, userId);
+
+        // Remove members and invitations first. The database also cascades these,
+        // but this works even if the tables were created without the cascade.
+        memberRepository.deleteByTripId(tripId);
+        invitationRepository.deleteByTripId(tripId);
 
         // The database doesn't cascade savings rows, so remove them first
         savingsGoalRepository.findByTripId(tripId).ifPresent(goal -> {
