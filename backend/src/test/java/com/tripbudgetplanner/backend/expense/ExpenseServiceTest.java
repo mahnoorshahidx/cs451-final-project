@@ -20,7 +20,9 @@ import com.tripbudgetplanner.backend.currency.CurrencyService;
 import com.tripbudgetplanner.backend.currency.FixedExchangeRateProvider;
 import com.tripbudgetplanner.backend.expense.dto.ExpenseRequest;
 import com.tripbudgetplanner.backend.trip.Trip;
+import com.tripbudgetplanner.backend.trip.TripAccessService;
 import com.tripbudgetplanner.backend.trip.TripRepository;
+import com.tripbudgetplanner.backend.member.TripMemberRepository;
 
 class ExpenseServiceTest {
 
@@ -41,7 +43,8 @@ class ExpenseServiceTest {
         // The budget repository and currency service are only used by the
         // budget comparison, which has its own test class.
         service = new ExpenseService(
-            expenseRepository, tripRepository,
+            expenseRepository,
+            new TripAccessService(tripRepository, mock(TripMemberRepository.class)),
             mock(TripBudgetRepository.class),
             new CurrencyService(new FixedExchangeRateProvider(), new FixedExchangeRateProvider(), "fixed", 60)
         );
