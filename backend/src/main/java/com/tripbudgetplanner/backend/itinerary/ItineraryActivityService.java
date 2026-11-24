@@ -11,29 +11,29 @@ import org.springframework.web.server.ResponseStatusException;
 import com.tripbudgetplanner.backend.itinerary.dto.ItineraryActivityRequest;
 import com.tripbudgetplanner.backend.itinerary.dto.ItineraryActivityResponse;
 import com.tripbudgetplanner.backend.trip.Trip;
-import com.tripbudgetplanner.backend.trip.TripService;
+import com.tripbudgetplanner.backend.trip.TripAccessService;
 
 @Service
 @Transactional(readOnly = true)
 public class ItineraryActivityService {
 
     private final ItineraryActivityRepository activityRepository;
-    private final TripService tripService;
+    private final TripAccessService tripAccess;
 
     public ItineraryActivityService(
             ItineraryActivityRepository activityRepository,
-            TripService tripService) {
+            TripAccessService tripAccess) {
 
         this.activityRepository = activityRepository;
-        this.tripService = tripService;
+        this.tripAccess = tripAccess;
     }
 
     // Retrieve all activities for a trip.
     public List<ItineraryActivityResponse> listActivities(
             Long tripId, Long userId) {
 
-        // Verify that the logged-in user owns the trip.
-        tripService.getTrip(tripId, userId);
+        // Any trip member can view the itinerary.
+        tripAccess.viewableTrip(tripId, userId);
 
         return activityRepository
                 .findByTripIdOrderByActivityDateAscStartTimeAsc(tripId)
@@ -49,7 +49,8 @@ public class ItineraryActivityService {
             ItineraryActivityRequest request,
             Long userId) {
 
-        Trip trip = tripService.getTrip(tripId, userId);
+        // Owner or editor (403 for viewers)
+        Trip trip = tripAccess.editableTrip(tripId, userId);
 
         validateActivity(request, trip);
 
@@ -69,7 +70,8 @@ public class ItineraryActivityService {
             ItineraryActivityRequest request,
             Long userId) {
 
-        Trip trip = tripService.getTrip(tripId, userId);
+        // Owner or editor (403 for viewers)
+        Trip trip = tripAccess.editableTrip(tripId, userId);
 
         ItineraryActivity activity = findActivity(
                 activityId, tripId);
@@ -88,7 +90,8 @@ public class ItineraryActivityService {
             Long activityId,
             Long userId) {
 
-        tripService.getTrip(tripId, userId);
+        // Owner or editor (403 for viewers)
+        tripAccess.editableTrip(tripId, userId);
 
         ItineraryActivity activity = findActivity(
                 activityId, tripId);
