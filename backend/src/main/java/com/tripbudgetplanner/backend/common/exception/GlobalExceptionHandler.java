@@ -13,6 +13,11 @@ import com.tripbudgetplanner.backend.auth.exception.EmailAlreadyExistsException;
 import com.tripbudgetplanner.backend.auth.exception.InvalidCredentialsException;
 import com.tripbudgetplanner.backend.bank.exception.BankAccountAlreadyConnectedException;
 import com.tripbudgetplanner.backend.bank.exception.BankAccountNotFoundException;
+import com.tripbudgetplanner.backend.member.exception.InvitationCooldownException;
+import com.tripbudgetplanner.backend.member.exception.InvitationGoneException;
+import com.tripbudgetplanner.backend.member.exception.SharingConflictException;
+import com.tripbudgetplanner.backend.member.exception.SharingNotFoundException;
+import com.tripbudgetplanner.backend.trip.exception.TripAccessDeniedException;
 import com.tripbudgetplanner.backend.trip.exception.TripCurrencyChangeException;
 import com.tripbudgetplanner.backend.trip.exception.TripNotFoundException;
 
@@ -52,6 +57,40 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TripCurrencyChangeException.class)
     public ResponseEntity<Map<String, String>> handleCurrencyChange(TripCurrencyChangeException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", ex.getMessage()));
+    }
+
+    // ---------- UC9: shared trips ----------
+
+    // 403: the user can see the trip, but their role doesn't allow this
+    @ExceptionHandler(TripAccessDeniedException.class)
+    public ResponseEntity<Map<String, String>> handleTripAccessDenied(TripAccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", ex.getMessage()));
+    }
+
+    // 404: member or invitation not found
+    @ExceptionHandler(SharingNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleSharingNotFound(SharingNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
+    }
+
+    // 409: duplicate member or invitation, or the owner can't be changed
+    @ExceptionHandler(SharingConflictException.class)
+    public ResponseEntity<Map<String, String>> handleSharingConflict(SharingConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", ex.getMessage()));
+    }
+
+    // 410: the invitation expired, was revoked or declined, or was already used
+    @ExceptionHandler(InvitationGoneException.class)
+    public ResponseEntity<Map<String, String>> handleInvitationGone(InvitationGoneException ex) {
+        return ResponseEntity.status(HttpStatus.GONE).body(Map.of("message", ex.getMessage()));
+    }
+
+    // 429: resend cooldown. Also sets the standard Retry-After header.
+    @ExceptionHandler(InvitationCooldownException.class)
+    public ResponseEntity<Map<String, Object>> handleInvitationCooldown(InvitationCooldownException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+            .header("Retry-After", String.valueOf(ex.getRetryAfterSeconds()))
+            .body(Map.of("message", ex.getMessage(), "retryAfterSeconds", ex.getRetryAfterSeconds()));
     }
 
     @ExceptionHandler(TripNotFoundException.class)
