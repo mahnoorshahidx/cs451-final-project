@@ -91,9 +91,12 @@ CREATE TABLE IF NOT EXISTS transactions (
     amount DECIMAL(12,2) NOT NULL,
     transaction_date DATE NOT NULL,
     description VARCHAR(255),
+    -- UC9: who added the contribution (editors can delete only their own). NULL = the trip owner.
+    created_by_user_id BIGINT NULL,
     CONSTRAINT chk_transaction_amount CHECK (amount > 0),
     CONSTRAINT fk_transactions_goal FOREIGN KEY (savings_goal_id) REFERENCES savings_goals (id),
-    CONSTRAINT fk_transactions_account FOREIGN KEY (bank_account_id) REFERENCES bank_accounts (id)
+    CONSTRAINT fk_transactions_account FOREIGN KEY (bank_account_id) REFERENCES bank_accounts (id),
+    CONSTRAINT fk_transactions_created_by FOREIGN KEY (created_by_user_id) REFERENCES users (id) ON DELETE SET NULL
 );
 
 -- Trip budget (UC4): one budget per trip, plus its per-category amounts.
@@ -152,4 +155,55 @@ CREATE TABLE IF NOT EXISTS itinerary_activities (
     CONSTRAINT fk_itinerary_activities_trip
         FOREIGN KEY (trip_id) REFERENCES trips(id)
         ON DELETE CASCADE
+);
+
+
+-- UC9: people who joined someone else's trip.
+-- The trip owner is always trips.user_id and is never stored here,
+-- so members can only be EDITOR or VIEWER.
+CREATE TABLE IF NOT EXISTS trip_members (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    trip_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    role VARCHAR(10) NOT NULL,
+    joined_at DATETIME(6) NOT NULL,
+    invited_by_user_id BIGINT NULL,
+    -- One membership per user per trip
+    CONSTRAINT uq_trip_members_trip_user UNIQUE (trip_id, user_id),
+    CONSTRAINT chk_trip_members_role CHECK (role IN ('EDITOR', 'VIEWER')),
+    CONSTRAINT fk_trip_members_trip FOREIGN KEY (trip_id) REFERENCES trips (id) ON DELETE CASCADE,
+    CONSTRAINT fk_trip_members_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_trip_members_inviter FOREIGN KEY (invited_by_user_id) REFERENCES users (id) ON DELETE SET NULL,
+    -- Fast lookup of "trips shared with me"
+    INDEX idx_trip_members_user (user_id)
+);
+
+-- UC9: invitations to join a trip.
+-- invited_email NULL = a single-use shareable link.
+-- Only a SHA-256 hash of the invitation token is stored.
+CREATE TABLE IF NOT EXISTS trip_invitations (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    trip_id BIGINT NOT NULL,
+    token_hash CHAR(64) NOT NULL,
+    invited_email VARCHAR(255) NULL,
+    role VARCHAR(10) NOT NULL,
+    status VARCHAR(10) NOT NULL DEFAULT 'PENDING',
+    invited_by_user_id BIGINT NOT NULL,
+    accepted_by_user_id BIGINT NULL,
+    created_at DATETIME(6) NOT NULL,
+    last_sent_at DATETIME(6) NOT NULL,
+    expires_at DATETIME(6) NOT NULL,
+    responded_at DATETIME(6) NULL,
+    -- Filled only while PENDING, so the unique key below allows one active
+    -- invitation per email per trip (expired or answered ones don't count)
+    pending_email VARCHAR(255) GENERATED ALWAYS AS (IF(status = 'PENDING', invited_email, NULL)) STORED,
+    CONSTRAINT uq_trip_invitations_token UNIQUE (token_hash),
+    CONSTRAINT uq_trip_invitations_pending_email UNIQUE (trip_id, pending_email),
+    CONSTRAINT chk_trip_invitations_role CHECK (role IN ('EDITOR', 'VIEWER')),
+    CONSTRAINT chk_trip_invitations_status CHECK (status IN ('PENDING', 'ACCEPTED', 'DECLINED', 'REVOKED', 'EXPIRED')),
+    CONSTRAINT fk_trip_invitations_trip FOREIGN KEY (trip_id) REFERENCES trips (id) ON DELETE CASCADE,
+    CONSTRAINT fk_trip_invitations_inviter FOREIGN KEY (invited_by_user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_trip_invitations_accepter FOREIGN KEY (accepted_by_user_id) REFERENCES users (id) ON DELETE SET NULL,
+    INDEX idx_trip_invitations_email_status (invited_email, status),
+    INDEX idx_trip_invitations_trip_status (trip_id, status)
 );
