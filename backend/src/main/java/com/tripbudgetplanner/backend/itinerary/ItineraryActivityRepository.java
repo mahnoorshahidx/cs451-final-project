@@ -29,6 +29,9 @@ public interface ItineraryActivityRepository
     // UC6: does any activity have a cost? (used by the trip currency protection)
     boolean existsByTripIdAndEstimatedCostIsNotNull(Long tripId);
 
+    // Deletes all of a trip's activities, including search results (used when the trip is deleted, UC12)
+    void deleteByTripId(Long tripId);
+
     // Find a specific activity belonging to a specific trip.
     Optional<ItineraryActivity> findByIdAndTripId(
         Long id,
