@@ -1,6 +1,8 @@
 
 package com.tripbudgetplanner.backend.itinerary;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.tripbudgetplanner.backend.currency.SupportedCurrency;
 import com.tripbudgetplanner.backend.itinerary.dto.ItineraryActivityRequest;
 import com.tripbudgetplanner.backend.itinerary.dto.ItineraryActivityResponse;
 import com.tripbudgetplanner.backend.trip.Trip;
@@ -38,7 +41,7 @@ public class ItineraryActivityService {
         return activityRepository
                 .findByTripIdOrderByActivityDateAscStartTimeAsc(tripId)
                 .stream()
-                .map(this::toResponse)
+                .map(ItineraryActivityService::toResponse)
                 .toList();
     }
 
@@ -57,7 +60,7 @@ public class ItineraryActivityService {
         ItineraryActivity activity = new ItineraryActivity();
         activity.setTrip(trip);
 
-        applyRequest(activity, request);
+        applyRequest(activity, request, trip);
 
         return toResponse(activityRepository.save(activity));
     }
@@ -78,12 +81,13 @@ public class ItineraryActivityService {
 
         validateActivity(request, trip);
 
-        applyRequest(activity, request);
+        applyRequest(activity, request, trip);
 
         return toResponse(activityRepository.save(activity));
     }
 
     // Delete an activity.
+    // Note (UC6): if this activity's cost was added to the budget, the budget is NOT reduced.
     @Transactional
     public void deleteActivity(
             Long tripId,
@@ -147,7 +151,8 @@ public class ItineraryActivityService {
     // Copy request information into the database entity.
     private void applyRequest(
             ItineraryActivity activity,
-            ItineraryActivityRequest request) {
+            ItineraryActivityRequest request,
+            Trip trip) {
 
         activity.setActivityDate(request.activityDate());
         activity.setTitle(request.title().trim());
@@ -156,10 +161,26 @@ public class ItineraryActivityService {
         activity.setCategory(request.category().trim());
         activity.setLocation(request.location());
         activity.setNotes(request.notes());
+
+        // A cost is saved in the trip's currency. Leaving it out keeps the saved cost.
+        if (request.estimatedCost() != null) {
+            SupportedCurrency currency = SupportedCurrency.fromCode(trip.getCurrency());
+            activity.setEstimatedCost(costInTripCurrency(request.estimatedCost(), currency), currency.name());
+        }
+    }
+
+    // JPY and KRW have no decimals, so 1500.50 JPY is rejected
+    private static BigDecimal costInTripCurrency(BigDecimal cost, SupportedCurrency currency) {
+        if (cost.stripTrailingZeros().scale() > currency.getDecimalPlaces()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                currency + " amounts can have at most " + currency.getDecimalPlaces() + " decimal places");
+        }
+        return cost.setScale(currency.getDecimalPlaces(), RoundingMode.UNNECESSARY);
     }
 
     // Convert an entity into a response for the frontend.
-    private ItineraryActivityResponse toResponse(
+    // Public so the travel search feature (UC6) returns activities in the same shape.
+    public static ItineraryActivityResponse toResponse(
             ItineraryActivity activity) {
 
         return new ItineraryActivityResponse(
@@ -171,7 +192,14 @@ public class ItineraryActivityService {
                 activity.getEndTime(),
                 activity.getCategory(),
                 activity.getLocation(),
-                activity.getNotes()
+                activity.getNotes(),
+                activity.getEstimatedCost(),
+                activity.getCostCurrency(),
+                activity.getSourceType(),
+                activity.getSourceProvider(),
+                activity.getSourceSegment(),
+                activity.getBudgetAmountAdded(),
+                activity.getBudgetAmountCurrency()
         );
     }
 }
