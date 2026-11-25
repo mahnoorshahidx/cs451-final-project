@@ -43,6 +43,7 @@ public class TripBudgetController {
             b.getTotalAmount(),
             b.getCurrency(),
             TripBudgetService.totalAllocated(b),
-            new LinkedHashMap<>(b.getAllocations()));
+            new LinkedHashMap<>(b.getAllocations()),
+            b.getVersion());
     }
 }
