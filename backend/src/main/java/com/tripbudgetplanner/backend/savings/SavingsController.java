@@ -1,6 +1,7 @@
 package com.tripbudgetplanner.backend.savings;
 
 import com.tripbudgetplanner.backend.savings.dto.BudgetOverviewItem;
+import com.tripbudgetplanner.backend.savings.dto.ContributionHistoryResponse;
 import com.tripbudgetplanner.backend.savings.dto.ContributionRequest;
 import com.tripbudgetplanner.backend.savings.dto.SavingsGoalRequest;
 import com.tripbudgetplanner.backend.savings.dto.SavingsResponse;
@@ -42,6 +43,18 @@ public class SavingsController {
                                     @Valid @RequestBody SavingsGoalRequest request,
                                     @AuthenticationPrincipal Long userId) {
         return savingsService.saveGoal(tripId, request, userId);
+    }
+
+    // UC7: the contribution history, optionally filtered. All parameters are optional:
+    //   ?from=2027-01-01&to=2027-03-31&bankAccountId=5
+    // 400 for a bad date or from after to; 404 if bankAccountId isn't one of your own accounts.
+    @GetMapping("/api/trips/{tripId}/savings/contributions")
+    public ContributionHistoryResponse contributionHistory(@PathVariable Long tripId,
+                                                           @RequestParam(required = false) String from,
+                                                           @RequestParam(required = false) String to,
+                                                           @RequestParam(required = false) String bankAccountId,
+                                                           @AuthenticationPrincipal Long userId) {
+        return savingsService.contributionHistory(tripId, from, to, bankAccountId, userId);
     }
 
     @PostMapping("/api/trips/{tripId}/savings/contributions")
