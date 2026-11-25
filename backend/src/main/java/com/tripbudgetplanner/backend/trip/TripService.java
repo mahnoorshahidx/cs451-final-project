@@ -16,6 +16,7 @@ import com.tripbudgetplanner.backend.itinerary.ItineraryActivityRepository;
 import com.tripbudgetplanner.backend.member.TripInvitationRepository;
 import com.tripbudgetplanner.backend.member.TripMember;
 import com.tripbudgetplanner.backend.member.TripMemberRepository;
+import com.tripbudgetplanner.backend.notification.NotificationRepository;
 import com.tripbudgetplanner.backend.savings.SavingsContributionRepository;
 import com.tripbudgetplanner.backend.savings.SavingsGoalRepository;
 import com.tripbudgetplanner.backend.trip.dto.CreateTripRequest;
@@ -37,12 +38,14 @@ public class TripService {
     private final TripMemberRepository memberRepository;
     private final TripInvitationRepository invitationRepository;
     private final ItineraryActivityRepository activityRepository;
+    private final NotificationRepository notificationRepository;
 
     // Connects the service to the trip, user, savings, budget and expense repositories.
     // Budget and expense repositories are used to check for money already recorded
     // before a trip's currency can change.
     // TripAccessService decides who can view, edit or delete a trip (UC9).
     // ItineraryActivityRepository is used to protect itinerary cost estimates (UC6).
+    // NotificationRepository is used to remove a trip's reminders when it is deleted (UC12).
     @Autowired
     public TripService(TripRepository tripRepository,
                        UserRepository userRepository,
@@ -53,7 +56,8 @@ public class TripService {
                        TripAccessService tripAccess,
                        TripMemberRepository memberRepository,
                        TripInvitationRepository invitationRepository,
-                       ItineraryActivityRepository activityRepository) {
+                       ItineraryActivityRepository activityRepository,
+                       NotificationRepository notificationRepository) {
         this.tripRepository = tripRepository;
         this.userRepository = userRepository;
         this.savingsGoalRepository = savingsGoalRepository;
@@ -64,6 +68,23 @@ public class TripService {
         this.memberRepository = memberRepository;
         this.invitationRepository = invitationRepository;
         this.activityRepository = activityRepository;
+        this.notificationRepository = notificationRepository;
+    }
+
+    // The constructor from before UC12, kept for existing tests (no notification cleanup)
+    public TripService(TripRepository tripRepository,
+                       UserRepository userRepository,
+                       SavingsGoalRepository savingsGoalRepository,
+                       SavingsContributionRepository savingsContributionRepository,
+                       TripBudgetRepository tripBudgetRepository,
+                       ExpenseRepository expenseRepository,
+                       TripAccessService tripAccess,
+                       TripMemberRepository memberRepository,
+                       TripInvitationRepository invitationRepository,
+                       ItineraryActivityRepository activityRepository) {
+        this(tripRepository, userRepository, savingsGoalRepository, savingsContributionRepository,
+            tripBudgetRepository, expenseRepository, tripAccess, memberRepository, invitationRepository,
+            activityRepository, null);
     }
 
     // The constructor from before UC6, kept for existing tests (no itinerary cost check)
@@ -231,21 +252,49 @@ public class TripService {
         return value != null && !value.isBlank();
     }
 
-    // Deletes the trip (UC12). Only the owner can delete (403 for editors and viewers).
+    // Deletes the trip and everything that belongs to it (UC12).
+    // Only the owner can delete (403 for editors and viewers, 404 without access).
+    //
+    // Everything runs in one transaction: if any step fails, nothing is deleted.
+    // The database also cascades these rows (database/updates/2026-11-27-trip-delete-cascade.sql),
+    // but deleting them here means it works even on a database that hasn't been updated yet.
+    // Users, bank accounts and other trips are never touched.
     @Transactional
     public void deleteTrip(Long tripId, Long userId) {
+        // Lock the trip row first (SELECT ... FOR UPDATE). Anything being added to this trip
+        // at the same moment (an expense, a contribution, a search result) waits for us, and
+        // a second delete of the same trip waits and then gets a 404 instead of an error.
+        // Locking before the ownership check also means the check sees the latest data.
+        if (tripBudgetRepository != null) {
+            tripBudgetRepository.lockTrip(tripId);
+        }
         Trip trip = tripAccess.ownedTrip(tripId, userId);
 
-        // Remove members and invitations first. The database also cascades these,
-        // but this works even if the tables were created without the cascade.
-        memberRepository.deleteByTripId(tripId);
-        invitationRepository.deleteByTripId(tripId);
-
-        // The database doesn't cascade savings rows, so remove them first
+        // Savings: contributions first, then the goal they belong to.
+        // Bank accounts stay; only the contribution records go.
         savingsGoalRepository.findByTripId(tripId).ifPresent(goal -> {
             savingsContributionRepository.deleteBySavingsGoalId(goal.getId());
             savingsGoalRepository.delete(goal);
         });
+
+        if (expenseRepository != null) {
+            expenseRepository.deleteByTripId(tripId);
+        }
+        if (notificationRepository != null) {
+            notificationRepository.deleteByTripId(tripId);
+        }
+        // Itinerary activities, including UC6 search results and their cost estimates
+        if (activityRepository != null) {
+            activityRepository.deleteByTripId(tripId);
+        }
+        // The budget and its category allocations
+        if (tripBudgetRepository != null) {
+            tripBudgetRepository.findByTripId(tripId).ifPresent(tripBudgetRepository::delete);
+        }
+
+        // Members and invitations (UC9)
+        memberRepository.deleteByTripId(tripId);
+        invitationRepository.deleteByTripId(tripId);
 
         tripRepository.delete(trip);
     }
