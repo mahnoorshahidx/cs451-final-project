@@ -19,5 +19,16 @@ public record BudgetRequest(
 
     @NotNull(message = "Allocations are required")
     Map<@NotBlank @Size(max = 50) String,
-        @NotNull @DecimalMin(value = "0", message = "Amounts cannot be negative") BigDecimal> allocations
-) {}
+        @NotNull @DecimalMin(value = "0", message = "Amounts cannot be negative") BigDecimal> allocations,
+
+    // Optional (UC6): the budget version the page loaded. If someone changed the budget
+    // since then, the save is refused with 409 instead of overwriting their change.
+    @PositiveOrZero(message = "Version cannot be negative")
+    Long version
+) {
+
+    // The original form without a version (kept for existing code and tests)
+    public BudgetRequest(BigDecimal totalBudget, String currency, Map<String, BigDecimal> allocations) {
+        this(totalBudget, currency, allocations, null);
+    }
+}
