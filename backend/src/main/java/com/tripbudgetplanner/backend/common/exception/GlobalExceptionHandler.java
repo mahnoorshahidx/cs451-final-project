@@ -13,7 +13,11 @@ import com.tripbudgetplanner.backend.auth.exception.EmailAlreadyExistsException;
 import com.tripbudgetplanner.backend.auth.exception.InvalidCredentialsException;
 import com.tripbudgetplanner.backend.bank.exception.BankAccountAlreadyConnectedException;
 import com.tripbudgetplanner.backend.bank.exception.BankAccountNotFoundException;
+import com.tripbudgetplanner.backend.budget.exception.BudgetConflictException;
 import com.tripbudgetplanner.backend.member.exception.InvitationCooldownException;
+import com.tripbudgetplanner.backend.search.exception.DuplicateTripItemException;
+import com.tripbudgetplanner.backend.search.exception.SearchItemMismatchException;
+import com.tripbudgetplanner.backend.search.exception.SearchItemNotFoundException;
 import com.tripbudgetplanner.backend.member.exception.InvitationGoneException;
 import com.tripbudgetplanner.backend.member.exception.SharingConflictException;
 import com.tripbudgetplanner.backend.member.exception.SharingNotFoundException;
@@ -91,6 +95,32 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
             .header("Retry-After", String.valueOf(ex.getRetryAfterSeconds()))
             .body(Map.of("message", ex.getMessage(), "retryAfterSeconds", ex.getRetryAfterSeconds()));
+    }
+
+    // ---------- UC6: travel search ----------
+
+    // 404: the search result ID is unknown or no longer available
+    @ExceptionHandler(SearchItemNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleSearchItemNotFound(SearchItemNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
+    }
+
+    // 400: the search result doesn't match the trip
+    @ExceptionHandler(SearchItemMismatchException.class)
+    public ResponseEntity<Map<String, String>> handleSearchItemMismatch(SearchItemMismatchException ex) {
+        return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
+    }
+
+    // 409: the item is already in the itinerary
+    @ExceptionHandler(DuplicateTripItemException.class)
+    public ResponseEntity<Map<String, String>> handleDuplicateTripItem(DuplicateTripItemException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", ex.getMessage()));
+    }
+
+    // 409: the budget was changed by someone else, or its currency can't be converted
+    @ExceptionHandler(BudgetConflictException.class)
+    public ResponseEntity<Map<String, String>> handleBudgetConflict(BudgetConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", ex.getMessage()));
     }
 
     @ExceptionHandler(TripNotFoundException.class)
