@@ -8,5 +8,7 @@ public record BudgetResponse(
     BigDecimal totalBudget,
     String currency,
     BigDecimal totalAllocated,
-    Map<String, BigDecimal> allocations
+    Map<String, BigDecimal> allocations,
+    // UC6: send this back as "version" when saving to avoid overwriting someone else's change
+    long version
 ) {}
