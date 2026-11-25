@@ -15,4 +15,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     // True if the trip has at least one expense (a quick check, doesn't load the expenses).
     boolean existsByTripId(Long tripId);
+
+    // Deletes all of a trip's expenses (used when the trip is deleted, UC12)
+    void deleteByTripId(Long tripId);
 }
