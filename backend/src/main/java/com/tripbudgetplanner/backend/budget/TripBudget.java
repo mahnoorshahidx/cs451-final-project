@@ -35,6 +35,11 @@ public class TripBudget {
     @Column(name = "amount", nullable = false, precision = 12, scale = 2)
     private Map<String, BigDecimal> allocations = new LinkedHashMap<>();
 
+    // Goes up by one on every change (UC6). A client can send the version it loaded,
+    // and the save is refused if someone else changed the budget in the meantime.
+    @Column(nullable = false, columnDefinition = "BIGINT NOT NULL DEFAULT 0")
+    private long version;
+
     protected TripBudget() {}
 
     public TripBudget(Long tripId) {
@@ -55,4 +60,6 @@ public class TripBudget {
     public void setCurrency(String currency) { this.currency = currency; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public Map<String, BigDecimal> getAllocations() { return allocations; }
+    public long getVersion() { return version; }
+    public void nextVersion() { version++; }
 }
