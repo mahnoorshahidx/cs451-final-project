@@ -108,6 +108,8 @@ CREATE TABLE IF NOT EXISTS trip_budgets (
     total_amount DECIMAL(12, 2) NOT NULL,
     currency CHAR(3) NOT NULL,
     updated_at DATETIME(6) NOT NULL,
+    -- UC6: goes up by one on every change (lets a page detect someone else's newer save)
+    version BIGINT NOT NULL DEFAULT 0,
     CONSTRAINT fk_trip_budgets_trip
         FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
 );
@@ -152,9 +154,30 @@ CREATE TABLE IF NOT EXISTS itinerary_activities (
     location VARCHAR(255),
     notes TEXT,
 
+    -- UC6: optional estimated cost for the whole group, in cost_currency (the trip's currency)
+    estimated_cost DECIMAL(12, 2) NULL,
+    cost_currency CHAR(3) NULL,
+    -- UC6: set when the activity was added from a search result (NULL for manual and AI activities)
+    source_type VARCHAR(20) NULL,
+    source_provider VARCHAR(30) NULL,
+    source_item_id VARCHAR(120) NULL,
+    -- MAIN, or OUTBOUND / RETURN for the two entries of a round-trip flight
+    source_segment VARCHAR(10) NULL,
+    -- UC6: what updateBudget=true added to the budget, in the budget's currency
+    budget_amount_added DECIMAL(12, 2) NULL,
+    budget_amount_currency CHAR(3) NULL,
+
     CONSTRAINT fk_itinerary_activities_trip
         FOREIGN KEY (trip_id) REFERENCES trips(id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT chk_itinerary_estimated_cost CHECK (estimated_cost IS NULL OR estimated_cost >= 0),
+    CONSTRAINT chk_itinerary_cost_currency CHECK ((estimated_cost IS NULL) = (cost_currency IS NULL)),
+    CONSTRAINT chk_itinerary_budget_amount CHECK (budget_amount_added IS NULL OR budget_amount_added >= 0),
+    CONSTRAINT chk_itinerary_budget_currency CHECK ((budget_amount_added IS NULL) = (budget_amount_currency IS NULL)),
+    CONSTRAINT chk_itinerary_source_type CHECK (source_type IS NULL OR source_type IN ('FLIGHT', 'HOTEL', 'RESTAURANT', 'ACTIVITY')),
+    CONSTRAINT chk_itinerary_source_segment CHECK (source_segment IS NULL OR source_segment IN ('MAIN', 'OUTBOUND', 'RETURN')),
+    -- Each search result (and flight leg) can be added to a trip only once
+    CONSTRAINT uq_itinerary_source_item UNIQUE (trip_id, source_provider, source_item_id, source_segment)
 );
 
 
