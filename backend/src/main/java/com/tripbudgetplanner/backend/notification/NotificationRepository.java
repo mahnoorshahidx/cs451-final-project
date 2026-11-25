@@ -16,4 +16,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     // Checks whether a reminder already exists for a trip
     boolean existsByTripIdAndType(Long tripId, String type);
+
+    // Deletes all of a trip's notifications (used when the trip is deleted, UC12)
+    void deleteByTripId(Long tripId);
 }
