@@ -66,7 +66,8 @@ CREATE TABLE IF NOT EXISTS savings_goals (
         target_amount >= 0 AND initial_saved_amount >= 0
         AND (planned_monthly_contribution IS NULL OR planned_monthly_contribution >= 0)
     ),
-    CONSTRAINT fk_savings_goals_trip FOREIGN KEY (trip_id) REFERENCES trips (id)
+    -- UC12: deleting a trip deletes its savings goal
+    CONSTRAINT fk_savings_goals_trip FOREIGN KEY (trip_id) REFERENCES trips (id) ON DELETE CASCADE
 );
 
 -- TODO #1: A trip may have multiple actual expenses.
@@ -78,7 +79,8 @@ CREATE TABLE IF NOT EXISTS expenses (
     expense_date DATE NOT NULL,
     description VARCHAR(255),
     CONSTRAINT chk_expense_amount CHECK (amount > 0),
-    CONSTRAINT fk_expenses_trip FOREIGN KEY (trip_id) REFERENCES trips (id)
+    -- UC12: deleting a trip deletes its expenses
+    CONSTRAINT fk_expenses_trip FOREIGN KEY (trip_id) REFERENCES trips (id) ON DELETE CASCADE
 );
 
 -- TODO #1: Simulated savings contributions; not actual bank transfers.
@@ -94,7 +96,8 @@ CREATE TABLE IF NOT EXISTS transactions (
     -- UC9: who added the contribution (editors can delete only their own). NULL = the trip owner.
     created_by_user_id BIGINT NULL,
     CONSTRAINT chk_transaction_amount CHECK (amount > 0),
-    CONSTRAINT fk_transactions_goal FOREIGN KEY (savings_goal_id) REFERENCES savings_goals (id),
+    -- UC12: deleting a savings goal deletes its contributions (bank accounts are never deleted)
+    CONSTRAINT fk_transactions_goal FOREIGN KEY (savings_goal_id) REFERENCES savings_goals (id) ON DELETE CASCADE,
     CONSTRAINT fk_transactions_account FOREIGN KEY (bank_account_id) REFERENCES bank_accounts (id),
     CONSTRAINT fk_transactions_created_by FOREIGN KEY (created_by_user_id) REFERENCES users (id) ON DELETE SET NULL
 );
@@ -137,8 +140,9 @@ CREATE TABLE IF NOT EXISTS notifications (
         UNIQUE (trip_id, type),
     CONSTRAINT fk_notifications_user
         FOREIGN KEY (user_id) REFERENCES users(id),
+    -- UC12: deleting a trip deletes its notifications
     CONSTRAINT fk_notifications_trip
-        FOREIGN KEY (trip_id) REFERENCES trips(id)
+        FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
 );
 
 -- Stores scheduled activities for each trip.
