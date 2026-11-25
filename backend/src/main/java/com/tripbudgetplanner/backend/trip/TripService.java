@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +12,7 @@ import com.tripbudgetplanner.backend.budget.TripBudget;
 import com.tripbudgetplanner.backend.budget.TripBudgetRepository;
 import com.tripbudgetplanner.backend.currency.SupportedCurrency;
 import com.tripbudgetplanner.backend.expense.ExpenseRepository;
+import com.tripbudgetplanner.backend.itinerary.ItineraryActivityRepository;
 import com.tripbudgetplanner.backend.member.TripInvitationRepository;
 import com.tripbudgetplanner.backend.member.TripMember;
 import com.tripbudgetplanner.backend.member.TripMemberRepository;
@@ -34,11 +36,14 @@ public class TripService {
     private final TripAccessService tripAccess;
     private final TripMemberRepository memberRepository;
     private final TripInvitationRepository invitationRepository;
+    private final ItineraryActivityRepository activityRepository;
 
     // Connects the service to the trip, user, savings, budget and expense repositories.
     // Budget and expense repositories are used to check for money already recorded
     // before a trip's currency can change.
     // TripAccessService decides who can view, edit or delete a trip (UC9).
+    // ItineraryActivityRepository is used to protect itinerary cost estimates (UC6).
+    @Autowired
     public TripService(TripRepository tripRepository,
                        UserRepository userRepository,
                        SavingsGoalRepository savingsGoalRepository,
@@ -47,7 +52,8 @@ public class TripService {
                        ExpenseRepository expenseRepository,
                        TripAccessService tripAccess,
                        TripMemberRepository memberRepository,
-                       TripInvitationRepository invitationRepository) {
+                       TripInvitationRepository invitationRepository,
+                       ItineraryActivityRepository activityRepository) {
         this.tripRepository = tripRepository;
         this.userRepository = userRepository;
         this.savingsGoalRepository = savingsGoalRepository;
@@ -57,6 +63,21 @@ public class TripService {
         this.tripAccess = tripAccess;
         this.memberRepository = memberRepository;
         this.invitationRepository = invitationRepository;
+        this.activityRepository = activityRepository;
+    }
+
+    // The constructor from before UC6, kept for existing tests (no itinerary cost check)
+    public TripService(TripRepository tripRepository,
+                       UserRepository userRepository,
+                       SavingsGoalRepository savingsGoalRepository,
+                       SavingsContributionRepository savingsContributionRepository,
+                       TripBudgetRepository tripBudgetRepository,
+                       ExpenseRepository expenseRepository,
+                       TripAccessService tripAccess,
+                       TripMemberRepository memberRepository,
+                       TripInvitationRepository invitationRepository) {
+        this(tripRepository, userRepository, savingsGoalRepository, savingsContributionRepository,
+            tripBudgetRepository, expenseRepository, tripAccess, memberRepository, invitationRepository, null);
     }
 
     // Validates the trip information and saves a new trip
@@ -110,6 +131,7 @@ public class TripService {
     }
 
     // Updates the trip's details (UC10)
+    @Transactional
     public Trip updateTrip(Long tripId, CreateTripRequest request, Long userId) {
 
         // Make sure the return date is not before the departure date
@@ -132,6 +154,9 @@ public class TripService {
         // currency again changes nothing.
         boolean currencyChanges = newCurrency != null && !newCurrency.equals(trip.getCurrency());
         if (currencyChanges) {
+            // Wait for any budget or itinerary change in progress on this trip (UC6),
+            // so nothing is added in the old currency while we check
+            tripBudgetRepository.lockTrip(tripId);
             checkCurrencyCanChange(tripId, trip, newCurrency);   // 409 if amounts would become wrong
         }
 
@@ -149,8 +174,8 @@ public class TripService {
     // A trip's currency can only change while no money has been recorded for it,
     // because we don't convert existing amounts.
     //
-    // One safe exception: the trip has a budget but no expenses and no savings goal
-    // (so no contributions either), and the new currency is the budget's own currency.
+    // One safe exception: the trip has a budget but no expenses, no savings goal
+    // (so no contributions either) and no itinerary costs, and the new currency is the budget's own.
     // The budget is already in that currency, so nothing becomes wrong. This lets trips
     // that were set to USD by the database update match a budget saved in EUR, GBP, etc.
     //
@@ -163,11 +188,14 @@ public class TripService {
         // Contributions can only exist under a savings goal (transactions.savings_goal_id
         // is required), so checking for the goal also covers its contributions.
         boolean hasSavings = savingsGoalRepository.findByTripId(tripId).isPresent();
+        // UC6: itinerary cost estimates are stored in the trip's currency
+        boolean hasItineraryCosts = activityRepository != null
+            && activityRepository.existsByTripIdAndEstimatedCostIsNotNull(tripId);
 
         boolean matchesBudgetCurrency = budget
             .map(b -> newCurrency.equalsIgnoreCase(b.getCurrency()))
             .orElse(false);
-        if (budget.isPresent() && !hasExpenses && !hasSavings && matchesBudgetCurrency) {
+        if (budget.isPresent() && !hasExpenses && !hasSavings && !hasItineraryCosts && matchesBudgetCurrency) {
             return;   // safe: lines the trip up with its own budget
         }
 
@@ -179,6 +207,9 @@ public class TripService {
         }
         if (hasSavings) {
             recorded.add("a savings goal");
+        }
+        if (hasItineraryCosts) {
+            recorded.add("itinerary cost estimates");
         }
 
         if (!recorded.isEmpty()) {
