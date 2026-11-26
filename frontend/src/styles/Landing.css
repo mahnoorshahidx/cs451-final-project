@@ -239,13 +239,14 @@
   background: var(--tb-blue-tint);
 }
 
+/* "Save each month" is the main answer, so it gets the navy + marigold look */
 .landing-try-result > div:first-child {
-  background: var(--tb-butter);
-  color: #213253;
+  background: var(--tb-navy);
+  color: #FFFFFF;
 }
 
 .landing-try-result > div:first-child .tb-kicker {
-  color: #5E4310;
+  color: var(--tb-marigold);
 }
 
 .landing-try-big {
@@ -333,23 +334,27 @@
   background: rgba(255, 255, 255, 0.7);
 }
 
-.landing-feature:has(.tint-butter) { background: #FBEBBD; }
+/* First card is navy with a marigold icon, like the home page panels */
+.landing-feature:has(.tint-butter) { background: var(--tb-navy); }
+.landing-feature:has(.tint-butter) h3 { color: #FFFFFF; }
+.landing-feature:has(.tint-butter) p { color: #BFCBDB; }
+.landing-feature:has(.tint-butter) .landing-feature-icon { background: rgba(255, 255, 255, 0.12); }
 .landing-feature:has(.tint-sage) { background: #E4E3CC; }   /* olive mist */
 .landing-feature:has(.tint-blue) { background: var(--tb-blue-tint); }
 .landing-feature:has(.tint-coral) { background: var(--tb-coral-tint); }
 
 .landing-feature p { color: #3A4458; }
 
-.tint-butter { color: #8A5A14; }
+.tint-butter { color: var(--tb-marigold); }
 .tint-sage { color: #4C6249; }
 .tint-blue { color: #213253; }
 .tint-coral { color: var(--tb-red); }
 
-[data-theme="dark"] .landing-feature:has(.tint-butter) { background: #3B3220; }
+[data-theme="dark"] .landing-feature:has(.tint-butter) { background: var(--tb-panel); }
 [data-theme="dark"] .landing-feature:has(.tint-sage) { background: #2E3326; }
-[data-theme="dark"] .landing-feature p { color: var(--tb-text-soft); }
+[data-theme="dark"] .landing-feature:not(:has(.tint-butter)) p { color: var(--tb-text-soft); }
 [data-theme="dark"] .landing-feature-icon { background: rgba(255, 255, 255, 0.08); }
-[data-theme="dark"] .tint-butter { color: var(--tb-butter); }
+[data-theme="dark"] .tint-butter { color: var(--tb-marigold); }
 [data-theme="dark"] .tint-sage { color: #A9C2A5; }
 [data-theme="dark"] .tint-blue { color: #93B4D2; }
 [data-theme="dark"] .tint-coral { color: #F0A193; }
@@ -368,7 +373,7 @@
 }
 
 .landing-how .tb-serif {
-  color: var(--tb-butter);
+  color: var(--tb-marigold);
 }
 
 .landing-steps {
@@ -434,13 +439,13 @@
 .landing-banner-btn {
   min-height: 52px;
   padding: 0 26px;
-  background: var(--tb-butter);
+  background: var(--tb-marigold);
   color: #213253;
   font-weight: 700;
 }
 
 .landing-banner-btn:hover {
-  background: #FAE6A8;
+  background: #F0B955;
 }
 
 /* ---------- Footer ---------- */

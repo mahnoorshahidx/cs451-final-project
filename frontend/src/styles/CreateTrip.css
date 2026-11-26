@@ -458,18 +458,13 @@
 
 /* ---------- Recommendation card (timing + budget steps) ---------- */
 
-/* Recommendation panel: soft sage, with burgundy accents */
+/* Recommendation panel: navy with marigold accents, like the home savings card */
 .wizard-rec {
   margin: 20px 0 24px;
-  padding: 18px 20px;
-  border-radius: var(--tb-radius-md);
-  background: #E6ECE3;
-  border: 1px solid #CFDACB;
-}
-
-[data-theme="dark"] .wizard-rec {
-  background: var(--tb-success-bg);
-  border-color: #34483A;
+  padding: 20px 22px;
+  border-radius: var(--tb-radius-lg);
+  background: var(--tb-panel);
+  color: #FFFFFF;
 }
 
 .wizard-rec:empty {
@@ -478,15 +473,11 @@
 
 .wizard-rec .wizard-eyebrow {
   margin-bottom: 6px;
-  color: var(--tb-success-fg);
+  color: var(--tb-panel-muted);
 }
 
 .wizard-rec-arrow {
-  color: var(--tb-red);
-}
-
-[data-theme="dark"] .wizard-rec-arrow {
-  color: var(--tb-coral);
+  color: var(--tb-marigold);
 }
 
 .wizard-rec-top {
@@ -512,6 +503,26 @@
   color: var(--tb-text-soft);
 }
 
+.wizard-rec .wizard-rec-reason,
+.wizard-rec .wizard-rec-loading,
+.wizard-rec .wizard-rec-breakdown span,
+.wizard-rec .wizard-rec-assumptions {
+  color: var(--tb-panel-muted);
+}
+
+.wizard-rec .wizard-rec-assumptions summary {
+  color: #FFFFFF;
+}
+
+/* Navy Flights dot would vanish on the navy panel, so use the light version */
+.wizard-rec [data-category="Flights"] {
+  --cat: #93B4D2;
+}
+
+.wizard-rec .wizard-rec-error {
+  color: #F0A193;
+}
+
 .wizard-rec-loading,
 .wizard-rec-error {
   margin: 0;
@@ -529,21 +540,21 @@
   padding: 0 16px;
   border: none;
   border-radius: var(--tb-radius-pill);
-  background: var(--tb-red);
-  color: #FFFFFF;
+  background: var(--tb-marigold);
+  color: #213253;
   font: 700 14px var(--tb-font-body);
   cursor: pointer;
 }
 
 .wizard-rec-apply:hover {
-  background: #9A1010;
+  background: #F0B955;
 }
 
 .wizard-rec-breakdown {
   list-style: none;
   margin: 14px 0 0;
   padding: 12px 0 0;
-  border-top: 1px solid #CFDACB;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
   display: grid;
   gap: 6px;
 }

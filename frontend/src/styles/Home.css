@@ -221,7 +221,7 @@
 }
 
 .home-next-empty .tb-serif {
-  color: var(--tb-butter);
+  color: var(--tb-marigold);
   font-size: 1.2em;
 }
 
@@ -249,7 +249,7 @@
 }
 
 .home-totals-head a {
-  color: var(--tb-butter);
+  color: var(--tb-marigold);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -368,7 +368,7 @@
 }
 
 .home-trip-status.is-now {
-  background: var(--tb-butter);
+  background: var(--tb-marigold);
 }
 
 .home-trip-status.is-soon {
