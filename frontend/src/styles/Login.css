@@ -144,12 +144,6 @@
   margin: 0;
   font-size: 34px;
   line-height: 1;
-  font-weight: inherit;
-}
-
-.login-container h1 .tb-serif,
-.signup-container h1 .tb-serif {
-  font-size: 1.25em;
 }
 
 .login-subtitle {

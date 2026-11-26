@@ -94,10 +94,7 @@ function Signup() {
         <div className="signup-container auth-card">
 
           <p className="welcome-text tb-kicker">Get started</p>
-          <h1>
-            <span className="tb-wide">Create</span>{" "}
-            <span className="tb-serif">your account</span>
-          </h1>
+          <h1 className="tb-wide">Create account</h1>
 
           <p className="signup-subtitle">
             Start planning your next unforgettable adventure.

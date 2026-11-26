@@ -53,10 +53,7 @@ function Login() {
                 <div className="login-container auth-card">
 
                     <p className="welcome-text tb-kicker">Welcome back</p>
-                    <h1>
-                        <span className="tb-wide">Sign in</span>{" "}
-                        <span className="tb-serif">to plan on</span>
-                    </h1>
+                    <h1 className="tb-wide">Sign in</h1>
                     <p className="login-subtitle">
                         Pick up where you left off with your trips.
                     </p>
