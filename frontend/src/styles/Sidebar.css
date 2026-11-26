@@ -180,6 +180,11 @@
     padding: 0;
   }
 
+  /* Always slim on phones, so the collapse button has nothing to do */
+  .sidebar .sidebar-toggle {
+    display: none;
+  }
+
   .sidebar .sidebar-link {
     justify-content: center;
     padding: 0;

@@ -354,13 +354,14 @@
 
 /* Mobile */
 @media (max-width: 600px) {
+  /* The sidebar becomes a slim icon rail on phones (see Sidebar.css),
+     so it stays on the left instead of stacking on top */
   .dashboard-page {
-    flex-direction: column;
+    flex-direction: row;
   }
 
   .dashboard-sidebar {
-    width: 100%;
-    min-height: auto;
+    width: auto;
   }
 
   .dashboard-main {

@@ -148,20 +148,21 @@
   text-align: center;
 }
 
-/* Questions use the display font at normal width, no italics */
+/* Questions use the same wide caps as the landing page headings (.tb-wide) */
 .wizard-content h1 {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   font-family: var(--tb-font-display);
-  font-stretch: 100%;
-  font-size: 34px;
+  font-stretch: 125%;
+  font-size: 28px;
   font-weight: 800;
-  line-height: 1.12;
-  letter-spacing: -0.02em;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
   text-wrap: balance;
 }
 
 .wizard-content.is-centered h1 {
-  font-size: 30px;
+  font-size: 26px;
   max-width: 440px;
   margin-top: 10px;
 }
@@ -869,7 +870,7 @@
   }
 
   .wizard-content h1 {
-    font-size: 26px;
+    font-size: 22px;
   }
 
   .wizard-grid,
