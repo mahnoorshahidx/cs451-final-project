@@ -8,14 +8,14 @@ body {
 
 /* Shared form messages (login, signup, create trip, bank card) */
 .error-text {
-  color: #d93025;
+  color: var(--tb-danger);
   font-size: 0.85rem;
   margin: 4px 0 0;
 }
 
 .success-text {
-  color: #1f6f5c;
-  background: #e5f3ee;
+  color: var(--tb-success-fg);
+  background: var(--tb-success-bg);
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 0.9rem;

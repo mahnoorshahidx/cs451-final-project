@@ -334,6 +334,10 @@
   background: var(--tb-sage);
 }
 
+.home-trip:nth-child(4n + 4) .home-trip-photo {
+  background: var(--tb-coral);
+}
+
 .home-trip-photo img {
   position: absolute;
   inset: 0;
@@ -363,8 +367,18 @@
   font-weight: 700;
 }
 
-.home-trip-status.soon {
+.home-trip-status.is-now {
   background: var(--tb-butter);
+}
+
+.home-trip-status.is-soon {
+  background: #F6DBD6;
+  color: #7E0808;
+}
+
+.home-trip-status.is-later {
+  background: #DCE5D7;
+  color: #3F5A3C;
 }
 
 .home-trip-city {

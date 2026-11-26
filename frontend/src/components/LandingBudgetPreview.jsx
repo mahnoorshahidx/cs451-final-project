@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BUDGET_CATEGORIES, fallbackAllocations } from "../lib/budgetSuggestions";
 
+// Category colors live in theme.css (--tb-cat-*)
 const COLORS = {
-  Flights: "#213253",
-  Accommodation: "#638FB3",
-  Food: "#E9AB42",
-  "Local transport": "#6C8569",
-  Activities: "#DB6E5F",
+  Flights: "var(--tb-cat-flights)",
+  Accommodation: "var(--tb-cat-accommodation)",
+  Food: "var(--tb-cat-food)",
+  "Local transport": "var(--tb-cat-transport)",
+  Activities: "var(--tb-cat-activities)",
 };
 
 const money = (value) =>
@@ -40,7 +41,7 @@ export default function LandingBudgetPreview() {
 
   const rows = [
     ...BUDGET_CATEGORIES.map((name) => ({ name, amount: allocations[name] ?? 0, color: COLORS[name] })),
-    { name: "Buffer", amount: buffer, color: "var(--tb-border-strong)" },
+    { name: "Buffer", amount: buffer, color: "var(--tb-cat-buffer)" },
   ];
 
   return (

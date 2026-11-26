@@ -12,7 +12,7 @@
   --wz-muted: var(--tb-text-muted);
   --wz-line: var(--tb-border-strong);
   --wz-bg: var(--tb-bg);
-  --wz-error: #B42318;
+  --wz-error: var(--tb-danger);
 
   min-height: 100vh;
   display: flex;
@@ -25,7 +25,6 @@
 [data-theme="dark"] .wizard-page {
   --wz-teal: var(--tb-marigold);
   --wz-teal-dark: #F0B955;
-  --wz-error: #F4A3A3;
 }
 
 .wizard-message {
@@ -613,15 +612,35 @@
   border-top: 1px solid var(--tb-border);
 }
 
+/* Icon tile in the category's own color (see data-category in theme.css) */
 .wizard-cap-icon {
   display: grid;
   place-items: center;
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: var(--tb-blue-tint);
+  background: color-mix(in srgb, var(--cat, var(--tb-blue)) 22%, var(--tb-surface));
   color: var(--wz-ink);
   font-size: 16px;
+  box-shadow: inset 0 -3px 0 var(--cat, var(--tb-blue));
+}
+
+/* Colored dot before each category name in the lists */
+.wizard-rec-breakdown li[data-category] span,
+.wizard-caps-lines li[data-category] span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wizard-rec-breakdown li[data-category] span::before,
+.wizard-caps-lines li[data-category] span::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--cat);
+  flex-shrink: 0;
 }
 
 .wizard-cap-text {
@@ -687,7 +706,9 @@
 }
 
 .wizard-caps-meter {
-  height: 8px;
+  display: flex;
+  gap: 2px;
+  height: 10px;
   margin-top: 16px;
   border-radius: var(--tb-radius-pill);
   background: var(--tb-track);
@@ -696,9 +717,9 @@
 
 .wizard-caps-meter span {
   display: block;
+  flex: none;
   height: 100%;
-  border-radius: inherit;
-  background: var(--wz-teal);
+  background: var(--cat, var(--wz-teal));
   transition: width 0.25s ease;
 }
 
@@ -731,6 +752,7 @@
   color: var(--wz-muted);
 }
 
+/* Leftover money is the buffer, so it uses the buffer color (olive mist) */
 .wizard-caps-remaining {
   display: flex;
   justify-content: space-between;
@@ -738,8 +760,14 @@
   margin-top: 16px;
   padding: 12px 14px;
   border-radius: var(--tb-radius-md);
-  background: var(--tb-sage-tint);
+  background: color-mix(in srgb, var(--tb-cat-buffer) 55%, var(--tb-surface));
+  color: #213253;
   font-size: 14px;
+}
+
+[data-theme="dark"] .wizard-caps-remaining {
+  background: color-mix(in srgb, var(--tb-cat-buffer) 25%, var(--tb-surface));
+  color: var(--tb-text);
 }
 
 .wizard-caps-remaining strong {
@@ -748,9 +776,10 @@
   font-size: 18px;
 }
 
-.wizard-caps-remaining.is-over {
-  background: var(--tb-coral-tint);
-  color: var(--wz-error);
+.wizard-caps-remaining.is-over,
+[data-theme="dark"] .wizard-caps-remaining.is-over {
+  background: var(--tb-warning-bg);
+  color: var(--tb-danger);
 }
 
 /* ---------- Recap on final step ---------- */

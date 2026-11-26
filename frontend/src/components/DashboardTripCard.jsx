@@ -43,7 +43,8 @@ export default function DashboardTripCard({ trip }) {
   }, []);
 
   const days = daysUntil(trip.startDate);
-  const soon = days !== null && days <= 1;
+  // Chip color: tomorrow/today = butter, within a month = coral, later = sage
+  const urgency = days === null ? "later" : days <= 1 ? "now" : days <= 30 ? "soon" : "later";
   const city = trip.destination?.split(",")[0]?.trim() || trip.name;
 
   return (
@@ -53,7 +54,7 @@ export default function DashboardTripCard({ trip }) {
           <img src={photo.imageUrl} alt="" loading="lazy" onError={clearPhoto} />
         )}
 
-        <span className={`home-trip-status${soon ? " soon" : ""}`}>
+        <span className={`home-trip-status is-${urgency}`}>
           {countdownLabel(days)}
         </span>
 

@@ -300,7 +300,9 @@
   gap: 16px;
 }
 
+/* Each feature card gets its own palette tint */
 .landing-feature {
+  border: 0;
   padding: 28px;
   display: flex;
   flex-direction: column;
@@ -327,12 +329,29 @@
   justify-content: center;
 }
 
-.tint-butter { background: var(--tb-butter); color: #213253; }
-.tint-sage { background: var(--tb-sage-tint); color: #4C6249; }
-.tint-blue { background: var(--tb-blue-tint); color: var(--tb-text); }
-.tint-coral { background: var(--tb-coral-tint); color: var(--tb-red); }
+.landing-feature-icon {
+  background: rgba(255, 255, 255, 0.7);
+}
 
+.landing-feature:has(.tint-butter) { background: #FBEBBD; }
+.landing-feature:has(.tint-sage) { background: #E4E3CC; }   /* olive mist */
+.landing-feature:has(.tint-blue) { background: var(--tb-blue-tint); }
+.landing-feature:has(.tint-coral) { background: var(--tb-coral-tint); }
+
+.landing-feature p { color: #3A4458; }
+
+.tint-butter { color: #8A5A14; }
+.tint-sage { color: #4C6249; }
+.tint-blue { color: #213253; }
+.tint-coral { color: var(--tb-red); }
+
+[data-theme="dark"] .landing-feature:has(.tint-butter) { background: #3B3220; }
+[data-theme="dark"] .landing-feature:has(.tint-sage) { background: #2E3326; }
+[data-theme="dark"] .landing-feature p { color: var(--tb-text-soft); }
+[data-theme="dark"] .landing-feature-icon { background: rgba(255, 255, 255, 0.08); }
+[data-theme="dark"] .tint-butter { color: var(--tb-butter); }
 [data-theme="dark"] .tint-sage { color: #A9C2A5; }
+[data-theme="dark"] .tint-blue { color: #93B4D2; }
 [data-theme="dark"] .tint-coral { color: #F0A193; }
 
 /* ---------- How it works (navy band) ---------- */
@@ -366,13 +385,19 @@
   flex-direction: column;
   gap: 12px;
   padding-top: 22px;
-  border-top: 1px solid #3E5478;
+  border-top: 2px solid #3E5478;
 }
 
 .landing-step-number {
   font-size: 15px;
   color: var(--tb-marigold);
 }
+
+.landing-steps li:nth-child(1) { border-top-color: var(--tb-marigold); }
+.landing-steps li:nth-child(2) { border-top-color: var(--tb-coral); }
+.landing-steps li:nth-child(2) .landing-step-number { color: var(--tb-coral); }
+.landing-steps li:nth-child(3) { border-top-color: var(--tb-olive); }
+.landing-steps li:nth-child(3) .landing-step-number { color: var(--tb-olive); }
 
 .landing-steps h3 {
   font-size: 24px;

@@ -16,6 +16,22 @@
   --tb-sage: #6C8569;
   --tb-olive: #C9C8A3;
 
+  /* What each color means (use these names in page CSS):
+     blue + yellow lead; the rest are supporting colors with fixed jobs */
+  --tb-danger: #7E0808;        /* over budget, errors, delete */
+  --tb-warning-bg: #F6DBD6;    /* coming up soon */
+  --tb-warning-fg: #7E0808;
+  --tb-success-bg: #DCE5D7;    /* on track, connected, saved */
+  --tb-success-fg: #3F5A3C;
+
+  /* Budget categories, same color on every screen */
+  --tb-cat-flights: #213253;
+  --tb-cat-accommodation: #638FB3;
+  --tb-cat-food: #E9AB42;
+  --tb-cat-transport: #6C8569;
+  --tb-cat-activities: #DB6E5F;
+  --tb-cat-buffer: #C9C8A3;
+
   /* Light tints for icon tiles and tags */
   --tb-blue-tint: #DCE7F1;
   --tb-sage-tint: #DCE5D7;
@@ -73,7 +89,21 @@
   --tb-sage-tint: #283A2F;
   --tb-coral-tint: #432A2C;
   --tb-butter-tint: #3B3220;
+  --tb-danger: #F0A193;
+  --tb-warning-bg: #432A2C;
+  --tb-warning-fg: #F0A193;
+  --tb-success-bg: #283A2F;
+  --tb-success-fg: #A9C2A5;
+  --tb-cat-flights: #93B4D2;   /* navy would vanish on a dark background */
 }
+
+/* Put data-category="Flights" (etc.) on an element and use var(--cat) inside it */
+[data-category="Flights"] { --cat: var(--tb-cat-flights); }
+[data-category="Accommodation"] { --cat: var(--tb-cat-accommodation); }
+[data-category="Food"] { --cat: var(--tb-cat-food); }
+[data-category="Local transport"] { --cat: var(--tb-cat-transport); }
+[data-category="Activities"] { --cat: var(--tb-cat-activities); }
+[data-category="Buffer"] { --cat: var(--tb-cat-buffer); }
 
 body {
   background: var(--tb-bg);

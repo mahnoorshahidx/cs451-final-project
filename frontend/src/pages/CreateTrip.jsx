@@ -674,7 +674,7 @@ function CreateTrip() {
 
                     <ul className="wizard-rec-breakdown">
                       {Object.entries(budgetRec.allocations).map(([category, amount]) => (
-                        <li key={category}>
+                        <li key={category} data-category={category}>
                           <span>{category}</span>
                           <strong>{money(Number(amount))}</strong>
                         </li>
@@ -783,7 +783,7 @@ function CreateTrip() {
                     const meta = categoryMeta(category);
                     const amount = Number(caps[category]) || 0;
                     return (
-                      <div className="wizard-cap" key={category}>
+                      <div className="wizard-cap" key={category} data-category={category}>
                         <span className="wizard-cap-icon" aria-hidden="true">{meta.icon}</span>
                         <div className="wizard-cap-text">
                           <strong>{category}</strong>
@@ -818,11 +818,22 @@ function CreateTrip() {
                     {travelers === 1 ? "" : "s"}
                   </p>
 
+                  {/* One segment per category, in its color; all red when over budget */}
                   <div className="wizard-caps-meter" aria-hidden="true">
-                    <span
-                      className={capsRemaining < 0 ? "is-over" : ""}
-                      style={{ width: `${total > 0 ? Math.min(100, (capsAllocated / total) * 100) : 0}%` }}
-                    />
+                    {capsRemaining < 0 ? (
+                      <span className="is-over" style={{ width: "100%" }} />
+                    ) : (
+                      capCategories.map((category) => {
+                        const amount = Number(caps[category]) || 0;
+                        return amount > 0 && total > 0 ? (
+                          <span
+                            key={category}
+                            data-category={category}
+                            style={{ width: `${(amount / total) * 100}%` }}
+                          />
+                        ) : null;
+                      })
+                    )}
                   </div>
                   <p className="wizard-caps-meter-label">
                     {money(capsAllocated)} of {money(total)} planned
@@ -830,14 +841,17 @@ function CreateTrip() {
 
                   <ul className="wizard-caps-lines">
                     {capCategories.map((category) => (
-                      <li key={category}>
+                      <li key={category} data-category={category}>
                         <span>{category}</span>
                         <strong>{money(Number(caps[category]) || 0)}</strong>
                       </li>
                     ))}
                   </ul>
 
-                  <div className={`wizard-caps-remaining ${capsRemaining < 0 ? "is-over" : ""}`}>
+                  <div
+                    className={`wizard-caps-remaining ${capsRemaining < 0 ? "is-over" : ""}`}
+                    data-category={capsRemaining < 0 ? undefined : "Buffer"}
+                  >
                     <span>{capsRemaining < 0 ? "Over budget by" : "Unassigned buffer"}</span>
                     <strong>{money(Math.abs(capsRemaining))}</strong>
                   </div>
