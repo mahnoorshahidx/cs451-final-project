@@ -420,7 +420,10 @@ function CreateTrip() {
             aria-label={`Step ${step + 1} of ${STEPS.length}`}
           >
             {STEPS.map((s, i) => (
-              <span key={s.key} className={`wizard-bar ${i <= step ? "is-done" : ""}`} />
+              <span
+                key={s.key}
+                className={`wizard-bar ${i < step ? "is-done" : ""} ${i === step ? "is-current" : ""}`}
+              />
             ))}
           </div>
         </div>
@@ -555,7 +558,9 @@ function CreateTrip() {
                       <>
                         <p className="wizard-eyebrow">Recommended dates</p>
                         <p className="wizard-rec-headline">
-                          {formatDate(timingRec.startDate)} → {formatDate(timingRec.endDate)}
+                          {formatDate(timingRec.startDate)}{" "}
+                          <span className="wizard-rec-arrow" aria-label="to">→</span>{" "}
+                          {formatDate(timingRec.endDate)}
                         </p>
                         <p className="wizard-rec-reason">{timingRec.reason}</p>
                       </>

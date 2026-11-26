@@ -113,8 +113,17 @@
   transition: background 0.25s ease;
 }
 
+/* Finished steps in sage, the current step in burgundy */
 .wizard-bar.is-done {
-  background: var(--tb-marigold);
+  background: var(--tb-sage);
+}
+
+.wizard-bar.is-current {
+  background: var(--tb-red);
+}
+
+[data-theme="dark"] .wizard-bar.is-current {
+  background: var(--tb-coral);
 }
 
 /* ---------- The step card ---------- */
@@ -449,11 +458,18 @@
 
 /* ---------- Recommendation card (timing + budget steps) ---------- */
 
+/* Recommendation panel: soft sage, with burgundy accents */
 .wizard-rec {
   margin: 20px 0 24px;
   padding: 18px 20px;
   border-radius: var(--tb-radius-md);
-  background: var(--tb-butter-tint);
+  background: #E6ECE3;
+  border: 1px solid #CFDACB;
+}
+
+[data-theme="dark"] .wizard-rec {
+  background: var(--tb-success-bg);
+  border-color: #34483A;
 }
 
 .wizard-rec:empty {
@@ -462,11 +478,15 @@
 
 .wizard-rec .wizard-eyebrow {
   margin-bottom: 6px;
-  color: #8A5A14;
+  color: var(--tb-success-fg);
 }
 
-[data-theme="dark"] .wizard-rec .wizard-eyebrow {
-  color: var(--tb-butter);
+.wizard-rec-arrow {
+  color: var(--tb-red);
+}
+
+[data-theme="dark"] .wizard-rec-arrow {
+  color: var(--tb-coral);
 }
 
 .wizard-rec-top {
@@ -509,21 +529,21 @@
   padding: 0 16px;
   border: none;
   border-radius: var(--tb-radius-pill);
-  background: var(--tb-marigold);
-  color: #213253;
+  background: var(--tb-red);
+  color: #FFFFFF;
   font: 700 14px var(--tb-font-body);
   cursor: pointer;
 }
 
 .wizard-rec-apply:hover {
-  background: #F0B955;
+  background: #9A1010;
 }
 
 .wizard-rec-breakdown {
   list-style: none;
   margin: 14px 0 0;
   padding: 12px 0 0;
-  border-top: 1px solid rgba(33, 50, 83, 0.12);
+  border-top: 1px solid #CFDACB;
   display: grid;
   gap: 6px;
 }
