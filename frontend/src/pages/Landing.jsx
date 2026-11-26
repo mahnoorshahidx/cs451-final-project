@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { CalendarDays, PieChart, TrendingUp, Users } from "lucide-react";
+import LandingBudgetPreview from "../components/LandingBudgetPreview";
 import TravelSlideshow from "../components/TravelSlideshow";
 import TripbudgetMark from "../components/TripbudgetMark";
 import "../styles/Landing.css";
@@ -86,6 +87,11 @@ function Landing() {
             </div>
           </div>
 
+          <LandingBudgetPreview />
+        </section>
+
+        {/* Wide photo banner */}
+        <section className="landing-section landing-carousel-wrap" aria-label="Destinations">
           <div className="landing-carousel">
             <TravelSlideshow showArrows />
           </div>

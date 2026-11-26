@@ -129,14 +129,147 @@
   font-size: 16px;
 }
 
-/* The slideshow sits in a tall rounded photo card */
-.landing-carousel {
-  aspect-ratio: 4 / 5;
-  max-height: 640px;
+/* ---------- "Try it" budget card ---------- */
+
+.landing-try {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: var(--tb-shadow-pop);
+}
+
+.landing-try-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.landing-try-head h2 {
+  font-size: 26px;
+  line-height: 1;
+  font-weight: inherit;
+}
+
+.landing-try-head .tb-serif {
+  font-size: 1.25em;
+}
+
+.landing-try-inputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 12px;
+}
+
+.landing-try-inputs .tb-input {
   width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 12px 14px;
+}
+
+.landing-try-money {
+  position: relative;
+  display: block;
+}
+
+.landing-try-money > span {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 600;
+  color: var(--tb-text-muted);
+  pointer-events: none;
+}
+
+.landing-try-money .tb-input {
+  padding-left: 28px;
+}
+
+.landing-try-bar {
+  display: flex;
+  gap: 3px;
+  height: 14px;
+  border-radius: var(--tb-radius-pill);
+  overflow: hidden;
+  background: var(--tb-track);
+}
+
+.landing-try-bar span {
+  flex-basis: 0;
+  transition: flex-grow 0.3s ease;
+}
+
+.landing-try-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 24px;
+}
+
+.landing-try-rows li {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  font-size: 14px;
+}
+
+.landing-try-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.landing-try-result {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.landing-try-result > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: var(--tb-radius-md);
+  background: var(--tb-blue-tint);
+}
+
+.landing-try-result > div:first-child {
+  background: var(--tb-butter);
+  color: #213253;
+}
+
+.landing-try-result > div:first-child .tb-kicker {
+  color: #5E4310;
+}
+
+.landing-try-big {
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.landing-try-cta {
+  min-height: 50px;
+}
+
+/* ---------- Wide photo banner ---------- */
+
+.landing-carousel-wrap {
+  padding-bottom: 96px;
+}
+
+.landing-carousel {
+  width: 100%;
+  aspect-ratio: 16 / 6;
+  min-height: 300px;
+  max-height: 440px;
   border-radius: var(--tb-radius-xl);
   overflow: hidden;
-  box-shadow: var(--tb-shadow-pop);
 }
 
 /* ---------- Sections ---------- */
@@ -336,5 +469,26 @@
 
   .landing-banner {
     padding: 36px 28px;
+  }
+
+  .landing-try {
+    padding: 22px;
+  }
+
+  .landing-try-inputs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .landing-try-inputs .tb-field:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .landing-try-rows {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-carousel {
+    aspect-ratio: 4 / 5;
+    max-height: 520px;
   }
 }
