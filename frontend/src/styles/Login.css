@@ -25,14 +25,16 @@
 
 .login-right {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 24px;
+  gap: 32px;
+  padding: 12px 24px 32px;
 }
 
 .login-container {
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
+  margin: auto 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -40,15 +42,96 @@
 
 /* ---------- Shared by login and sign up ---------- */
 
+.auth-top {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 8px 0;
+  box-sizing: border-box;
+}
+
 .auth-brand {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  align-self: flex-start;
-  margin-bottom: 28px;
   color: var(--tb-text);
   text-decoration: none;
   font-size: 15px;
+}
+
+.auth-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: var(--tb-radius-pill);
+  border: 1px solid var(--tb-border);
+  background: var(--tb-surface);
+  color: var(--tb-text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-back:hover {
+  border-color: var(--tb-blue);
+}
+
+.auth-brand:focus-visible,
+.auth-back:focus-visible {
+  outline: 3px solid var(--tb-blue);
+  outline-offset: 2px;
+}
+
+/* White card around the form, same shadow as the landing "Try it" card */
+.auth-card {
+  background: var(--tb-surface);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-xl);
+  box-shadow: var(--tb-shadow-pop);
+  padding: 36px;
+  box-sizing: border-box;
+}
+
+/* Password field with a show/hide eye button */
+.password-input {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.password-input input {
+  padding-right: 52px !important;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--tb-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  color: var(--tb-text);
+  background: var(--tb-surface-hover);
+}
+
+.password-toggle:focus-visible {
+  outline: 3px solid var(--tb-blue);
+  outline-offset: 0;
 }
 
 .welcome-text.tb-kicker {
@@ -90,10 +173,14 @@
   color: var(--tb-text);
 }
 
+.login-form > input,
+.login-form .password-input {
+  margin-bottom: 12px;
+}
+
 .login-form input {
   font: 400 16px var(--tb-font-body);
   padding: 14px 16px;
-  margin-bottom: 12px;
   border-radius: 14px;
   border: 1.5px solid var(--tb-border-strong);
   background: var(--tb-surface);
@@ -173,5 +260,9 @@
 
   .login-left {
     display: none;
+  }
+
+  .auth-card {
+    padding: 28px 22px;
   }
 }

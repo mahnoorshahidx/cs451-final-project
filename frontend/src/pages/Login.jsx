@@ -5,7 +5,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { login } from "../api/api";
 import { clearSession, saveSession } from "../api/client";
 import TravelSlideshow from "../components/TravelSlideshow";
-import TripbudgetMark from "../components/TripbudgetMark";
+import AuthTopBar from "../components/AuthTopBar";
+import PasswordInput from "../components/PasswordInput";
 
 function Login() {
     const navigate = useNavigate();
@@ -47,12 +48,9 @@ function Login() {
 
             {/* Right side - Login form */}
             <section className="login-right">
-                <div className="login-container">
+                <AuthTopBar />
 
-                    <Link to="/" className="auth-brand">
-                        <TripbudgetMark size={22} />
-                        <span className="tb-wide">Tripbudget</span>
-                    </Link>
+                <div className="login-container auth-card">
 
                     <p className="welcome-text tb-kicker">Welcome back</p>
                     <h1>
@@ -74,6 +72,7 @@ function Login() {
                         <input
                             id="email"
                             type="email"
+                            autoComplete="email"
                             placeholder="example@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -85,9 +84,9 @@ function Login() {
                             <a href="/forgot-password">Forgot password?</a>
                         </div>
 
-                        <input
+                        <PasswordInput
                             id="password"
-                            type="password"
+                            autoComplete="current-password"
                             placeholder="Enter password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -98,13 +97,13 @@ function Login() {
                         {error && <p className="error-text">{error}</p>}
 
                         <button type="submit" className="login-button" disabled={loading}>
-                            {loading ? "Signing in..." : "Sign In"}
+                            {loading ? "Signing in..." : "Sign in"}
                         </button>
 
                     </form>
 
                     <p className="signup-text">
-                        New to TripBudget? <Link to="/signup">Create an account</Link>
+                        New to Tripbudget? <Link to="/signup">Create an account</Link>
                     </p>
 
                 </div>

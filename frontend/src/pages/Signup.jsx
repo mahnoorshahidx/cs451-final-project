@@ -5,7 +5,8 @@ import { register } from "../api/api";
 import "../styles/SignUp.css";
 
 import TravelSlideshow from "../components/TravelSlideshow";
-import TripbudgetMark from "../components/TripbudgetMark";
+import AuthTopBar from "../components/AuthTopBar";
+import PasswordInput from "../components/PasswordInput";
 
 function Signup() {
   const navigate = useNavigate();
@@ -88,12 +89,9 @@ function Signup() {
 
       {/* Right side */}
       <section className="signup-right">
-        <div className="signup-container">
+        <AuthTopBar />
 
-          <Link to="/" className="auth-brand">
-            <TripbudgetMark size={22} />
-            <span className="tb-wide">Tripbudget</span>
-          </Link>
+        <div className="signup-container auth-card">
 
           <p className="welcome-text tb-kicker">Get started</p>
           <h1>
@@ -160,10 +158,9 @@ function Signup() {
 
               <div className="signup-field">
                 <label htmlFor="password">Password</label>
-                <input
+                <PasswordInput
                   id="password"
                   name="password"
-                  type="password"
                   placeholder="Create a password"
                   autoComplete="new-password"
                   value={formData.password}
@@ -176,10 +173,9 @@ function Signup() {
 
               <div className="signup-field">
                 <label htmlFor="confirmPassword">Confirm password</label>
-                <input
+                <PasswordInput
                   id="confirmPassword"
                   name="confirmPassword"
-                  type="password"
                   placeholder="Confirm password"
                   autoComplete="new-password"
                   value={formData.confirmPassword}
@@ -278,7 +274,7 @@ function Signup() {
               className="signup-button"
               disabled={loading}
             >
-              {loading ? "Creating account..." : "Create Account"}
+              {loading ? "Creating account..." : "Create account"}
             </button>
 
 

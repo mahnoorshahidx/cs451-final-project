@@ -25,31 +25,23 @@
 
 .signup-right {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 24px;
+  gap: 32px;
+  padding: 12px 24px 32px;
 }
 
 .signup-container {
   width: 100%;
-  max-width: 520px;
+  max-width: 560px;
+  margin: auto 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* The brand link and heading share Login.css rules; repeated here
-   so the sign-up page looks right even if it loads first. */
-.signup-container .auth-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  align-self: flex-start;
-  margin-bottom: 28px;
-  color: var(--tb-text);
-  text-decoration: none;
-  font-size: 15px;
-}
+/* The top bar, card and password field styles live in Login.css,
+   which is always loaded with the app. */
 
 .signup-container .welcome-text {
   margin: 0;
