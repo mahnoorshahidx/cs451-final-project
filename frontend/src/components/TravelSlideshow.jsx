@@ -1,98 +1,113 @@
 import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import "../styles/TravelSlideshow.css";
 
-// Keep using the five photos already in frontend/public/images.
-// Each caption is written to match its photo; no API or new images required.
+// The five photos already in frontend/public/images.
+// Each caption is written to match its photo.
 const slides = [
   {
     image: "/images/travel-1.jpg",
-    location: "Bangkok, Thailand",
-    lead: "EXPLORE",
-    before: " ",
-    highlight: "Bangkok’s",
-    after: " neon streets",
+    city: "Bangkok",
+    country: "Thailand",
+    tagline: "explore the neon streets",
   },
   {
     image: "/images/travel-2.jpg",
-    location: "Istanbul, Türkiye",
-    lead: "DISCOVER",
-    before: " ",
-    highlight: "Istanbul’s",
-    after: " timeless beauty",
+    city: "Istanbul",
+    country: "Türkiye",
+    tagline: "discover its timeless beauty",
   },
   {
     image: "/images/travel-3.jpg",
-    location: "Chefchaouen, Morocco",
-    lead: "WANDER",
-    before: " through ",
-    highlight: "Chefchaouen’s",
-    after: " blue alleys",
+    city: "Chefchaouen",
+    country: "Morocco",
+    tagline: "wander the blue alleys",
   },
   {
     image: "/images/travel-4.jpg",
-    location: "Reine, Norway",
-    lead: "CHASE",
-    before: " ",
-    highlight: "Lofoten’s",
-    after: " northern lights",
+    city: "Reine",
+    country: "Norway",
+    tagline: "chase the northern lights",
   },
   {
     image: "/images/travel-5.jpg",
-    location: "Fujiyoshida, Japan",
-    lead: "ADMIRE",
-    before: " ",
-    highlight: "Japan’s",
-    after: " mountain views",
+    city: "Fujiyoshida",
+    country: "Japan",
+    tagline: "admire the mountain views",
   },
 ];
 
-export default function TravelSlideshow() {
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+// showArrows adds previous/next buttons (used on the landing page).
+export default function TravelSlideshow({ showArrows = false }) {
   const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
   const slide = slides[current];
 
+  // Move on every 5 seconds, unless the user picked a slide or prefers less motion
   useEffect(() => {
+    if (paused || prefersReducedMotion()) return undefined;
+
     const interval = window.setInterval(() => {
       setCurrent((previous) => (previous + 1) % slides.length);
     }, 5000);
 
     return () => window.clearInterval(interval);
-  }, []);
+  }, [paused]);
+
+  const goTo = (index) => {
+    setPaused(true);
+    setCurrent((index + slides.length) % slides.length);
+  };
 
   return (
-    <div className="travel-slideshow" aria-label="Travel destination slideshow">
+    <div className="travel-slideshow" aria-roledescription="carousel" aria-label="Travel destinations">
       {slides.map((item, index) => (
         <div
           key={item.image}
           className={`travel-slide${index === current ? " active" : ""}`}
           style={{ backgroundImage: `url("${item.image}")` }}
-          aria-hidden="true"
+          role="img"
+          aria-label={`${item.city}, ${item.country}`}
+          aria-hidden={index !== current}
         />
       ))}
 
-      {/* Figma-inspired dark gradient ON THE PHOTOS, not on the form. */}
       <div className="travel-slide-scrim" aria-hidden="true" />
 
-      <div className="travel-slide-caption" aria-live="off">
-        <p className="travel-slide-location">{slide.location}</p>
-        <p className="travel-slide-headline">
-          <strong className="travel-slide-verb">{slide.lead}</strong>
-          {slide.before}
-          <strong className="travel-slide-highlight">{slide.highlight}</strong>
-          {slide.after}
-        </p>
+      <div className="travel-slide-caption" aria-live="polite">
+        <span className="tb-kicker travel-slide-country">{slide.country}</span>
+        <span className="tb-wide travel-slide-city">{slide.city}</span>
+        <span className="tb-serif travel-slide-tagline">{slide.tagline}</span>
       </div>
 
-      <div className="travel-slide-dots" role="group" aria-label="Choose a travel photo">
-        {slides.map((item, index) => (
-          <button
-            key={item.image}
-            type="button"
-            className={index === current ? "active" : ""}
-            aria-label={`Show ${item.location}`}
-            aria-current={index === current ? "true" : undefined}
-            onClick={() => setCurrent(index)}
-          />
-        ))}
+      <div className="travel-slide-controls">
+        <div className="travel-slide-dots" role="group" aria-label="Choose a destination">
+          {slides.map((item, index) => (
+            <button
+              key={item.image}
+              type="button"
+              className={index === current ? "active" : ""}
+              aria-label={`Show ${item.city}`}
+              aria-current={index === current ? "true" : undefined}
+              onClick={() => goTo(index)}
+            />
+          ))}
+        </div>
+
+        {showArrows && (
+          <div className="travel-slide-arrows">
+            <button type="button" aria-label="Previous destination" onClick={() => goTo(current - 1)}>
+              <ChevronLeft size={18} strokeWidth={2.4} />
+            </button>
+            <button type="button" aria-label="Next destination" className="next" onClick={() => goTo(current + 1)}>
+              <ChevronRight size={18} strokeWidth={2.4} />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

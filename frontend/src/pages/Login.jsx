@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { login } from "../api/api";
 import { clearSession, saveSession } from "../api/client";
 import TravelSlideshow from "../components/TravelSlideshow";
+import TripbudgetMark from "../components/TripbudgetMark";
 
 function Login() {
     const navigate = useNavigate();
@@ -48,10 +49,18 @@ function Login() {
             <section className="login-right">
                 <div className="login-container">
 
-                    <p className="welcome-text">WELCOME BACK</p>
-                    <h1>Sign in to your account</h1>
+                    <Link to="/" className="auth-brand">
+                        <TripbudgetMark size={22} />
+                        <span className="tb-wide">Tripbudget</span>
+                    </Link>
+
+                    <p className="welcome-text tb-kicker">Welcome back</p>
+                    <h1>
+                        <span className="tb-wide">Sign in</span>{" "}
+                        <span className="tb-serif">to plan on</span>
+                    </h1>
                     <p className="login-subtitle">
-                        Continue planning your next unforgettable adventure.
+                        Pick up where you left off with your trips.
                     </p>
 
                     {/* Shown after signing up */}

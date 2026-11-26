@@ -1,11 +1,15 @@
-/* Travel photos only. The login and signup card styles are not touched. */
+/* ================================
+   TRAVEL SLIDESHOW
+   Fills whatever box it sits in (login panel or landing card).
+================================ */
+
 .travel-slideshow {
   position: relative;
   width: 100%;
   height: 100%;
   min-height: 100%;
   overflow: hidden;
-  background-color: #020617;
+  background-color: var(--tb-navy);
   isolation: isolate;
 }
 
@@ -15,129 +19,124 @@
   background-size: cover;
   background-position: center;
   opacity: 0;
-  transition: opacity 1200ms ease-in-out;
+  transition: opacity 1000ms ease-in-out;
 }
 
 .travel-slide.active {
   opacity: 1;
 }
 
-/* Based on the photo-overlay in the Figma Make export.
-   The darkest area is at the bottom, behind the caption. */
+/* Light navy wash so white text stays readable, a little deeper at the bottom */
 .travel-slide-scrim {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: linear-gradient(
-    0deg,
-    #020617 0%,
-    rgba(2, 6, 23, 0.65) 16%,
-    rgba(2, 6, 23, 0.10) 65%,
-    rgba(2, 6, 23, 0.20) 100%
-  );
+  background:
+    linear-gradient(0deg, rgba(18, 28, 48, 0.55) 0%, rgba(18, 28, 48, 0) 45%),
+    rgba(18, 28, 48, 0.18);
 }
 
-/* Figma: small location label + white headline + accent-highlighted word.
-   Captions go LEFT here because the existing card MUST stay on the RIGHT. */
+/* Centered, poster-style caption */
 .travel-slide-caption {
   position: absolute;
   z-index: 2;
-  left: clamp(24px, 4vw, 56px);
-  bottom: 92px;
-  width: min(42vw, 540px);
-  max-width: calc(100% - 48px);
-  color: #e2e8f0;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.32);
+  left: 24px;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  color: #FFFFFF;
+  text-align: center;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.25);
   pointer-events: none;
 }
 
-.travel-slide-location {
-  margin: 0 0 8px;
-  color: #cbd5e1;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 18px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
+.travel-slide-country {
+  color: #FFFFFF;
 }
 
-.travel-slide-headline {
-  margin: 0;
-  font-size: clamp(21px, 2.1vw, 30px);
-  font-weight: 400;
-  line-height: 1.35;
-  letter-spacing: -0.015em;
-  text-wrap: balance;
+.travel-slide-city {
+  font-size: clamp(34px, 5vw, 60px);
+  line-height: 1;
 }
 
-.travel-slide-verb {
-  font-weight: 700;
-  color: #ffffff;
+.travel-slide-tagline {
+  color: #FFFFFF;
+  font-size: clamp(22px, 2.4vw, 30px);
 }
 
-.travel-slide-highlight {
-  font-weight: 700;
-  color: #9cf2e8;
-}
-
-/* Retain the original clickable photo dots. */
-.travel-slide-dots {
+/* Dots + optional arrows along the bottom */
+.travel-slide-controls {
   position: absolute;
   z-index: 3;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 16px;
+}
+
+.travel-slide-dots {
+  display: flex;
+  gap: 6px;
 }
 
 .travel-slide-dots button {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.55);
+  border: 0;
+  border-radius: var(--tb-radius-pill);
+  background: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  transition: width 0.3s ease, background-color 0.3s ease;
+  transition: width 0.25s ease, background 0.25s ease;
 }
 
 .travel-slide-dots button.active {
-  width: 26px;
-  border-radius: 20px;
-  background: #9cf2e8;
+  width: 28px;
+  background: var(--tb-marigold);
 }
 
-.travel-slide-dots button:focus-visible {
-  outline: 2px solid white;
-  outline-offset: 4px;
+.travel-slide-arrows {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
 }
 
-@media (max-width: 900px) {
-  .travel-slide-caption {
-    bottom: 84px;
-    left: 24px;
-    width: min(70vw, 440px);
-  }
-
-  .travel-slide-headline {
-    font-size: clamp(20px, 3.3vw, 26px);
-  }
+.travel-slide-arrows button {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--tb-radius-pill);
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--tb-navy);
+  cursor: pointer;
 }
 
-@media (max-width: 600px) {
-  .travel-slide-caption {
-    left: 20px;
-    bottom: 82px;
-    width: calc(100% - 40px);
-  }
+.travel-slide-arrows button.next {
+  background: var(--tb-marigold);
+}
 
-  .travel-slide-headline {
-    font-size: 20px;
-  }
+/* With arrows, dots sit on the left so the row stays balanced */
+.travel-slide-controls:has(.travel-slide-arrows) {
+  justify-content: space-between;
+}
+
+.travel-slide-dots button:focus-visible,
+.travel-slide-arrows button:focus-visible {
+  outline: 3px solid #FFFFFF;
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {

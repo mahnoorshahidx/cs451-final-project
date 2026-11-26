@@ -1,0 +1,260 @@
+/* ==================================
+   TRIPBUDGET THEME
+   Shared colors, fonts and building blocks.
+   Use the variables below in page CSS instead of hard-coded hex values.
+   Fonts are loaded in index.html.
+================================== */
+
+:root {
+  /* Palette (Italy palette, blue-led) */
+  --tb-navy: #213253;
+  --tb-blue: #638FB3;
+  --tb-marigold: #E9AB42;
+  --tb-butter: #F7DC89;
+  --tb-red: #7E0808;
+  --tb-coral: #DB6E5F;
+  --tb-sage: #6C8569;
+  --tb-olive: #C9C8A3;
+
+  /* Light tints for icon tiles and tags */
+  --tb-blue-tint: #DCE7F1;
+  --tb-sage-tint: #DCE5D7;
+  --tb-coral-tint: #F6DBD6;
+  --tb-butter-tint: #FDF3DA;
+
+  /* Surfaces and text (these flip in dark mode) */
+  --tb-bg: #F3F6F9;
+  --tb-surface: #FFFFFF;
+  --tb-surface-hover: #EEF3F8;
+  --tb-border: #DDE5EE;
+  --tb-border-strong: #C5D2DF;
+  --tb-text: #213253;
+  --tb-text-soft: #4D5D72;
+  --tb-text-muted: #56657A;
+  --tb-track: #E4EBF2;
+  --tb-accent-text: #638FB3;   /* italic accent words */
+  --tb-panel: #213253;         /* navy cards */
+  --tb-panel-text: #FFFFFF;
+  --tb-panel-muted: #BFCBDB;
+  --tb-primary-bg: #213253;    /* main buttons */
+  --tb-primary-fg: #FFFFFF;
+  --tb-photo-overlay: rgba(18, 28, 48, 0.28);
+
+  /* Fonts */
+  --tb-font-display: "Archivo", "Arial Black", system-ui, sans-serif;
+  --tb-font-serif: "Instrument Serif", Georgia, serif;
+  --tb-font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Shape */
+  --tb-radius-sm: 12px;
+  --tb-radius-md: 16px;
+  --tb-radius-lg: 24px;
+  --tb-radius-xl: 28px;
+  --tb-radius-pill: 999px;
+  --tb-shadow-pop: 0 24px 48px -24px rgba(18, 28, 48, 0.35);
+}
+
+[data-theme="dark"] {
+  --tb-bg: #111A29;
+  --tb-surface: #18233A;
+  --tb-surface-hover: #1F2D48;
+  --tb-border: #2A3A57;
+  --tb-border-strong: #3A4D70;
+  --tb-text: #EAF0F7;
+  --tb-text-soft: #C4CFDD;
+  --tb-text-muted: #9FAEC3;
+  --tb-track: #2A3A57;
+  --tb-accent-text: #93B4D2;
+  --tb-panel: #22345A;
+  --tb-panel-muted: #B4C2D6;
+  --tb-primary-bg: #E9AB42;
+  --tb-primary-fg: #213253;
+  --tb-blue-tint: #24385A;
+  --tb-sage-tint: #283A2F;
+  --tb-coral-tint: #432A2C;
+  --tb-butter-tint: #3B3220;
+}
+
+body {
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  font-family: var(--tb-font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Type ---------- */
+
+/* Wide, bold caps: city names and headline words */
+.tb-wide {
+  font-family: var(--tb-font-display);
+  font-stretch: 125%;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+/* Italic serif: one playful word per heading */
+.tb-serif {
+  font-family: var(--tb-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--tb-accent-text);
+}
+
+/* Small spaced-out label above headings */
+.tb-kicker {
+  font-family: var(--tb-font-display);
+  font-stretch: 115%;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tb-text-muted);
+}
+
+/* Money and counts */
+.tb-num {
+  font-family: var(--tb-font-display);
+  font-stretch: 110%;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Buttons ---------- */
+
+.tb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: var(--tb-radius-pill);
+  border: 1.5px solid transparent;
+  font: 600 15px var(--tb-font-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.tb-btn:focus-visible {
+  outline: 3px solid var(--tb-blue);
+  outline-offset: 2px;
+}
+
+.tb-btn-primary {
+  background: var(--tb-primary-bg);
+  color: var(--tb-primary-fg);
+}
+
+.tb-btn-primary:hover {
+  filter: brightness(1.12);
+}
+
+/* Yellow call to action, one per screen */
+.tb-btn-accent {
+  background: var(--tb-marigold);
+  color: #213253;
+  font-weight: 700;
+}
+
+.tb-btn-accent:hover {
+  background: #F0B955;
+}
+
+.tb-btn-outline {
+  background: var(--tb-surface);
+  color: var(--tb-text);
+  border-color: var(--tb-border-strong);
+}
+
+.tb-btn-outline:hover {
+  border-color: var(--tb-blue);
+}
+
+.tb-btn-ghost {
+  background: transparent;
+  color: var(--tb-text);
+}
+
+.tb-btn-ghost:hover {
+  background: var(--tb-surface-hover);
+}
+
+/* ---------- Cards, chips, progress ---------- */
+
+.tb-card {
+  background: var(--tb-surface);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-lg);
+}
+
+.tb-panel {
+  background: var(--tb-panel);
+  color: var(--tb-panel-text);
+  border-radius: var(--tb-radius-lg);
+}
+
+.tb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: var(--tb-radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--tb-butter);
+  color: #213253;
+}
+
+.tb-progress {
+  height: 8px;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-track);
+  overflow: hidden;
+}
+
+.tb-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--tb-navy);
+  transition: width 0.4s ease;
+}
+
+[data-theme="dark"] .tb-progress > span {
+  background: var(--tb-marigold);
+}
+
+/* ---------- Form fields ---------- */
+
+.tb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tb-text);
+}
+
+.tb-input {
+  font: 400 16px var(--tb-font-body);
+  padding: 13px 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--tb-border-strong);
+  background: var(--tb-surface);
+  color: var(--tb-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tb-input::placeholder {
+  color: var(--tb-text-muted);
+}
+
+.tb-input:focus {
+  outline: none;
+  border-color: var(--tb-blue);
+  box-shadow: 0 0 0 4px rgba(99, 143, 179, 0.2);
+}

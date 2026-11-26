@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Landmark } from "lucide-react";
 import "../styles/BankConnection.css";
 import {
   connectBankAccount,
@@ -151,17 +152,16 @@ function BankConnection() {
         /* No connected account */
         <div className="bank-empty-state">
 
-          <div className="bank-empty-icon">🏦</div>
+          <div className="bank-empty-icon"><Landmark size={22} aria-hidden="true" /></div>
 
           <h3>No bank account connected</h3>
 
           <p>
-            Connect a demo bank account to view your balance
-            and manage your travel savings.
+            See your balance next to your trips.
           </p>
 
           <button className="bank-connect-btn" onClick={() => setShowBankOptions(true)}>
-            + Connect Bank
+            Connect demo bank
           </button>
 
         </div>

@@ -73,7 +73,7 @@ export async function apiFetch(path, { method = "GET", body } = {}) {
   // Expired or invalid token: log out and go back to the login page
   if (res.status === 401 && token) {
     clearSession();
-    window.location.href = "/";
+    window.location.href = "/login";
     throw new ApiError(401, { message: "Your session expired. Please sign in again." });
   }
 

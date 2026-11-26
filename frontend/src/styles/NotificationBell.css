@@ -225,3 +225,30 @@
 [data-theme="dark"] .notification-empty {
   color: #C5BDD2;
 }
+
+/* ==================================
+   REDESIGN: round bell that matches theme.css
+================================== */
+
+.notification-bell,
+[data-theme="dark"] .notification-bell {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--tb-radius-pill);
+  border: 1px solid var(--tb-border);
+  background: var(--tb-surface);
+  color: var(--tb-text);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.notification-bell:hover,
+[data-theme="dark"] .notification-bell:hover {
+  background: var(--tb-surface-hover);
+}
+
+.notification-bell:focus-visible {
+  outline: 3px solid var(--tb-blue);
+  outline-offset: 2px;
+}

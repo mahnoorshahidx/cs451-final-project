@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { getProfile } from "./api/api";
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
@@ -38,9 +39,11 @@ function App() {
     <BrowserRouter>
       <Routes>
 
+        {/* Landing page (public) */}
+        <Route path="/" element={<Landing />} />
+
         {/* Login */}
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Navigate to="/" replace />} />
+        <Route path="/login" element={<Login />} />
 
         {/* Sign Up */}
         <Route path="/signup" element={<Signup />} />

@@ -3,6 +3,7 @@ import {
   getNotifications,
   markNotificationAsRead,
 } from "../api/api";
+import { Bell } from "lucide-react";
 import "../styles/NotificationBell.css";
 
 export default function NotificationBell() {
@@ -73,7 +74,7 @@ export default function NotificationBell() {
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Notifications"
       >
-        🔔
+        <Bell size={19} strokeWidth={2} aria-hidden="true" />
 
         {unreadCount > 0 && (
           <span className="notification-badge">

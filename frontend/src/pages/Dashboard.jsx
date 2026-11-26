@@ -1,14 +1,15 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Plus } from "lucide-react";
 import "../styles/Dashboard.css";
-import "../styles/Trips.css";
+import "../styles/Home.css";
 import Sidebar from "../components/Sidebar";
 import DashboardTripCard from "../components/DashboardTripCard";
 import NotificationBell from "../components/NotificationBell";
 import BankConnection from "./BankConnection";
 import { listTrips, getBudgetOverview } from "../api/api";
 import { getCurrentUser } from "../api/client";
+import useDestinationPhoto from "../lib/useDestinationPhoto";
 
 // Returns a greeting based on the time
 function greeting() {
@@ -17,6 +18,99 @@ function greeting() {
   if (hour < 12) return "Good morning";
   if (hour < 18) return "Good afternoon";
   return "Good evening";
+}
+
+function formatMoney(amount, currency = "USD") {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(Number(amount || 0));
+}
+
+function longDate(iso) {
+  return new Date(`${iso}T00:00:00`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+// Big photo card for the next trip, with countdown and savings progress
+function NextTripCard({ trip, days, overview }) {
+  const [photo, clearPhoto] = useDestinationPhoto(trip.destination);
+  const [city, ...rest] = (trip.destination || trip.name).split(",");
+  const region = rest.join(",").trim();
+
+  const currency = overview?.currency || "USD";
+  const target = Number(overview?.savingsTarget || 0);
+  const saved = Number(overview?.savedAmount || 0);
+  const percent = target > 0 ? Math.min(100, Math.floor((saved / target) * 100)) : 0;
+
+  let savingsLine;
+  let action;
+
+  if (target > 0) {
+    savingsLine = `${formatMoney(saved, currency)} of ${formatMoney(target, currency)} saved`;
+    action = { to: `/budget/${trip.id}`, label: "View savings" };
+  } else if (overview?.budgetTotal != null) {
+    savingsLine = `No savings goal yet · ${formatMoney(overview.budgetTotal, currency)} budget`;
+    action = { to: `/budget/${trip.id}`, label: "Set a goal" };
+  } else {
+    savingsLine = "No budget yet";
+    action = { to: `/trips/${trip.id}/edit?tab=details`, label: "Add a budget" };
+  }
+
+  return (
+    <section className="home-next" aria-label={`Next trip: ${trip.name}`}>
+      {photo?.imageUrl && (
+        <img className="home-next-photo" src={photo.imageUrl} alt="" onError={clearPhoto} />
+      )}
+      <div className="home-next-overlay" aria-hidden="true" />
+
+      <div className="home-next-title">
+        <span className="tb-kicker">Your next adventure</span>
+        <span className="tb-wide home-next-city">{city.trim()}</span>
+        <span className="tb-serif">
+          {region ? `${region} · ` : ""}
+          {longDate(trip.startDate)} – {longDate(trip.endDate)}
+        </span>
+      </div>
+
+      <div className="home-next-strip">
+        <div className="home-next-countdown">
+          <span className="tb-num">{days}</span>
+          <span>{days === 0 ? "leaves today" : days === 1 ? "day to go" : "days to go"}</span>
+        </div>
+
+        <div className="home-next-savings">
+          <div className="home-next-savings-row">
+            <span>{savingsLine}</span>
+            {target > 0 && <span className="home-muted">{percent}%</span>}
+          </div>
+          <div className="tb-progress">
+            <span style={{ width: `${percent}%` }} />
+          </div>
+        </div>
+
+        <Link to={action.to} className="tb-btn tb-btn-accent home-next-action">
+          {action.label}
+        </Link>
+      </div>
+
+      {photo?.photographerUrl && photo?.unsplashUrl && (
+        <span className="home-next-credit">
+          Photo by{" "}
+          <a href={photo.photographerUrl} target="_blank" rel="noopener noreferrer">
+            {photo.photographer}
+          </a>{" "}
+          on{" "}
+          <a href={photo.unsplashUrl} target="_blank" rel="noopener noreferrer">
+            Unsplash
+          </a>
+        </span>
+      )}
+    </section>
+  );
 }
 
 function Dashboard() {
@@ -54,6 +148,12 @@ function Dashboard() {
     String(now.getDate()).padStart(2, "0"),
   ].join("-");
 
+  const todayLabel = now.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
+
   // Show up to 3 upcoming trips
   const upcoming = trips
     .filter((trip) => trip.endDate >= today)
@@ -71,6 +171,10 @@ function Dashboard() {
         new Date(`${today}T00:00:00`)) /
       (1000 * 60 * 60 * 24)
     )
+    : null;
+
+  const nextTripOverview = nextTrip
+    ? savingsOverview.find((item) => item.tripId === nextTrip.id)
     : null;
 
   // Savings for upcoming trips only
@@ -96,6 +200,11 @@ function Dashboard() {
     (trip) => trip.currency === mainCurrency
   );
 
+  const totalBudgeted = savingsTrips.reduce(
+    (sum, trip) => sum + Number(trip.budgetTotal || 0),
+    0
+  );
+
   const totalSaved = savingsTrips.reduce(
     (sum, trip) => sum + Number(trip.savedAmount || 0),
     0
@@ -111,14 +220,8 @@ function Dashboard() {
       ? Math.min(100, Math.floor((totalSaved / totalGoal) * 100))
       : 0;
 
-  const formattedSaved = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: mainCurrency,
-    maximumFractionDigits: 0,
-  }).format(totalSaved);
-
   return (
-    <div className="dashboard-page">
+    <div className="dashboard-page home-page">
 
       {/* Sidebar */}
       <aside className="dashboard-sidebar">
@@ -126,66 +229,55 @@ function Dashboard() {
       </aside>
 
       {/* Main Content */}
-      <main className="dashboard-main">
+      <main className="dashboard-main home-main">
 
-        {/* Welcome Banner */}
-        <section className="dashboard-banner">
-          <div className="dashboard-welcome">
-            <h1>{greeting()}, {firstName}!</h1>
-            <p>
-              Where to next? Let's turn your travel dreams
-              into a plan.
-            </p>
+        {/* Greeting */}
+        <header className="home-header">
+          <div className="home-greeting">
+            <span className="tb-kicker">{todayLabel}</span>
+            <h1>
+              <span className="tb-wide">{greeting()},</span>{" "}
+              <span className="tb-serif">{firstName}</span>
+            </h1>
           </div>
 
-          {/* Notification bell */}
-          <NotificationBell />
-        </section>
+          <div className="home-header-actions">
+            <NotificationBell />
+            <Link to="/create-trip" className="tb-btn tb-btn-primary">
+              <Plus size={18} aria-hidden="true" />
+              New trip
+            </Link>
+          </div>
+        </header>
 
-        <div className="dashboard-content">
+        <div className="home-top">
 
-          <div className="dashboard-left">
+          {/* Next Trip */}
+          {loading ? (
+            <section className="home-next home-next-empty">
+              <p>Loading your trips...</p>
+            </section>
+          ) : nextTrip ? (
+            <NextTripCard trip={nextTrip} days={daysUntilTrip} overview={nextTripOverview} />
+          ) : (
+            <section className="home-next home-next-empty">
+              <span className="tb-kicker">Your next adventure</span>
+              <h2>
+                <span className="tb-wide">Where to</span>{" "}
+                <span className="tb-serif">next?</span>
+              </h2>
+              <p>Add a trip and we'll help you budget and save for it.</p>
+              <Link to="/create-trip" className="tb-btn tb-btn-accent">Plan a trip</Link>
+            </section>
+          )}
 
-            {/* Next Trip Countdown */}
-            {!loading && !error && nextTrip && (
-              <section className="dashboard-countdown">
-                <div className="countdown-details">
-                  <span className="countdown-label">
-                    ✈ YOUR NEXT ADVENTURE
-                  </span>
+          <div className="home-side">
 
-                  <h2>{nextTrip.destination}</h2>
-
-                  <p>
-                    Departure:{" "}
-                    {new Date(
-                      `${nextTrip.startDate}T00:00:00`
-                    ).toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
-                </div>
-
-                <div className="countdown-number">
-                  <strong>{daysUntilTrip}</strong>
-                  <span>
-                    {daysUntilTrip === 0
-                      ? "TODAY!"
-                      : daysUntilTrip === 1
-                        ? "DAY TO GO"
-                        : "DAYS TO GO"}
-                  </span>
-                </div>
-              </section>
-            )}
-
-            {/* Trip Savings Overview */}
-            <section className="dashboard-savings">
-              <div className="dashboard-savings-header">
-                <span> Trip Savings</span>
-                <Link to="/budget">View savings →</Link>
+            {/* Savings Overview */}
+            <section className="tb-panel home-totals">
+              <div className="home-totals-head">
+                <span className="tb-kicker">Saved for upcoming trips</span>
+                <Link to="/budget">View</Link>
               </div>
 
               {savingsLoading ? (
@@ -194,84 +286,66 @@ function Dashboard() {
                 <p>Unable to load savings.</p>
               ) : (
                 <>
-                  <div className="dashboard-savings-amount">
-                    <strong>{formattedSaved}</strong>
-                    <span>{savingsPercent}% saved</span>
+                  <div className="home-totals-amount">
+                    <span className="tb-num">{formatMoney(totalSaved, mainCurrency)}</span>
+                    <span>
+                      {totalGoal > 0
+                        ? `${savingsPercent}% of ${formatMoney(totalGoal, mainCurrency)} goal`
+                        : "No savings goals set yet"}
+                    </span>
                   </div>
 
-                  <div className="dashboard-savings-progress">
-                    <div style={{ width: `${savingsPercent}%` }} />
+                  <div className="tb-progress home-totals-bar">
+                    <span style={{ width: `${savingsPercent}%` }} />
                   </div>
 
-                  <p>
-                    {totalGoal > 0
-                      ? `${savingsPercent}% of your savings goals reached`
-                      : "No savings goals set yet"}
-                  </p>
+                  {totalBudgeted > 0 && (
+                    <p className="home-totals-note">
+                      {formatMoney(totalBudgeted, mainCurrency)} budgeted across{" "}
+                      {savingsTrips.length} {savingsTrips.length === 1 ? "trip" : "trips"}
+                    </p>
+                  )}
                 </>
               )}
             </section>
 
-
-          </div>
-
-
-
-          {/* Bank Connection Card */}
-          <aside className="dashboard-card">
-            <BankConnection />
-          </aside>
-
-
-
-
-        </div> {/* End dashboard-content grid */}
-
-        {/* Upcoming Trips */}
-        <section className="dashboard-trips">
-
-          <div className="trips-section-header">
-            <h2>Upcoming Trips</h2>
-
-            <div className="trips-header-actions">
-              <Link to="/create-trip" className="dashboard-create-trip-btn">
-                <span aria-hidden="true">+</span>
-                Create Trip
-              </Link>
-
-              {trips.length > 0 && (
-                <Link to="/trips" className="dashboard-view-all">
-                  View all ({trips.length})
-                </Link>
-              )}
+            {/* Bank Connection Card */}
+            <div className="home-bank">
+              <BankConnection />
             </div>
           </div>
+        </div>
 
-          {loading && (
-            <p className="trips-message">
-              Loading your trips...
-            </p>
-          )}
+        {/* Upcoming Trips */}
+        <section className="home-trips">
+          <div className="home-section-head">
+            <h2>
+              <span className="tb-wide">Upcoming</span>{" "}
+              <span className="tb-serif">trips</span>
+            </h2>
 
-          {error && (
-            <p className="error-text">{error}</p>
-          )}
+            {trips.length > 0 && (
+              <Link to="/trips" className="home-link">
+                View all ({trips.length})
+              </Link>
+            )}
+          </div>
+
+          {error && <p className="error-text">{error}</p>}
 
           {!loading && !error && upcoming.length === 0 && (
-            <p className="trips-message">
-              No upcoming trips yet.{" "}
-              <Link to="/create-trip">Plan one</Link>.
+            <p className="home-muted">
+              No upcoming trips yet. <Link to="/create-trip" className="home-link">Plan one</Link>.
             </p>
           )}
 
-          {!loading && !error && (
-            <div className="trip-list">
+          {!loading && !error && upcoming.length > 0 && (
+            <div className="home-trip-grid">
               {upcoming.map((trip) => (
                 <DashboardTripCard key={trip.id} trip={trip} />
               ))}
             </div>
           )}
-
         </section>
 
       </main>

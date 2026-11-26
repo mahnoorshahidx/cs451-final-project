@@ -1,8 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { CalendarDays, Users } from "lucide-react";
-import { getDestinationPhoto, getProfile } from "../api/api";
+import { getProfile } from "../api/api";
+import useDestinationPhoto from "../lib/useDestinationPhoto";
 import { formatDate } from "./TripCard";
 
 function daysUntil(iso) {
@@ -16,8 +16,16 @@ function daysUntil(iso) {
   return Math.round((departure - today) / 86400000);
 }
 
+function countdownLabel(days) {
+  if (days === null) return "Upcoming";
+  if (days <= 0) return "In progress";
+  if (days === 1) return "Tomorrow";
+  return `In ${days} days`;
+}
+
+// Photo tile for the home page's upcoming trips
 export default function DashboardTripCard({ trip }) {
-  const [photo, setPhoto] = useState(null);
+  const [photo, clearPhoto] = useDestinationPhoto(trip.destination);
   const [dateFormat, setDateFormat] = useState("MM/DD/YYYY");
 
   useEffect(() => {
@@ -25,9 +33,7 @@ export default function DashboardTripCard({ trip }) {
 
     getProfile()
       .then((user) => {
-        if (!cancelled) {
-          setDateFormat(user.dateFormat || "MM/DD/YYYY");
-        }
+        if (!cancelled) setDateFormat(user.dateFormat || "MM/DD/YYYY");
       })
       .catch(() => {});
 
@@ -36,104 +42,54 @@ export default function DashboardTripCard({ trip }) {
     };
   }, []);
 
-  useEffect(() => {
-    const destination = trip.destination?.trim();
-    setPhoto(null);
-
-    if (!destination) return;
-
-    let cancelled = false;
-
-    getDestinationPhoto(destination)
-      .then((result) => {
-        if (!cancelled && result?.imageUrl) {
-          setPhoto(result);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setPhoto(null);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [trip.destination]);
-
   const days = daysUntil(trip.startDate);
-  const status = days !== null && days > 0
-    ? "Upcoming"
-    : "In progress";
+  const soon = days !== null && days <= 1;
+  const city = trip.destination?.split(",")[0]?.trim() || trip.name;
 
   return (
-    <article className="dashboard-trip-card">
-      <div className="dashboard-trip-photo">
+    <article className="home-trip">
+      <div className="home-trip-photo">
         {photo?.imageUrl && (
-          <img
-            src={photo.imageUrl}
-            alt=""
-            loading="lazy"
-            onError={() => setPhoto(null)}
-          />
+          <img src={photo.imageUrl} alt="" loading="lazy" onError={clearPhoto} />
         )}
 
-        <span className="dashboard-trip-status">
-          {status}
+        <span className={`home-trip-status${soon ? " soon" : ""}`}>
+          {countdownLabel(days)}
         </span>
 
+        <span className="tb-wide home-trip-city">{city}</span>
+
         {photo?.photographerUrl && photo?.unsplashUrl && (
-          <span className="dashboard-trip-credit">
+          <span className="home-trip-credit">
             Photo by{" "}
-            <a
-              href={photo.photographerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={photo.photographerUrl} target="_blank" rel="noopener noreferrer">
               {photo.photographer}
-            </a>
-            {" "}on{" "}
-            <a
-              href={photo.unsplashUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            </a>{" "}
+            on{" "}
+            <a href={photo.unsplashUrl} target="_blank" rel="noopener noreferrer">
               Unsplash
             </a>
           </span>
         )}
       </div>
 
-      <div className="dashboard-trip-body">
-        <p className="dashboard-trip-location">
-          {trip.destination || "Destination not specified"}
-        </p>
-
+      <div className="home-trip-body">
         <h3>{trip.name}</h3>
 
-        <div className="dashboard-trip-details">
+        <div className="home-trip-details">
           <span>
-            <CalendarDays size={15} />
-            {formatDate(trip.startDate, dateFormat)}
-            {" – "}
-            {formatDate(trip.endDate, dateFormat)}
+            <CalendarDays size={15} aria-hidden="true" />
+            {formatDate(trip.startDate, dateFormat)} – {formatDate(trip.endDate, dateFormat)}
           </span>
-
           <span>
-            <Users size={15} />
-            {trip.numberOfTravelers}{" "}
-            {trip.numberOfTravelers === 1
-              ? "traveler"
-              : "travelers"}
+            <Users size={15} aria-hidden="true" />
+            {trip.numberOfTravelers} {trip.numberOfTravelers === 1 ? "traveler" : "travelers"}
           </span>
         </div>
 
-        <div className="dashboard-trip-actions">
-          <Link to={`/budget/${trip.id}`}>
-            View budget
-          </Link>
-
-          <Link to={`/trips/${trip.id}/edit?tab=details`}>
-            Edit details
-          </Link>
+        <div className="home-trip-actions">
+          <Link to={`/budget/${trip.id}`}>View budget</Link>
+          <Link to={`/trips/${trip.id}/edit?tab=details`}>Edit details</Link>
         </div>
       </div>
     </article>

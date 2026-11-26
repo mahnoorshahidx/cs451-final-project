@@ -1,12 +1,23 @@
+/* ================================
+   BANK CONNECTION CARD
+   Colors come from theme.css, so dark mode works automatically.
+================================ */
 
 .bank-card {
-  background: white;
-  border: 1px solid #e5ebef;
-  border-radius: 18px;
+  background: var(--tb-surface);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-lg);
   padding: 24px;
   width: 100%;
   box-sizing: border-box;
-  font-family: inherit;
+  font-family: var(--tb-font-body);
+  color: var(--tb-text);
+}
+
+.bank-card h2,
+.bank-card h3,
+.bank-card p {
+  margin: 0;
 }
 
 .bank-card-header {
@@ -14,89 +25,97 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .bank-card-header h2 {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
+  font-family: var(--tb-font-display);
+  font-stretch: 115%;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tb-text-muted);
 }
 
 .bank-status {
-  background: #f1f3f5;
-  color: #777;
-  font-size: 11px;
-  padding: 6px 10px;
-  border-radius: 6px;
+  padding: 4px 10px;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-surface-hover);
+  color: var(--tb-text-muted);
+  font-size: 12px;
+  font-weight: 700;
   white-space: nowrap;
 }
 
 .bank-status.connected {
-  background: #e7f6ef;
-  color: #397765;
+  background: var(--tb-sage-tint);
+  color: #3F5A3C;
 }
 
-/* Empty state */
+[data-theme="dark"] .bank-status.connected {
+  color: #A9C2A5;
+}
+
+/* ---------- Not connected ---------- */
+
 .bank-empty-state {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 12px;
-  padding: 15px 5px;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .bank-empty-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: #f0f6f8;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: var(--tb-blue-tint);
+  color: var(--tb-text);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 28px;
 }
 
 .bank-empty-state h3 {
   font-size: 16px;
-  margin: 0;
+  font-weight: 700;
 }
 
 .bank-empty-state p {
-  font-size: 13px;
-  color: #777;
-  line-height: 1.6;
-  max-width: 290px;
-  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--tb-text-muted);
 }
 
 .bank-connect-btn {
-  background: #285d77;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
+  margin-top: 6px;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: var(--tb-radius-pill);
+  border: 1.5px solid var(--tb-border-strong);
+  background: var(--tb-surface);
+  color: var(--tb-text);
+  font: 600 15px var(--tb-font-body);
   cursor: pointer;
-  font-weight: 600;
-  margin-top: 8px;
 }
 
 .bank-connect-btn:hover {
-  background: #1b465e;
+  border-color: var(--tb-blue);
 }
 
-/* Bank selection */
+/* ---------- Choosing a demo bank ---------- */
+
 .bank-selection > p {
-  font-size: 13px;
-  color: #777;
-  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--tb-text-muted);
+  margin-bottom: 12px;
 }
 
 .bank-options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .bank-option {
@@ -104,93 +123,93 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  background: white;
-  border: 1px solid #e5ebef;
-  border-radius: 10px;
-  padding: 12px;
-  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--tb-border);
+  background: var(--tb-surface);
+  color: var(--tb-text);
+  font-family: inherit;
   text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .bank-option:hover {
-  background: #f2f8fa;
-  border-color: #b8d8e3;
+  border-color: var(--tb-blue);
+  background: var(--tb-surface-hover);
 }
 
-.bank-option-logo {
-  width: 42px;
-  height: 42px;
-  background: #172b46;
-  color: white;
-  border-radius: 9px;
+.bank-option-logo,
+.bank-logo {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--tb-navy);
+  color: #FFFFFF;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 18px;
-  flex-shrink: 0;
+  font-family: var(--tb-font-display);
+  font-weight: 800;
+  font-size: 14px;
 }
 
 .bank-option-name {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
 }
 
 .bank-option-name strong {
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .bank-option-name small {
-  font-size: 11px;
-  color: #888;
+  font-size: 12px;
+  color: var(--tb-text-muted);
 }
 
 .bank-option-arrow {
-  color: #777;
-  font-size: 24px;
+  color: var(--tb-text-muted);
+  font-size: 22px;
 }
 
 .bank-cancel-btn {
   width: 100%;
-  margin-top: 12px;
-  background: transparent;
-  border: none;
-  color: #777;
+  margin-top: 10px;
   padding: 10px;
+  border: none;
+  background: transparent;
+  color: var(--tb-text-muted);
+  font: 600 14px var(--tb-font-body);
   cursor: pointer;
 }
 
-/* Connected bank */
+.bank-cancel-btn:hover {
+  color: var(--tb-text);
+}
+
+/* ---------- Connected ---------- */
+
 .bank-account-info {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 22px;
-}
-
-.bank-logo {
-  width: 44px;
-  height: 44px;
-  background: #172b46;
-  color: white;
-  border-radius: 9px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 20px;
-  flex-shrink: 0;
+  margin-bottom: 18px;
 }
 
 .bank-name h3 {
-  font-size: 13px;
-  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 2px;
 }
 
-.bank-name p {
-  font-size: 12px;
-  color: #888;
-  margin: 0;
+.bank-name p,
+.bank-balance p {
+  font-size: 13px;
+  color: var(--tb-text-muted);
 }
 
 .bank-balance {
@@ -198,53 +217,40 @@
   text-align: right;
 }
 
-.bank-balance p {
-  font-size: 11px;
-  color: #888;
-  margin: 0 0 5px;
-}
-
 .bank-balance h3 {
-  font-size: 19px;
-  margin: 0;
-}
-
-.smart-saving {
-  background: #f2f8f8;
-  border-radius: 9px;
-  padding: 15px;
-  margin-bottom: 16px;
-}
-
-.smart-saving h4 {
-  font-size: 13px;
-  margin: 0 0 8px;
-}
-
-.smart-saving p {
-  color: #888;
-  font-size: 11px;
-  margin: 0;
+  font-family: var(--tb-font-display);
+  font-stretch: 110%;
+  font-weight: 700;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
 }
 
 .bank-action-btn {
   width: 100%;
-  padding: 12px;
-  background: white;
-  border: 1px solid #dce4e8;
-  border-radius: 9px;
+  min-height: 44px;
+  border-radius: var(--tb-radius-pill);
+  border: 1.5px solid var(--tb-border-strong);
+  background: var(--tb-surface);
+  color: var(--tb-text);
+  font: 600 14px var(--tb-font-body);
   cursor: pointer;
 }
 
 .bank-action-btn:hover {
-  background: #f2f8fa;
+  border-color: var(--tb-coral);
+  color: var(--tb-red);
 }
 
-.bank-demo-note {
-  font-size: 10px;
-  color: #999;
-  text-align: center;
-  margin: 18px 0 0;
+[data-theme="dark"] .bank-action-btn:hover {
+  color: var(--tb-coral);
+}
+
+.bank-connect-btn:focus-visible,
+.bank-option:focus-visible,
+.bank-cancel-btn:focus-visible,
+.bank-action-btn:focus-visible {
+  outline: 3px solid var(--tb-blue);
+  outline-offset: 2px;
 }
 
 @media (max-width: 480px) {
@@ -257,101 +263,4 @@
     text-align: left;
     margin-left: 0;
   }
-}
-
-/* ==================================
-   BANK CONNECTION - LAVENDER CHARCOAL
-================================== */
-
-/* Main bank card */
-[data-theme="dark"] .bank-card {
-  background: rgba(53, 51, 68, 0.88);
-  border-color: rgba(190, 175, 215, 0.18);
-  color: #F1EDF8;
-}
-
-/* Headings */
-[data-theme="dark"] .bank-card h2,
-[data-theme="dark"] .bank-card h3,
-[data-theme="dark"] .bank-card h4 {
-  color: #F1EDF8;
-}
-
-/* Secondary text */
-[data-theme="dark"] .bank-name p,
-[data-theme="dark"] .bank-balance p,
-[data-theme="dark"] .bank-empty-state p,
-[data-theme="dark"] .bank-selection > p,
-[data-theme="dark"] .bank-option-name small,
-[data-theme="dark"] .bank-demo-note {
-  color: #C5BDD2;
-}
-
-/* Connection status */
-[data-theme="dark"] .bank-status {
-  background: #504960;
-  color: #E8DFF5;
-}
-
-[data-theme="dark"] .bank-status.connected {
-  background: rgba(113, 101, 142, 0.4);
-  color: #D8C8F0;
-}
-
-/* Bank logos */
-[data-theme="dark"] .bank-logo,
-[data-theme="dark"] .bank-option-logo {
-  background: #504960;
-  color: #FFFFFF;
-}
-
-/* Smart saving section */
-[data-theme="dark"] .smart-saving {
-  background: rgba(113, 101, 142, 0.2);
-}
-
-[data-theme="dark"] .smart-saving p {
-  color: #C5BDD2;
-}
-
-/* Bank selection options */
-[data-theme="dark"] .bank-option {
-  background: #353344;
-  border-color: rgba(190, 175, 215, 0.2);
-  color: #F1EDF8;
-}
-
-[data-theme="dark"] .bank-option:hover {
-  background: #454155;
-  border-color: #81729D;
-}
-
-[data-theme="dark"] .bank-option-arrow,
-[data-theme="dark"] .bank-cancel-btn {
-  color: #C5BDD2;
-}
-
-/* Buttons */
-[data-theme="dark"] .bank-action-btn {
-  background: #454155;
-  border-color: rgba(190, 175, 215, 0.25);
-  color: #F1EDF8;
-}
-
-[data-theme="dark"] .bank-action-btn:hover {
-  background: #504960;
-}
-
-[data-theme="dark"] .bank-connect-btn {
-  background: #71658E;
-  color: #FFFFFF;
-}
-
-[data-theme="dark"] .bank-connect-btn:hover {
-  background: #81729D;
-}
-
-/* Empty state icon */
-[data-theme="dark"] .bank-empty-icon {
-  background: #504960;
 }

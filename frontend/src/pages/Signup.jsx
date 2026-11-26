@@ -5,6 +5,7 @@ import { register } from "../api/api";
 import "../styles/SignUp.css";
 
 import TravelSlideshow from "../components/TravelSlideshow";
+import TripbudgetMark from "../components/TripbudgetMark";
 
 function Signup() {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ function Signup() {
 
       await register(body);
 
-      navigate("/", { state: { registered: true } });
+      navigate("/login", { state: { registered: true } });
     } catch (err) {
       setFieldErrors(err.fieldErrors || {});
       setError(err.message || "Registration failed.");
@@ -89,8 +90,16 @@ function Signup() {
       <section className="signup-right">
         <div className="signup-container">
 
-          <p className="welcome-text">GET STARTED</p>
-          <h1>Create your account</h1>
+          <Link to="/" className="auth-brand">
+            <TripbudgetMark size={22} />
+            <span className="tb-wide">Tripbudget</span>
+          </Link>
+
+          <p className="welcome-text tb-kicker">Get started</p>
+          <h1>
+            <span className="tb-wide">Create</span>{" "}
+            <span className="tb-serif">your account</span>
+          </h1>
 
           <p className="signup-subtitle">
             Start planning your next unforgettable adventure.
@@ -277,7 +286,7 @@ function Signup() {
 
           <p className="signup-login-text">
             Already have an account?{" "}
-            <Link to="/">Sign In</Link>
+            <Link to="/login">Sign in</Link>
           </p>
 
         </div>

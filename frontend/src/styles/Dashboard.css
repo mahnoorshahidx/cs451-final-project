@@ -9,21 +9,19 @@
   width: 100%;
   min-height: 100vh;
 
-  background: linear-gradient(
-    135deg,
-    #F8FBFD 0%,
-    #DCE8F1 55%,
-    #EEF5FA 100%
-  );
+  /* Flat background and font from theme.css (was a blue gradient + Arial) */
+  background: var(--tb-bg);
+  color: var(--tb-text);
 
-  font-family: Arial, sans-serif;
+  font-family: var(--tb-font-body);
   box-sizing: border-box;
   position: relative;
   isolation: isolate;
 }
 
-/* Soft Background Glow */
+/* Soft Background Glow (turned off in the redesign) */
 .dashboard-page::before {
+  display: none;
   content: "";
   position: fixed;
   width: 550px;
@@ -446,12 +444,7 @@
 
 /* Dashboard background */
 [data-theme="dark"] .dashboard-page {
-  background: linear-gradient(
-    135deg,
-    #24232E 0%,
-    #2D2B39 55%,
-    #24232E 100%
-  );
+  background: var(--tb-bg);
 }
 
 /* Soft lavender glow */
