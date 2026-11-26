@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { X } from "lucide-react";
 import "../styles/CreateTrip.css";
 import { createTrip, getProfile, recommendBudget, recommendTiming, saveBudget } from "../api/api";
 import { BUDGET_CATEGORIES, fallbackAllocations, scaleAllocations } from "../lib/budgetSuggestions";
@@ -393,13 +394,14 @@ function CreateTrip() {
       <div className="wizard-page">
         <header className="wizard-topbar">
           <div className="wizard-brand">
+            <span className="tb-kicker">New trip</span>
           </div>
           <button
             type="button"
             className="wizard-exit"
             onClick={() => navigate("/trips")}
           >
-            <span aria-hidden="true">×</span> Exit
+            <X size={16} aria-hidden="true" /> Exit
           </button>
         </header>
 
