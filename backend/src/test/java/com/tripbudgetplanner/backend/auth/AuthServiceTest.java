@@ -168,4 +168,47 @@ class AuthServiceTest {
 
         verify(userRepository).findByEmail("test@example.com");
     }
+
+    // Without two-factor, step 1 of sign-in returns the token straight away
+    @Test
+    void startLoginWithoutTwoFactorReturnsTheToken() {
+        User user = mock(User.class);
+        when(user.getId()).thenReturn(1L);
+        when(user.getName()).thenReturn("Test User");
+        when(user.getEmail()).thenReturn("test@example.com");
+        when(user.getPasswordHash()).thenReturn("hashedPassword");
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("Password123", "hashedPassword")).thenReturn(true);
+        when(jwtService.generateToken(1L, "test@example.com")).thenReturn("test-jwt-token");
+
+        com.tripbudgetplanner.backend.auth.dto.LoginResponse response =
+            authService.startLogin(new LoginRequest("test@example.com", "Password123"));
+
+        assertFalse(response.twoFactorRequired());
+        assertEquals("test-jwt-token", response.token());
+    }
+
+    // With two-factor on, a right password returns a challenge and no token
+    @Test
+    void startLoginWithTwoFactorSendsACodeInstead() {
+        com.tripbudgetplanner.backend.auth.twofactor.TwoFactorService twoFactor =
+            mock(com.tripbudgetplanner.backend.auth.twofactor.TwoFactorService.class);
+        AuthService withTwoFactor = new AuthService(userRepository, passwordEncoder, jwtService, twoFactor);
+
+        User user = new User();
+        user.setEmail("test@example.com");
+        user.setPasswordHash("hashedPassword");
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("Password123", "hashedPassword")).thenReturn(true);
+        when(twoFactor.isEnabled()).thenReturn(true);
+        when(twoFactor.start(user)).thenReturn(
+            com.tripbudgetplanner.backend.auth.dto.LoginResponse.challenge("abc", "t***@example.com", 600, 30, null));
+
+        com.tripbudgetplanner.backend.auth.dto.LoginResponse response =
+            withTwoFactor.startLogin(new LoginRequest("test@example.com", "Password123"));
+
+        assertTrue(response.twoFactorRequired());
+        assertNull(response.token());
+        verifyNoInteractions(jwtService);
+    }
 }

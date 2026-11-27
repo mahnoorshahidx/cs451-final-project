@@ -2,8 +2,16 @@
 import { apiFetch, ApiError } from "./client";
 
 // ---- Auth ----
+// Step 1: email + password. Returns { twoFactorRequired, challengeId, sentTo, ... } or { token, name, email }
 export const login = (email, password) =>
   apiFetch("/api/auth/login", { method: "POST", body: { email, password } });
+
+// Step 2 (two-factor): the 6-digit code. Returns { token, name, email }
+export const verifyLoginCode = (challengeId, code) =>
+  apiFetch("/api/auth/verify", { method: "POST", body: { challengeId, code } });
+
+export const resendLoginCode = (challengeId) =>
+  apiFetch("/api/auth/resend", { method: "POST", body: { challengeId } });
 
 export const register = (data) =>
   apiFetch("/api/auth/register", { method: "POST", body: data });

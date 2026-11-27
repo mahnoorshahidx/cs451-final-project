@@ -260,3 +260,58 @@
     padding: 28px 22px;
   }
 }
+
+/* ---------- Two-step sign-in ---------- */
+.login-code-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  background: var(--tb-navy);
+  color: var(--tb-marigold);
+}
+.login-form .login-code-input {
+  font-family: var(--tb-font-display);
+  font-stretch: 110%;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.5em;
+  text-align: center;
+  padding-left: 0.5em;
+}
+.login-code-help { margin: 2px 0 0; font-size: 14px; color: var(--tb-text-muted); }
+.login-link-button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--tb-accent-strong);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.login-link-button:disabled { color: var(--tb-text-muted); text-decoration: none; cursor: default; }
+.login-dev-code {
+  margin: 0 0 4px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--tb-butter-tint);
+  color: #213253;
+  font-size: 14px;
+}
+[data-theme="dark"] .login-dev-code { background: rgba(233, 171, 66, 0.18); color: var(--tb-text); }
+.login-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
+  border: 0;
+  background: none;
+  padding: 6px 0;
+  font: 600 14px var(--tb-font-body);
+  color: var(--tb-text-soft);
+  cursor: pointer;
+}
+.login-back-button:hover { color: var(--tb-text); }

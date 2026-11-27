@@ -234,3 +234,19 @@ CREATE TABLE IF NOT EXISTS trip_invitations (
     INDEX idx_trip_invitations_email_status (invited_email, status),
     INDEX idx_trip_invitations_trip_status (trip_id, status)
 );
+
+-- UC1 two-factor sign-in: a sign-in waiting for its emailed code (only the code's hash is stored)
+CREATE TABLE IF NOT EXISTS login_challenges (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    code_hash VARCHAR(100) NOT NULL,
+    created_at DATETIME(6) NOT NULL,
+    expires_at DATETIME(6) NOT NULL,
+    last_sent_at DATETIME(6) NOT NULL,
+    attempts INT NOT NULL DEFAULT 0,
+    send_count INT NOT NULL DEFAULT 1,
+    closed_at DATETIME(6) NULL,
+    CONSTRAINT fk_login_challenges_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    INDEX idx_login_challenges_user_open (user_id, closed_at)
+);
