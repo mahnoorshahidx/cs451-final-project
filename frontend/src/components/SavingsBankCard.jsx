@@ -189,6 +189,7 @@ export default function SavingsBankCard({ onAccountChange, onLogSavings }) {
               {busy ? "Disconnecting..." : "Disconnect"}
             </button>
           </div>
+          <span className="sv-bank-note">Money you add to a trip can come from this account. Demo mode: no real bank.</span>
         </>
       ) : (
         <>

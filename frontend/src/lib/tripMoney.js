@@ -80,3 +80,24 @@ export function suggestedPlan(trip, today = todayIso()) {
   const months = Math.max(1, Math.round(days / 30.44));
   return { target: budget, targetDate, months, monthly: Math.ceil(budget / months) };
 }
+
+// Totals from dated entries: the running total, the pace (saved per day since the first entry,
+// once there's a week of history), when the goal is reached at that pace, and where it ends up.
+export function savingsForecast(entries, goal, endDate, today) {
+  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
+  let running = 0;
+  const points = sorted.map((e) => ({ date: e.date, value: (running += Number(e.amount) || 0) }));
+  const saved = running;
+  const first = points[0];
+
+  // Pace = saved per day since the first entry (needs at least a week of history)
+  const span = first ? daysBetween(first.date, today) : 0;
+  const rate = first && span >= 7 && saved > 0 ? saved / span : null;
+  let reachDate = null;
+  if (rate && goal > saved) {
+    reachDate = addDays(today, Math.ceil((goal - saved) / rate));
+  }
+  const atEnd = rate && endDate > today ? saved + rate * daysBetween(today, endDate) : null;
+  return { points, saved, rate, reachDate, atEnd };
+}
+
