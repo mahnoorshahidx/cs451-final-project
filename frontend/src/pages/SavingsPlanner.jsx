@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { History, PencilLine, Plus, X } from "lucide-react";
+import { PencilLine, Plus, X } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import ConfirmDialog from "../components/ConfirmDialog";
 import SavingsBankCard from "../components/SavingsBankCard";
@@ -186,6 +186,11 @@ function Jar({ trip, savings, highlighted, today, busy, onAdd, onEditGoal, onUse
   const status = hasGoal ? STATUS[trip.savingsStatus] ?? STATUS.NO_PLAN : null;
   const suggestion = suggestedPlan(trip, today);
   const ref = useRef(null);
+  // The last two contributions, newest first
+  const recent = [...(savings?.contributions ?? [])]
+    .filter((c) => c.date)
+    .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
+    .slice(0, 2);
 
   useEffect(() => {
     if (highlighted) ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -267,6 +272,18 @@ function Jar({ trip, savings, highlighted, today, busy, onAdd, onEditGoal, onUse
           <button type="button" className="tb-btn tb-btn-outline" onClick={onEditGoal}>Set a goal</button>
         )}
       </div>
+
+      {recent.length > 0 && (
+        <ul className="sv-jar-recent" aria-label={`Recent savings for ${trip.name}`}>
+          {recent.map((c) => (
+            <li key={c.id}>
+              <span className="tb-num">+{money(c.amount)}</span>
+              <span>{c.description || (c.bankAccountId ? "From your bank" : "Added")}</span>
+              <time dateTime={c.date}>{shortDate(c.date)}</time>
+            </li>
+          ))}
+        </ul>
+      )}
     </li>
   );
 }
@@ -292,8 +309,6 @@ function FormDialog({ title, onClose, busy, children }) {
     </div>
   );
 }
-
-const RECENT = 5;
 
 export default function SavingsPlanner() {
   const [searchParams] = useSearchParams();
@@ -403,7 +418,7 @@ export default function SavingsPlanner() {
       return items;
     })
     .sort((a, b) => (b.date || "0000").localeCompare(a.date || "0000"));
-  const shownHistory = showAll ? history : history.slice(0, RECENT);
+  const shownHistory = showAll ? history : [];
 
   const dialogTrip = dialog ? tripsById[dialog.tripId] : null;
 
@@ -419,23 +434,61 @@ export default function SavingsPlanner() {
             <span className="tb-kicker">Savings</span>
             <h1 className="tb-wide">Saving up for every trip</h1>
           </div>
+          {overview && goalTotal > 0 && (
+            <div className="sv-headline" aria-label="Saved across your trips">
+              <span className="tb-kicker">Saved so far</span>
+              <p>
+                <strong className="tb-num">{money(savedTotal)}</strong> of {money(goalTotal)}
+                <span className="sv-overview-pct tb-num">{Math.min(100, Math.round((savedTotal / goalTotal) * 100))}%</span>
+              </p>
+            </div>
+          )}
         </header>
 
         {error && <p role="alert" className="error-text">{error}</p>}
+        {pageError && <p role="alert" className="error-text">{pageError}</p>}
+        {!overview && !error && <p role="status" className="bp-muted">Loading your savings...</p>}
 
-        <div className="sv-top">
+        {overview && upcoming.length === 0 && (
+          <p className="bp-muted">
+            No upcoming trips. <Link to="/create-trip">Plan a trip</Link> to start saving for it.
+          </p>
+        )}
+
+        <ul ref={jarsRef} className="sv-jars" aria-label="Your trips">
+          {upcoming.map((trip) => (
+            <Jar
+              key={trip.tripId}
+              trip={trip}
+              savings={savingsByTrip[trip.tripId]}
+              highlighted={String(trip.tripId) === highlightId}
+              today={today}
+              busy={busy}
+              onAdd={() => setDialog({ tripId: trip.tripId, kind: "add" })}
+              onEditGoal={() => setDialog({ tripId: trip.tripId, kind: "goal" })}
+              onUseSuggestion={(s) =>
+                run(
+                  () =>
+                    saveSavingsGoal(trip.tripId, {
+                      targetAmount: s.target,
+                      initialSavedAmount: 0,
+                      targetDate: s.targetDate,
+                      plannedMonthlyContribution: s.monthly,
+                    }),
+                  { inDialog: false }
+                )
+              }
+            />
+          ))}
+        </ul>
+
+        <div className="sv-bottom">
           <section className="sv-overview tb-card" aria-labelledby="sv-overview-title">
             <div className="sv-overview-head">
-              <div>
-                <span id="sv-overview-title" className="tb-kicker">Saved so far</span>
-                <p className="sv-overview-total">
-                  <span className="tb-num">{money(savedTotal)}</span>
-                  {goalTotal > 0 && <span> of {money(goalTotal)} in goals</span>}
-                </p>
-              </div>
-              {goalTotal > 0 && <span className="sv-overview-pct tb-num">{Math.min(100, Math.round((savedTotal / goalTotal) * 100))}%</span>}
+              <h2 id="sv-overview-title" className="tb-wide">Your pace</h2>
+              {forecastNote && <p className="sv-forecast">{forecastNote}</p>}
             </div>
-            {overview ? (
+            {overview && (
               <>
                 <SavingsChart entries={chartEntries} goal={goalTotal} endDate={lastTarget} today={today} money={money} />
                 <div className="sv-chart-legend">
@@ -443,71 +496,24 @@ export default function SavingsPlanner() {
                   <span><i className="is-pace" /> At this pace</span>
                   <span><i className="is-goal" /> Goal</span>
                 </div>
-                {forecastNote && <p className="sv-forecast">{forecastNote}</p>}
               </>
-            ) : (
-              <p className="bp-muted" role="status">Loading...</p>
             )}
           </section>
 
           <SavingsBankCard onAccountChange={setAccount} onLogSavings={scrollToJars} />
         </div>
 
-        <section ref={jarsRef} aria-labelledby="sv-jars-title">
-          <div className="sv-section-head">
-            <h2 id="sv-jars-title" className="tb-wide">Your trips</h2>
-            {overview && <span className="bp-muted">{upcoming.length} upcoming</span>}
-          </div>
-          {pageError && <p role="alert" className="error-text">{pageError}</p>}
-          {overview && upcoming.length === 0 && (
-            <p className="bp-muted">
-              No upcoming trips. <Link to="/create-trip">Plan a trip</Link> to start saving for it.
-            </p>
-          )}
-          <ul className="sv-jars">
-            {upcoming.map((trip) => (
-              <Jar
-                key={trip.tripId}
-                trip={trip}
-                savings={savingsByTrip[trip.tripId]}
-                highlighted={String(trip.tripId) === highlightId}
-                today={today}
-                busy={busy}
-                onAdd={() => setDialog({ tripId: trip.tripId, kind: "add" })}
-                onEditGoal={() => setDialog({ tripId: trip.tripId, kind: "goal" })}
-                onUseSuggestion={(s) =>
-                  run(
-                    () =>
-                      saveSavingsGoal(trip.tripId, {
-                        targetAmount: s.target,
-                        initialSavedAmount: 0,
-                        targetDate: s.targetDate,
-                        plannedMonthlyContribution: s.monthly,
-                      }),
-                    { inDialog: false }
-                  )
-                }
-              />
-            ))}
-          </ul>
-        </section>
-
         {history.length === 0 ? (
-          <section className="sv-history-empty" aria-label="Recent activity">
-            <History size={24} aria-hidden="true" />
-            <span>Money you add to a trip will show up here.</span>
-          </section>
+          null
         ) : (
           <section className="sv-history tb-card" aria-labelledby="sv-history-title">
             <div className="sv-card-head">
-              <h2 id="sv-history-title" className="tb-wide">Recent activity</h2>
-              {history.length > RECENT && (
-                <button type="button" className="sv-text-btn" onClick={() => setShowAll((v) => !v)} aria-expanded={showAll}>
-                  {showAll ? "Show less" : `Show all ${history.length}`}
-                </button>
-              )}
+              <h2 id="sv-history-title" className="tb-wide">All activity</h2>
+              <button type="button" className="sv-text-btn" onClick={() => setShowAll((v) => !v)} aria-expanded={showAll}>
+                {showAll ? "Hide" : `Show all ${history.length}`}
+              </button>
             </div>
-            <ul>
+            <ul hidden={!showAll}>
               {shownHistory.map((c) => {
                 const m = makeMoney(c.trip.currency);
                 const isPast = past.some((t) => t.tripId === c.trip.tripId);

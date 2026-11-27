@@ -519,3 +519,56 @@
   .sv-history-row { grid-template-columns: 56px minmax(0, 1fr) auto 30px; gap: 10px; }
 }
 .bp-muted a { color: var(--tb-accent-strong); font-weight: 600; }
+
+/* ---------- Savings layout: trips first ---------- */
+.sv-headline { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.sv-headline p { margin: 0; display: flex; align-items: baseline; gap: 8px; font-size: 15px; color: var(--tb-text-muted); }
+.sv-headline strong { font-size: 30px; color: var(--tb-text); }
+.sv-headline .sv-overview-pct { align-self: center; font-size: 13px; padding: 4px 10px; }
+
+.sv-jars { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+/* Last two contributions in each jar */
+.sv-jar-recent {
+  list-style: none;
+  margin: 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--tb-border);
+  display: grid;
+  gap: 8px;
+}
+.sv-jar-recent li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 13px;
+  color: var(--tb-text-muted);
+}
+.sv-jar-recent .tb-num { font-size: 14px; color: var(--tb-success-fg); }
+[data-theme="dark"] .sv-jar-recent .tb-num { color: #B9D3B4; }
+.sv-jar-recent li > span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sv-jar-recent time { font-weight: 600; color: var(--tb-blue); }
+
+/* Pace chart and bank, smaller, below the trips */
+.sv-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+.sv-bottom .sv-overview { padding: 22px 24px; gap: 10px; }
+.sv-bottom .sv-overview-head { flex-direction: column; gap: 4px; }
+.sv-bottom .sv-overview-head h2 { margin: 0; font-size: 16px; color: var(--tb-text); }
+.sv-bottom .sv-forecast { font-weight: 500; color: var(--tb-text-muted); }
+.sv-bottom .sv-bank { padding: 22px 24px; gap: 14px; }
+.sv-bottom .sv-bank-balance .tb-num { font-size: 30px; }
+.sv-bottom .sv-bank .tb-btn { min-height: 42px; padding: 0 18px; font-size: 14px; }
+.sv-bottom .sv-bank > .sv-bank-note { margin-top: auto; }
+
+@media (max-width: 1000px) {
+  .sv-bottom { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .sv-headline { align-items: flex-start; }
+}

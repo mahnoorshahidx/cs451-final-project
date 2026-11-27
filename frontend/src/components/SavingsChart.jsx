@@ -6,7 +6,7 @@ import { addDays, savingsForecast, shortDate, toUtc } from "../lib/tripMoney";
 // entries: [{ date: "YYYY-MM-DD", amount }], goal: number, endDate: "YYYY-MM-DD", today, money(n)
 
 const W = 640;
-const H = 220;
+const H = 170;
 const PAD = { top: 18, right: 16, bottom: 30, left: 16 };
 
 export default function SavingsChart({ entries, goal, endDate, today, money }) {
