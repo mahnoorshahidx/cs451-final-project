@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import {
-  ArrowRight, CalendarDays, Coffee, Crown, PiggyBank, Plus, ShieldCheck, SlidersHorizontal, Users,
-} from "lucide-react";
+import { ArrowRight, CalendarDays, Coffee, Crown, Plus, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import BudgetDonut from "../components/BudgetDonut";
 import { getBudget, getBudgetOverview } from "../api/api";
 import { categoryMeta } from "../lib/budgetCategories";
-import { todayIso } from "../lib/formatDate";
 import { countdown, daysBetween, envelopes, makeMoney, shortDate, splitTrips } from "../lib/tripMoney";
 import "../styles/Dashboard.css";
 import "../styles/BudgetPages.css";
@@ -121,111 +118,36 @@ function Envelopes({ trip, budget }) {
   );
 }
 
-// Facts worked out from the budget and the trip; only the ones the data supports are shown
+// A slim row of facts along the bottom of the board, worked out from the budget
 function TripFacts({ trip, budget }) {
   const money = makeMoney(budget.currency || trip.currency);
-  const today = todayIso();
   const { total, items, buffer } = envelopes(budget);
+  if (items.length === 0 || total <= 0) return null;
+
   const travelers = Math.max(1, Number(trip.numberOfTravelers) || 1);
-  const nights = Math.max(0, daysBetween(trip.startDate, trip.endDate));
-  const days = nights + 1;
-  const facts = [];
-
-  if (items.length > 0) {
-    const biggest = items.reduce((a, b) => (b.amount > a.amount ? b : a));
-    facts.push({
-      Icon: Crown,
-      value: `${Math.round((biggest.amount / total) * 100)}%`,
-      title: `goes to ${biggest.name.toLowerCase()}`,
-      text: `${biggest.name} is the biggest envelope at ${money(biggest.amount)}.`,
-    });
-  }
-
-  facts.push({
-    Icon: CalendarDays,
-    value: money(total / travelers / days),
-    title: "per person, per day",
-    text: `Spread over ${days} day${days === 1 ? "" : "s"} and ${travelers} traveler${travelers === 1 ? "" : "s"}.`,
-  });
-
+  const days = Math.max(0, daysBetween(trip.startDate, trip.endDate)) + 1;
+  const biggest = items.reduce((x, y) => (y.amount > x.amount ? y : x));
   const everyday = items.filter((i) => ["Food", "Activities", "Local transport"].includes(i.name));
-  if (everyday.length > 0) {
-    const amount = everyday.reduce((s, i) => s + i.amount, 0);
-    facts.push({
-      Icon: Coffee,
-      value: money(amount / travelers / days),
-      title: "spending money a day",
-      text: `Each person's daily share of ${everyday.map((i) => i.name.toLowerCase()).join(", ")}.`,
-    });
-  }
+  const everydayTotal = everyday.reduce((sum, i) => sum + i.amount, 0);
 
-  if (items.length > 0) {
-    facts.push({
-      Icon: ShieldCheck,
-      value: buffer > 0 ? money(buffer) : "$0",
-      title: buffer > 0 ? "cushion for surprises" : "no cushion",
-      text: buffer > 0
-        ? `${Math.round((buffer / total) * 100)}% of the budget isn't assigned to an envelope.`
-        : "Every dollar is in an envelope. Consider leaving some room.",
-    });
-  }
-
-  // Saving: what's left, or what a week of saving would need to look like
-  const weeksLeft = Math.max(0, Math.floor(daysBetween(today, trip.startDate) / 7));
-  if (trip.savingsTarget != null) {
-    const left = Math.max(0, Number(trip.savingsTarget) - Number(trip.savedAmount || 0));
-    facts.push({
-      Icon: PiggyBank,
-      value: left > 0 ? money(left) : "Funded",
-      title: left > 0 ? "still to save" : "fully saved",
-      text: left > 0 && weeksLeft > 0
-        ? `About ${money(left / weeksLeft)} a week until you leave.`
-        : left > 0 ? "The trip is almost here." : "You've saved the whole goal.",
-      link: { to: `/savings-planner?trip=${trip.tripId}`, label: "View savings" },
-    });
-  } else {
-    // Short trips count in days, longer ones in weeks
-    const daysLeft = Math.max(0, daysBetween(today, trip.startDate));
-    const byWeek = weeksLeft >= 3;
-    const periods = byWeek ? weeksLeft : daysLeft;
-    if (periods > 0) {
-      const unit = byWeek ? "week" : "day";
-      facts.push({
-        Icon: PiggyBank,
-        value: money(total / periods),
-        title: `a ${unit} covers it`,
-        text: `Saving that for the ${periods} ${unit}${periods === 1 ? "" : "s"} before you leave pays for the whole trip.`,
-        link: { to: `/savings-planner?trip=${trip.tripId}`, label: "Set a savings goal" },
-      });
-    }
-  }
-
-  facts.push({
-    Icon: Users,
-    value: `${days}d · ${nights}n`,
-    title: "trip length",
-    text: `${shortDate(trip.startDate)} to ${shortDate(trip.endDate, true)} with ${travelers} traveler${travelers === 1 ? "" : "s"}.`,
-  });
+  const facts = [
+    { Icon: Crown, value: `${Math.round((biggest.amount / total) * 100)}%`, text: `goes to ${biggest.name.toLowerCase()}` },
+    { Icon: CalendarDays, value: money(total / travelers / days), text: "per person, per day" },
+    ...(everydayTotal > 0
+      ? [{ Icon: Coffee, value: money(everydayTotal / travelers / days), text: "a day to spend on food and fun" }]
+      : []),
+    { Icon: ShieldCheck, value: money(buffer), text: buffer > 0 ? "left over for surprises" : "buffer: every dollar is assigned" },
+  ];
 
   return (
-    <section className="bp-facts" aria-labelledby="bp-facts-title">
-      <h2 id="bp-facts-title" className="tb-wide">Good to know</h2>
-      <ul>
-        {facts.map(({ Icon, value, title, text, link }) => (
-          <li key={title} className="bp-fact">
-            <span className="bp-fact-icon" aria-hidden="true"><Icon size={18} /></span>
-            <span className="tb-num bp-fact-value">{value}</span>
-            <strong>{title}</strong>
-            <p>{text}</p>
-            {link && (
-              <Link to={link.to} className="bp-text-link">
-                {link.label} <ArrowRight size={14} aria-hidden="true" />
-              </Link>
-            )}
-          </li>
-        ))}
-      </ul>
-    </section>
+    <ul className="bp-facts" aria-label="Good to know">
+      {facts.map(({ Icon, value, text }) => (
+        <li key={text}>
+          <Icon size={17} aria-hidden="true" />
+          <span><strong className="tb-num">{value}</strong> {text}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -379,6 +301,7 @@ export default function BudgetPlanner() {
                     <>
                       <StatStrip trip={selected} budget={budget} />
                       <Envelopes trip={selected} budget={budget} />
+                      <TripFacts trip={selected} budget={budget} />
                     </>
                   )}
                 </>
@@ -387,7 +310,6 @@ export default function BudgetPlanner() {
           </section>
         )}
 
-        {selected && budget && <TripFacts trip={selected} budget={budget} />}
       </main>
     </div>
   );

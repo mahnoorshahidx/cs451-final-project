@@ -201,45 +201,32 @@
 }
 .bp-env-empty p { margin: 0; font-size: 16px; color: var(--tb-text-soft); }
 
-/* ---------- Facts ---------- */
-.bp-facts h2 { margin: 0 0 14px; font-size: 18px; color: var(--tb-text); }
-.bp-facts ul {
+/* ---------- Facts: one slim row at the bottom of the board ---------- */
+.bp-facts {
   list-style: none;
   margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-@media (max-width: 1100px) { .bp-facts ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 600px) { .bp-facts ul { grid-template-columns: 1fr; } }
-.bp-fact {
+  padding: 18px 0 0;
+  border-top: 1px solid var(--tb-border);
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  padding: 20px 22px;
-  border-radius: var(--tb-radius-lg);
-  background: var(--tb-surface);
-  border: 1px solid var(--tb-border);
+  flex-wrap: wrap;
+  gap: 10px 0;
 }
-.bp-fact-icon {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  margin-bottom: 8px;
-  border-radius: 12px;
-  background: var(--tb-blue-tint);
-  color: var(--tb-accent-strong);
+.bp-facts li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 22px;
+  border-left: 1px solid var(--tb-border);
+  font-size: 14px;
+  color: var(--tb-text-muted);
 }
-.bp-fact:nth-child(3n + 2) .bp-fact-icon { background: var(--tb-sage-tint); color: var(--tb-success-fg); }
-.bp-fact:nth-child(3n + 3) .bp-fact-icon { background: var(--tb-coral-tint); color: #9A3B30; }
-[data-theme="dark"] .bp-fact-icon { background: var(--tb-surface-hover) !important; color: var(--tb-marigold) !important; }
-.bp-fact-value { font-size: 28px; color: var(--tb-text); line-height: 1.1; }
-.bp-fact strong { font-size: 14px; color: var(--tb-text); }
-.bp-fact p { margin: 4px 0 0; font-size: 13px; line-height: 1.45; color: var(--tb-text-muted); }
-.bp-fact .bp-text-link { margin-top: 8px; font-size: 13px; }
+.bp-facts li:first-child { padding-left: 0; border-left: 0; }
+.bp-facts svg { flex: none; color: var(--tb-blue); }
+.bp-facts strong { font-size: 16px; color: var(--tb-text); }
+@media (max-width: 600px) {
+  .bp-facts { flex-direction: column; gap: 10px; }
+  .bp-facts li { padding: 0; border-left: 0; }
+}
 
 .bp-empty { padding: 32px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .bp-empty h2 { margin: 0; font-size: 22px; }
