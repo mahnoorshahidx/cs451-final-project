@@ -124,27 +124,54 @@
   text-transform: uppercase;
   color: var(--tb-text-soft);
 }
-.itl-rows { display: grid; gap: 12px; }
-.itl-row {
+.itl-cards {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr) minmax(180px, auto) auto;
-  align-items: center;
-  gap: 20px;
-  padding: 14px 18px 14px 14px;
-  border-radius: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 18px;
+}
+.itl-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  overflow: hidden;
   background: var(--tb-surface);
   border: 1px solid var(--tb-border);
-  border-left: 5px solid var(--tb-blue);
+  box-shadow: 0 14px 30px -26px rgba(33, 50, 83, 0.5);
 }
-.itl-thumb {
+.itl-card-photo {
   position: relative;
-  width: 72px;
-  height: 72px;
-  border-radius: 14px;
-  overflow: hidden;
+  display: block;
+  height: 150px;
   background: linear-gradient(160deg, var(--tb-blue), var(--tb-sage));
 }
-.itl-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.itl-card-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.itl-countdown {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--tb-blue);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.itl-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  padding: 18px 20px 20px;
+  border-top: 4px solid var(--tb-sage);
+}
+.itl-card-body .itl-dates { margin-top: 4px; }
+.itl-card-body .itl-row-actions { margin-top: auto; justify-content: space-between; }
 .itl-row-main { display: grid; gap: 4px; min-width: 0; }
 .itl-row-name {
   font-size: 17px;
@@ -220,10 +247,6 @@
 @media (max-width: 960px) {
   .itl-next { grid-template-columns: 1fr; }
   .itl-next-photo { min-height: 180px; }
-  .itl-row { grid-template-columns: 64px minmax(0, 1fr) auto; }
-  .itl-thumb { width: 64px; height: 64px; }
-  .itl-row-plan { grid-column: 2 / -1; grid-row: 2; }
-  .itl-row-actions { grid-column: 3; grid-row: 1; }
 }
 @media (max-width: 600px) {
   .itl-next-body { padding: 22px 20px; }
@@ -231,3 +254,6 @@
   .itl-past-row .itl-past-meta { grid-column: 1; }
   .itl-past-row .itl-delete { grid-column: 2; grid-row: 1; }
 }
+.itl-card-body .itl-nextup { align-items: flex-start; }
+.itl-card-body .itl-nextup svg { flex: none; margin-top: 2px; }
+.itl-card-body .itl-nextup span { white-space: normal; }

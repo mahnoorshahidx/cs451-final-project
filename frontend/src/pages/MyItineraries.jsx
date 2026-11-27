@@ -157,40 +157,48 @@ function NextTrip({ trip, activities, today, onDelete }) {
   );
 }
 
-// A later trip as a row with its day strip
-function ItineraryRow({ trip, activities, today, onDelete }) {
+// A later trip as a smaller card with its day strip
+function ItineraryCard({ trip, activities, today, onDelete }) {
   const [photo, clearPhoto] = useDestinationPhoto(trip.destination);
   const { days, counts, planned } = planStats(trip, activities);
   const next = nextActivity(activities, today);
+  const until = Math.round((toUtc(trip.startDate) - toUtc(today)) / 86400000);
 
   return (
-    <article className="itl-row">
-      <Link to={`/itineraries/${trip.id}`} className="itl-thumb" tabIndex={-1} aria-hidden="true">
+    <article className="itl-card">
+      <Link to={`/itineraries/${trip.id}`} className="itl-card-photo" tabIndex={-1} aria-hidden="true">
         {photo?.imageUrl && <img src={photo.imageUrl} alt="" loading="lazy" onError={clearPhoto} />}
+        <span className="itl-countdown">{until <= 0 ? "Now" : until === 1 ? "Tomorrow" : `In ${until} days`}</span>
       </Link>
-      <div className="itl-row-main">
-        <Link to={`/itineraries/${trip.id}`} className="itl-row-name">{trip.name}</Link>
-        <p className="itl-dates">
-          {shortDay(trip.startDate)} – {shortDay(trip.endDate)}
-          {trip.destination ? ` · ${trip.destination}` : ""}
-        </p>
-        {next && (
-          <p className="itl-nextup">
-            <Clock size={14} aria-hidden="true" />
+      <div className="itl-card-body">
+        <div>
+          <Link to={`/itineraries/${trip.id}`} className="itl-row-name">{trip.name}</Link>
+          <p className="itl-dates">
+            {shortDay(trip.startDate)} – {shortDay(trip.endDate)}
+            {trip.destination ? ` · ${trip.destination}` : ""}
+          </p>
+        </div>
+        <div className="itl-row-plan">
+          <DayStrip days={days} counts={counts} today={today} />
+          <span>{planned} of {days.length} days planned</span>
+        </div>
+        <p className="itl-nextup">
+          <Clock size={14} aria-hidden="true" />
+          {next ? (
             <span>
               Next up: <strong>{next.title}</strong> · {shortDay(next.activityDate)}
               {next.startTime ? `, ${clockTime(next.startTime)}` : ""}
             </span>
-          </p>
-        )}
-      </div>
-      <div className="itl-row-plan">
-        <DayStrip days={days} counts={counts} today={today} />
-        <span>{planned} of {days.length} days planned</span>
-      </div>
-      <div className="itl-row-actions">
-        <Link to={`/itineraries/${trip.id}`} className="tb-btn tb-btn-outline">Open</Link>
-        <DeleteButton trip={trip} onDelete={onDelete} />
+          ) : (
+            <span>Nothing planned yet</span>
+          )}
+        </p>
+        <div className="itl-row-actions">
+          <Link to={`/itineraries/${trip.id}`} className="tb-btn tb-btn-outline">
+            {planned < days.length ? "Keep planning" : "Open"}
+          </Link>
+          <DeleteButton trip={trip} onDelete={onDelete} />
+        </div>
       </div>
     </article>
   );
@@ -327,9 +335,9 @@ export default function MyItineraries() {
         {upcoming.length > 1 && (
           <section className="itl-group" aria-labelledby="itl-later">
             <h2 id="itl-later" className="itl-group-title">Coming up</h2>
-            <div className="itl-rows">
+            <div className="itl-cards">
               {upcoming.slice(1).map(({ trip, activities }) => (
-                <ItineraryRow key={trip.id} trip={trip} activities={activities} today={today} onDelete={setToDelete} />
+                <ItineraryCard key={trip.id} trip={trip} activities={activities} today={today} onDelete={setToDelete} />
               ))}
             </div>
           </section>
