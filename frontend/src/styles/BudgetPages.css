@@ -572,3 +572,27 @@
 @media (max-width: 700px) {
   .sv-headline { align-items: flex-start; }
 }
+
+/* ---------- Bank strip (top of Savings) ---------- */
+.sv-bank-strip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-radius: var(--tb-radius-lg);
+  background: var(--tb-panel);
+  color: var(--tb-panel-text);
+}
+.sv-bank-strip .sv-bank-icon { width: 42px; height: 42px; border-radius: 12px; }
+.sv-strip-text { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 2px; margin: 0; }
+.sv-strip-text strong { display: flex; align-items: center; gap: 10px; font-size: 16px; }
+.sv-strip-text > span { font-size: 14px; color: var(--tb-panel-muted); }
+.sv-strip-text .tb-num { font-size: 16px; color: var(--tb-panel-text); }
+.sv-strip-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.sv-strip-actions .tb-btn { min-height: 40px; padding: 0 16px; font-size: 14px; }
+.sv-bank-strip .sv-bank-error { flex-basis: 100%; }
+.sv-bottom { grid-template-columns: 1fr; }
+@media (max-width: 600px) {
+  .sv-strip-actions { width: 100%; }
+}

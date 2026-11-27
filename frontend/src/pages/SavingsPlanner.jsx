@@ -445,6 +445,8 @@ export default function SavingsPlanner() {
           )}
         </header>
 
+        <SavingsBankCard onAccountChange={setAccount} onLogSavings={scrollToJars} />
+
         {error && <p role="alert" className="error-text">{error}</p>}
         {pageError && <p role="alert" className="error-text">{pageError}</p>}
         {!overview && !error && <p role="status" className="bp-muted">Loading your savings...</p>}
@@ -499,8 +501,6 @@ export default function SavingsPlanner() {
               </>
             )}
           </section>
-
-          <SavingsBankCard onAccountChange={setAccount} onLogSavings={scrollToJars} />
         </div>
 
         {history.length === 0 ? (

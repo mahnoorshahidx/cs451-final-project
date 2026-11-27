@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Landmark, Search, X } from "lucide-react";
+import { Landmark, Plus, Search, X } from "lucide-react";
 import { connectBankAccount, disconnectBankAccount, listBankAccounts } from "../api/api";
 import { bankFor, DEMO_BANKS } from "../lib/demoBanks";
 
@@ -162,49 +162,45 @@ export default function SavingsBankCard({ onAccountChange, onLogSavings }) {
     setError("");
   }, []);
 
+  // A slim navy strip: who you bank with and the balance on the left, actions on the right
   return (
-    <section className="sv-bank tb-panel" aria-labelledby="sv-bank-heading">
+    <section className="sv-bank-strip" aria-label="Bank account">
+      <span className="sv-bank-icon" aria-hidden="true"><Landmark size={20} /></span>
+
       {account === undefined ? (
-        <p role="status">Loading your bank account...</p>
+        <p className="sv-strip-text" role="status">Loading your bank account...</p>
       ) : account ? (
         <>
-          <div className="sv-bank-top">
-            <span id="sv-bank-heading" className="tb-kicker">Connected account</span>
-            <span className="sv-demo-chip">Demo</span>
-          </div>
-          <div className="sv-bank-balance">
-            <span className="tb-num">
+          <div className="sv-strip-text">
+            <strong>
+              {bank.name} {account.accountType === "SAVINGS" ? "Savings" : "Checking"} ••{account.accountLast4}
+              <span className="sv-demo-chip">Demo</span>
+            </strong>
+            <span>
               {bank.balance != null
-                ? bank.balance.toLocaleString("en-US", { style: "currency", currency: "USD" })
+                ? <><span className="tb-num">{bank.balance.toLocaleString("en-US", { style: "currency", currency: "USD" })}</span> available</>
                 : "Connected"}
             </span>
-            <span className="sv-bank-sub">
-              {bank.balance != null ? "Available · " : ""}
-              {account.accountType === "SAVINGS" ? "Savings" : "Checking"} ••{account.accountLast4} · {bank.name}
-            </span>
           </div>
-          <div className="sv-bank-actions">
+          <div className="sv-strip-actions">
             <button type="button" className="tb-btn tb-btn-accent" onClick={onLogSavings}>Move money to a trip</button>
             <button type="button" className="tb-btn sv-btn-on-navy" onClick={disconnect} disabled={busy}>
               {busy ? "Disconnecting..." : "Disconnect"}
             </button>
           </div>
-          <span className="sv-bank-note">Money you add to a trip can come from this account. Demo mode: no real bank.</span>
         </>
       ) : (
         <>
-          <div className="sv-bank-intro">
-            <span className="sv-bank-icon" aria-hidden="true"><Landmark size={22} /></span>
-            <div>
-              <h2 id="sv-bank-heading" className="sv-bank-title">Connect a bank account</h2>
-              <p className="sv-bank-sub">See your balance and track what you've set aside</p>
-            </div>
+          <div className="sv-strip-text">
+            <strong id="sv-bank-heading">Connect a bank account</strong>
+            <span>See your balance and move money to your trips. Demo banks only.</span>
           </div>
-          <div className="sv-bank-actions">
-            <button type="button" className="tb-btn tb-btn-accent" onClick={() => setDialog("search")}>Connect bank</button>
+          <div className="sv-strip-actions">
+            <button type="button" className="tb-btn tb-btn-accent" onClick={() => setDialog("search")}>
+              <Plus size={16} aria-hidden="true" /> Connect bank
+            </button>
             <button type="button" className="tb-btn sv-btn-on-navy" onClick={() => setDialog("manual")}>Add manually</button>
           </div>
-          <span className="sv-bank-note">Demo mode: uses test banks only, no real accounts.</span>
         </>
       )}
       {error && !dialog && <p role="alert" className="sv-bank-error">{error}</p>}
