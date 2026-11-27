@@ -235,9 +235,8 @@ function Dashboard() {
         <header className="home-header">
           <div className="home-greeting">
             <span className="tb-kicker">{todayLabel}</span>
-            <h1>
-              <span className="tb-wide">{greeting()},</span>{" "}
-              <span className="tb-serif">{firstName}</span>
+            <h1 className="tb-wide">
+              {greeting()}, {firstName}
             </h1>
           </div>
 
@@ -262,10 +261,7 @@ function Dashboard() {
           ) : (
             <section className="home-next home-next-empty">
               <span className="tb-kicker">Your next adventure</span>
-              <h2>
-                <span className="tb-wide">Where to</span>{" "}
-                <span className="tb-serif">next?</span>
-              </h2>
+              <h2 className="tb-wide">Where to next?</h2>
               <p>Add a trip and we'll help you budget and save for it.</p>
               <Link to="/create-trip" className="tb-btn tb-btn-accent">Plan a trip</Link>
             </section>
@@ -319,10 +315,7 @@ function Dashboard() {
         {/* Upcoming Trips */}
         <section className="home-trips">
           <div className="home-section-head">
-            <h2>
-              <span className="tb-wide">Upcoming</span>{" "}
-              <span className="tb-serif">trips</span>
-            </h2>
+            <h2 className="tb-wide">Upcoming trips</h2>
 
             {trips.length > 0 && (
               <Link to="/trips" className="home-link">

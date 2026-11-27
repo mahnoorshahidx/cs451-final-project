@@ -60,9 +60,7 @@ function MyTrips() {
             <span className="tb-kicker">
               {trips.length} trip{trips.length === 1 ? "" : "s"} planned
             </span>
-            <h1>
-              <span className="tb-wide">My</span> <span className="tb-serif">trips</span>
-            </h1>
+            <h1 className="tb-wide">My trips</h1>
             <p>Every trip you're planning, soonest first.</p>
           </div>
 
@@ -77,9 +75,7 @@ function MyTrips() {
 
         {!loading && !error && trips.length === 0 && (
           <section className="mytrips-empty">
-            <h2>
-              <span className="tb-wide">Where to</span> <span className="tb-serif">first?</span>
-            </h2>
+            <h2 className="tb-wide">Where to first?</h2>
             <p>You haven't planned any trips yet. Add one and we'll help you budget for it.</p>
             <Link to="/create-trip" className="tb-btn tb-btn-accent">Plan a trip</Link>
           </section>

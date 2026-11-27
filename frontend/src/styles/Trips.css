@@ -166,11 +166,6 @@
 .mytrips-title h1 {
   font-size: 34px;
   line-height: 1;
-  font-weight: inherit;
-}
-
-.mytrips-title .tb-serif {
-  font-size: 1.25em;
 }
 
 .mytrips-title p {
@@ -414,7 +409,6 @@
 .mytrips-empty h2 {
   font-size: 36px;
   line-height: 1;
-  font-weight: inherit;
 }
 
 .mytrips-empty .tb-serif {
