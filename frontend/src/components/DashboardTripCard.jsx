@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { CalendarDays, Users } from "lucide-react";
 import { getProfile } from "../api/api";
 import useDestinationPhoto from "../lib/useDestinationPhoto";
-import { formatDate } from "./TripCard";
+import { formatDate } from "../lib/formatDate";
 
 function daysUntil(iso) {
   if (!iso) return null;

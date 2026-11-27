@@ -1,4 +1,8 @@
-/* Trip cards used on the Dashboard and My Trips pages */
+/* ==================================
+   TRIPS
+   Shared list styles (also used by the itineraries list)
+   + the My Trips page. Colors come from theme.css.
+================================== */
 
 .my-trips {
   padding: 24px 0;
@@ -14,6 +18,7 @@
 .trips-section-header h2 {
   margin: 0;
   font-size: 1.15rem;
+  color: var(--tb-text);
 }
 
 .trips-section-header a {
@@ -21,16 +26,23 @@
 }
 
 .trips-new-btn {
-  padding: 8px 14px;
-  border-radius: 8px;
-  background: #1f6f5c;
-  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-primary-bg);
+  color: var(--tb-primary-fg);
   text-decoration: none;
   font-weight: 600;
 }
 
+.trips-new-btn:hover {
+  filter: brightness(1.12);
+}
+
 .trips-message {
-  color: #666;
+  color: var(--tb-text-muted);
   margin: 8px 0;
 }
 
@@ -40,19 +52,16 @@
   gap: 16px;
 }
 
-.trip-card-links {
-  display: flex;
-  gap: 16px;
-}
-
+/* Plain card (itineraries list) */
 .trip-card {
-  background: #fff;
-  border: 1px solid #e6e6e6;
-  border-radius: 12px;
-  padding: 18px;
+  background: var(--tb-surface);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-lg);
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  color: var(--tb-text);
 }
 
 .trip-card-top {
@@ -70,23 +79,23 @@
 .trip-card-destination,
 .trip-card-meta {
   margin: 2px 0 0;
-  color: #666;
+  color: var(--tb-text-muted);
   font-size: 0.9rem;
 }
 
 .trip-card-badge {
   white-space: nowrap;
   font-size: 0.75rem;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: #e5f3ee;
-  color: #1f6f5c;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-success-bg);
+  color: var(--tb-success-fg);
 }
 
 .trip-card-badge.past {
-  background: #f0f0f0;
-  color: #777;
+  background: var(--tb-surface-hover);
+  color: var(--tb-text-muted);
 }
 
 .trip-card-actions {
@@ -96,104 +105,336 @@
   margin-top: auto;
 }
 
+.trip-card-links {
+  display: flex;
+  gap: 16px;
+}
+
 .trip-card-link {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #1f6f5c;
+  color: var(--tb-text);
   text-decoration: none;
+  border-bottom: 2px solid var(--tb-marigold);
+}
+
+.trip-card-link:hover {
+  color: var(--tb-accent-text);
 }
 
 .trip-card-delete {
   border: none;
   background: none;
-  color: #c0392b;
+  color: var(--tb-danger);
   cursor: pointer;
   font-size: 0.9rem;
 }
 
 /* ==================================
-   TRIPS - LAVENDER CHARCOAL
+   MY TRIPS PAGE
 ================================== */
 
-/* Section headings */
-[data-theme="dark"] .trips-section-header h2 {
-  color: #F1EDF8;
+.dashboard-main.mytrips-main {
+  max-width: 1240px;
+  padding: 36px 44px 48px;
+  gap: 32px;
+  color: var(--tb-text);
 }
 
-/* View all link */
-[data-theme="dark"] .trips-section-header a {
-  color: #C5B0E5;
+.mytrips-main h1,
+.mytrips-main h2,
+.mytrips-main h3,
+.mytrips-main p {
+  margin: 0;
 }
 
-/* Trip cards */
-[data-theme="dark"] .trip-card {
-  background: rgba(53, 51, 68, 0.88);
-  border-color: rgba(190, 175, 215, 0.18);
-  color: #F1EDF8;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+/* Header: title on the left, New trip on the right */
+.mytrips-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-/* Trip names */
-[data-theme="dark"] .trip-card h3 {
-  color: #F1EDF8;
+.mytrips-title {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* Destination and dates */
-[data-theme="dark"] .trip-card-destination,
-[data-theme="dark"] .trip-card-meta,
-[data-theme="dark"] .trips-message {
-  color: #C5BDD2;
+.mytrips-title h1 {
+  font-size: 34px;
+  line-height: 1;
+  font-weight: inherit;
 }
 
-/* Upcoming trip badges */
-[data-theme="dark"] .trip-card-badge {
-  background: rgba(113, 101, 142, 0.35);
-  color: #E8DFF5;
+.mytrips-title .tb-serif {
+  font-size: 1.25em;
 }
 
-/* Past trip badges */
-[data-theme="dark"] .trip-card-badge.past {
-  background: #454155;
-  color: #B8AFC7;
+.mytrips-title p {
+  font-size: 16px;
+  color: var(--tb-text-muted);
 }
 
-/* Edit trip links */
-[data-theme="dark"] .trip-card-link {
-  color: #C5B0E5;
+/* Upcoming / Past groups */
+.mytrips-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-[data-theme="dark"] .trip-card-link:hover,
-[data-theme="dark"] .trips-section-header a:hover {
-  color: #E8DFF5;
+.mytrips-group-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--tb-font-display);
+  font-stretch: 125%;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
-/* Create new trip button */
-[data-theme="dark"] .trips-new-btn {
-  background: #71658E;
+.mytrips-group-title span {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-navy);
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--tb-font-body);
+  font-stretch: 100%;
+  font-size: 13px;
+}
+
+[data-theme="dark"] .mytrips-group-title span {
+  background: var(--tb-panel);
+}
+
+.mytrips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: 20px;
+}
+
+/* ---------- Trip card ---------- */
+
+.mytrip {
+  display: flex;
+  flex-direction: column;
+  background: var(--tb-surface);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-lg);
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mytrip:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--tb-shadow-pop);
+}
+
+.mytrip-photo {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--tb-blue);
+  isolation: isolate;
+}
+
+/* Colors behind cards that have no photo yet */
+.mytrip:nth-child(4n + 2) .mytrip-photo { background: var(--tb-navy); }
+.mytrip:nth-child(4n + 3) .mytrip-photo { background: var(--tb-sage); }
+.mytrip:nth-child(4n + 4) .mytrip-photo { background: var(--tb-red); }
+
+.mytrip-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+}
+
+.mytrip-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(0deg, rgba(18, 28, 48, 0.55) 0%, rgba(18, 28, 48, 0) 60%);
+}
+
+.mytrip-status {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 5px 11px;
+  border-radius: var(--tb-radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mytrip-status.is-now { background: var(--tb-marigold); color: #213253; }
+.mytrip-status.is-soon { background: #F6DBD6; color: #7E0808; }
+.mytrip-status.is-later { background: #DCE5D7; color: #3F5A3C; }
+.mytrip-status.is-past { background: rgba(255, 255, 255, 0.9); color: #56657A; }
+
+.mytrip-place {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  color: #FFFFFF;
+  font-size: 26px;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.mytrip-credit {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 120px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.mytrip-credit a {
+  color: inherit;
+}
+
+.mytrip-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px 16px;
+}
+
+.mytrip-body h3 {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.mytrip-destination {
+  margin-top: 2px;
+  font-size: 14px;
+  color: var(--tb-text-muted);
+}
+
+.mytrip-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 13px;
+  color: var(--tb-text-muted);
+}
+
+.mytrip-details span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mytrip-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--tb-border);
+}
+
+.mytrip-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tb-text);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.mytrip-link.is-main {
+  border-bottom-color: var(--tb-marigold);
+}
+
+.mytrip-link:hover {
+  color: var(--tb-accent-text);
+}
+
+.mytrip-delete {
+  margin-left: auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--tb-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.mytrip-delete:hover {
+  background: var(--tb-warning-bg);
+  color: var(--tb-danger);
+}
+
+.mytrip-link:focus-visible,
+.mytrip-delete:focus-visible {
+  outline: 3px solid var(--tb-blue);
+  outline-offset: 2px;
+}
+
+/* Past trips step back a little */
+.mytrip.is-past .mytrip-photo {
+  filter: grayscale(0.6);
+}
+
+.mytrip.is-past .mytrip-body {
+  opacity: 0.85;
+}
+
+/* Empty state */
+.mytrips-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 36px;
+  border-radius: var(--tb-radius-xl);
+  background: var(--tb-navy);
   color: #FFFFFF;
 }
 
-[data-theme="dark"] .trips-new-btn:hover {
-  background: #81729D;
+.mytrips-empty h2 {
+  font-size: 36px;
+  line-height: 1;
+  font-weight: inherit;
 }
 
-/* Delete trip button */
-[data-theme="dark"] .trip-card-delete {
-  color: #F0A5AC;
+.mytrips-empty .tb-serif {
+  color: var(--tb-marigold);
+  font-size: 1.2em;
 }
 
-[data-theme="dark"] .trip-card-delete:hover {
-  color: #FFD0D5;
+.mytrips-empty p {
+  color: #BFCBDB;
+  font-size: 16px;
 }
 
-/* Make the New Trip button stand out */
-[data-theme="dark"] .trips-new-btn {
-  background: linear-gradient(135deg, #81729D, #625578);
-  color: #FFFFFF;
-  border: 1px solid rgba(220, 205, 240, 0.3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+@media (max-width: 700px) {
+  .dashboard-main.mytrips-main {
+    padding: 24px 18px 40px;
+  }
 }
 
-[data-theme="dark"] .trips-new-btn:hover {
-  background: linear-gradient(135deg, #9484B0, #71658E);
+@media (prefers-reduced-motion: reduce) {
+  .mytrip {
+    transition: none;
+  }
 }

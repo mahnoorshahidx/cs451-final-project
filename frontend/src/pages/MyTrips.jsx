@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Plus } from "lucide-react";
 import "../styles/Dashboard.css";
 import "../styles/Trips.css";
 import Sidebar from "../components/Sidebar";
 import TripCard from "../components/TripCard";
 import { deleteTrip, listTrips } from "../api/api";
 
-// New page for My Trips (SCRUM-32). Lists all trips from the backend,
-// with edit and delete on each card. Reuses the dashboard layout.
+function todayIso() {
+  const now = new Date();
+  return [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+// My Trips (SCRUM-32). Lists all trips from the backend, with edit and delete on each card.
+// Upcoming trips come first (soonest first), past trips after (most recent first).
 function MyTrips() {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,43 +40,76 @@ function MyTrips() {
     }
   }
 
+  const today = todayIso();
+  const upcoming = trips
+    .filter((trip) => trip.endDate >= today)
+    .sort((a, b) => a.startDate.localeCompare(b.startDate));
+  const past = trips
+    .filter((trip) => trip.endDate < today)
+    .sort((a, b) => b.startDate.localeCompare(a.startDate));
+
   return (
-    <div className="dashboard-page">
+    <div className="dashboard-page mytrips-page">
       <aside className="dashboard-sidebar">
         <Sidebar />
       </aside>
 
-      <main className="dashboard-main">
-        <header className="dashboard-header"></header>
-
-        <section className="dashboard-banner">
-          <div>
-            <h1>My Trips</h1>
+      <main className="dashboard-main mytrips-main">
+        <header className="mytrips-header">
+          <div className="mytrips-title">
+            <span className="tb-kicker">
+              {trips.length} trip{trips.length === 1 ? "" : "s"} planned
+            </span>
+            <h1>
+              <span className="tb-wide">My</span> <span className="tb-serif">trips</span>
+            </h1>
             <p>Every trip you're planning, soonest first.</p>
           </div>
-        </section>
 
-        <section className="my-trips">
-          <div className="trips-section-header">
-            <h2>{trips.length} trip{trips.length === 1 ? "" : "s"}</h2>
-            <Link to="/create-trip" className="trips-new-btn">+ New trip</Link>
-          </div>
+          <Link to="/create-trip" className="tb-btn tb-btn-primary">
+            <Plus size={18} aria-hidden="true" />
+            New trip
+          </Link>
+        </header>
 
-          {loading && <p className="trips-message">Loading your trips...</p>}
-          {error && <p className="error-text">{error}</p>}
+        {loading && <p className="trips-message">Loading your trips...</p>}
+        {error && <p className="error-text">{error}</p>}
 
-          {!loading && !error && trips.length === 0 && (
-            <p className="trips-message">
-              You haven't planned any trips yet. <Link to="/create-trip">Create your first one</Link>.
-            </p>
-          )}
+        {!loading && !error && trips.length === 0 && (
+          <section className="mytrips-empty">
+            <h2>
+              <span className="tb-wide">Where to</span> <span className="tb-serif">first?</span>
+            </h2>
+            <p>You haven't planned any trips yet. Add one and we'll help you budget for it.</p>
+            <Link to="/create-trip" className="tb-btn tb-btn-accent">Plan a trip</Link>
+          </section>
+        )}
 
-          <div className="trip-list">
-            {trips.map((trip) => (
-              <TripCard key={trip.id} trip={trip} onDelete={handleDelete} />
-            ))}
-          </div>
-        </section>
+        {upcoming.length > 0 && (
+          <section className="mytrips-group" aria-labelledby="upcoming-heading">
+            <h2 id="upcoming-heading" className="mytrips-group-title">
+              Upcoming <span>{upcoming.length}</span>
+            </h2>
+            <div className="mytrips-grid">
+              {upcoming.map((trip) => (
+                <TripCard key={trip.id} trip={trip} onDelete={handleDelete} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {past.length > 0 && (
+          <section className="mytrips-group" aria-labelledby="past-heading">
+            <h2 id="past-heading" className="mytrips-group-title">
+              Past trips <span>{past.length}</span>
+            </h2>
+            <div className="mytrips-grid">
+              {past.map((trip) => (
+                <TripCard key={trip.id} trip={trip} onDelete={handleDelete} />
+              ))}
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );

@@ -1,22 +1,11 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { CalendarDays, Trash2, Users } from "lucide-react";
 import { getProfile } from "../api/api";
+import useDestinationPhoto from "../lib/useDestinationPhoto";
+import { formatDate } from "../lib/formatDate";
 
-// Formats dates using the user's saved preference
-export function formatDate(iso, dateFormat = "MM/DD/YYYY") {
-  if (!iso) return "";
-
-  const [year, month, day] = iso.split("-");
-
-  if (dateFormat === "DD/MM/YYYY") {
-    return `${day}/${month}/${year}`;
-  }
-
-  return `${month}/${day}/${year}`;
-}
-
-// Calculates how many days remain until a trip
+// Calculates how many days remain until a date
 function daysUntil(iso) {
   const [y, m, d] = iso.split("-").map(Number);
   const start = new Date(y, m - 1, d);
@@ -26,8 +15,22 @@ function daysUntil(iso) {
   return Math.round((start - today) / 86400000);
 }
 
+// Label and color for the status tag on a trip
+function tripStatus(trip) {
+  const days = daysUntil(trip.startDate);
+  const daysToEnd = daysUntil(trip.endDate);
+
+  if (daysToEnd < 0) return { label: "Past trip", tone: "past" };
+  if (days <= 0) return { label: "In progress", tone: "now" };
+  if (days === 1) return { label: "Tomorrow", tone: "now" };
+  if (days <= 30) return { label: `In ${days} days`, tone: "soon" };
+  return { label: `In ${days} days`, tone: "later" };
+}
+
+// Photo card for the My Trips page
 function TripCard({ trip, onDelete }) {
   const [dateFormat, setDateFormat] = useState("MM/DD/YYYY");
+  const [photo, clearPhoto] = useDestinationPhoto(trip.destination);
 
   // Load the user's saved date format
   useEffect(() => {
@@ -38,51 +41,67 @@ function TripCard({ trip, onDelete }) {
       .catch((err) => console.error(err));
   }, []);
 
-  const days = daysUntil(trip.startDate);
-
-  const status =
-    days > 0
-      ? `In ${days} day${days === 1 ? "" : "s"}`
-      : days === 0
-      ? "Today"
-      : "Past trip";
+  const status = tripStatus(trip);
+  const place = trip.destination?.split(",")[0]?.trim() || trip.name;
 
   return (
-    <article className="trip-card">
-      <div className="trip-card-top">
+    <article className={`mytrip ${status.tone === "past" ? "is-past" : ""}`}>
+      <div className="mytrip-photo">
+        {photo?.imageUrl && (
+          <img src={photo.imageUrl} alt="" loading="lazy" onError={clearPhoto} />
+        )}
+
+        <span className={`mytrip-status is-${status.tone}`}>{status.label}</span>
+        <span className="tb-wide mytrip-place">{place}</span>
+
+        {photo?.photographerUrl && photo?.unsplashUrl && (
+          <span className="mytrip-credit">
+            Photo by{" "}
+            <a href={photo.photographerUrl} target="_blank" rel="noopener noreferrer">
+              {photo.photographer}
+            </a>{" "}
+            on{" "}
+            <a href={photo.unsplashUrl} target="_blank" rel="noopener noreferrer">
+              Unsplash
+            </a>
+          </span>
+        )}
+      </div>
+
+      <div className="mytrip-body">
         <div>
           <h3>{trip.name}</h3>
-          <p className="trip-card-destination">{trip.destination}</p>
+          <p className="mytrip-destination">{trip.destination}</p>
         </div>
 
-        <span className={`trip-card-badge ${days < 0 ? "past" : ""}`}>
-          {status}
-        </span>
+        <div className="mytrip-details">
+          <span>
+            <CalendarDays size={15} aria-hidden="true" />
+            {formatDate(trip.startDate, dateFormat)} – {formatDate(trip.endDate, dateFormat)}
+          </span>
+          <span>
+            <Users size={15} aria-hidden="true" />
+            {trip.numberOfTravelers} traveler{trip.numberOfTravelers === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        <div className="mytrip-actions">
+          <Link to={`/budget/${trip.id}`} className="mytrip-link is-main">Budget</Link>
+          <Link to={`/trips/${trip.id}/edit?tab=details`} className="mytrip-link">Edit details</Link>
+
+          {onDelete && (
+            <button
+              type="button"
+              className="mytrip-delete"
+              onClick={() => onDelete(trip)}
+              aria-label={`Delete ${trip.name}`}
+              title="Delete trip"
+            >
+              <Trash2 size={17} aria-hidden="true" />
+            </button>
+          )}
+        </div>
       </div>
-
-      <p className="trip-card-meta">
-        {formatDate(trip.startDate, dateFormat)} –{" "}
-        {formatDate(trip.endDate, dateFormat)} ·{" "}
-        {trip.numberOfTravelers} traveler
-        {trip.numberOfTravelers === 1 ? "" : "s"}
-      </p>
-
-      <div className="trip-card-actions">
-      <div className="trip-card-links">
-        <Link to={`/budget/${trip.id}`} className="trip-card-link">Budget</Link>
-        <Link to={`/trips/${trip.id}/edit?tab=details`} className="trip-card-link">Edit details</Link>
-      </div>
-
-      {onDelete && (
-        <button
-          type="button"
-          className="trip-card-delete"
-          onClick={() => onDelete(trip)}
-        >
-          Delete
-        </button>
-      )}
-    </div>
     </article>
   );
 }
