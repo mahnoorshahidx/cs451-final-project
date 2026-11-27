@@ -51,10 +51,10 @@ function NextTripCard({ trip, days, overview }) {
 
   if (target > 0) {
     savingsLine = `${formatMoney(saved, currency)} of ${formatMoney(target, currency)} saved`;
-    action = { to: `/budget/${trip.id}`, label: "View savings" };
+    action = { to: `/savings-planner?trip=${trip.id}`, label: "View savings" };
   } else if (overview?.budgetTotal != null) {
     savingsLine = `No savings goal yet · ${formatMoney(overview.budgetTotal, currency)} budget`;
-    action = { to: `/budget/${trip.id}`, label: "Set a goal" };
+    action = { to: `/savings-planner?trip=${trip.id}`, label: "Set a goal" };
   } else {
     savingsLine = "No budget yet";
     action = { to: `/trips/${trip.id}/edit?tab=details`, label: "Add a budget" };
@@ -273,7 +273,7 @@ function Dashboard() {
             <section className="tb-panel home-totals">
               <div className="home-totals-head">
                 <span className="tb-kicker">Saved for upcoming trips</span>
-                <Link to="/budget">View</Link>
+                <Link to="/savings-planner">View</Link>
               </div>
 
               {savingsLoading ? (

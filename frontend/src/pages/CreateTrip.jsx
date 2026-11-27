@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 import "../styles/CreateTrip.css";
-import { createTrip, getProfile, recommendBudget, recommendTiming, saveBudget } from "../api/api";
+import { createTrip, getCurrencies, getProfile, recommendBudget, recommendTiming, saveBudget } from "../api/api";
 import { BUDGET_CATEGORIES, fallbackAllocations, scaleAllocations } from "../lib/budgetSuggestions";
 import { categoryMeta } from "../lib/budgetCategories";
 import Sidebar from "../components/Sidebar";
@@ -19,7 +19,7 @@ const STEPS = [
 
 const POPULAR_DESTINATIONS = ["Kyoto, Japan", "Lisbon, Portugal", "Denver, Colorado"];
 const FALLBACK_PRESETS = [2500, 4200, 6000];
-const CURRENCIES = ["USD", "EUR", "GBP", "MAD"];
+
 
 const TIMING_OPTIONS = [
   { value: "set", title: "I have set dates", description: "Plan around dates that are already decided." },
@@ -80,6 +80,8 @@ function CreateTrip() {
   const navigate = useNavigate();
 
   const [step, setStep] = useState(0);
+  const [currencies, setCurrencies] = useState([]);
+  const [currencyError, setCurrencyError] = useState("");
   const [form, setForm] = useState({
     destination: "",
     timing: "",
@@ -122,17 +124,49 @@ function CreateTrip() {
   const travelers = Number(form.numberOfTravelers) || 0;
   const tripNights = Math.max(1, nightsBetween(form.startDate, form.endDate));
 
-  const money = (n) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency: form.currency, maximumFractionDigits: 0 }).format(n);
+  const decimalPlaces =
+  currencies.find((c) => c.code === form.currency)?.decimalPlaces ?? 2;
 
+  const money = (n) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: form.currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: decimalPlaces,
+    }).format(n);
   // ---------- loading ----------
 
-  // Start with the user's saved currency preference
-  useEffect(() => {
-    getProfile()
-      .then((profile) => setForm((p) => ({ ...p, currency: profile.currency || "USD" })))
-      .catch(() => {}); // non-blocking: fall back to USD
-  }, []);
+// Load supported currencies and the user's saved preference
+useEffect(() => {
+  let cancelled = false;
+
+  Promise.all([
+    getCurrencies(),
+    getProfile().catch(() => null),
+  ])
+    .then(([list, profile]) => {
+      if (cancelled) return;
+
+      setCurrencies(list);
+
+      const preferred = profile?.currency || "USD";
+      const supported = list.some((c) => c.code === preferred);
+
+      setForm((p) => ({
+        ...p,
+        currency: supported ? preferred : "USD",
+      }));
+    })
+    .catch(() => {
+      if (!cancelled) {
+        setCurrencyError("Could not load supported currencies.");
+      }
+    });
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
 
   // ---------- timing recommendation (refreshes as the window or length changes) ----------
 
@@ -308,13 +342,31 @@ function CreateTrip() {
       case "tradeoffs":
         return form.tradeOffs.length ? "" : "Pick at least one option, or choose \u201cI'd rather not compromise.\u201d";
       case "budget":
-        return total > 0 ? "" : "Enter a total budget greater than 0.";
-      case "ready":
-        return capsAllocated > total ? "Your category caps add up to more than your total budget." : "";
-      default:
+        if (total <= 0) return "Enter a total budget greater than 0.";
+        if (Number(total.toFixed(decimalPlaces)) !== total) {
+          return decimalPlaces === 0
+            ? `${form.currency} only accepts whole numbers.`
+            : "Amounts can have at most 2 decimal places.";
+        }
         return "";
-    }
-  }
+
+      case "ready":
+        if (Object.values(caps ?? {}).some((amount) => {
+          const n = Number(amount);
+          return !Number.isFinite(n) || n < 0 ||
+            Number(n.toFixed(decimalPlaces)) !== n;
+        })) {
+          return decimalPlaces === 0
+            ? `${form.currency} only accepts whole numbers.`
+            : "Amounts must be non-negative and have at most 2 decimal places.";
+        }
+        return capsAllocated > total
+          ? "Your category caps add up to more than your total budget."
+          : "";
+            default:
+              return "";
+          }
+        }
 
   function goNext() {
     const err = validateStep(current.key);
@@ -348,6 +400,7 @@ function CreateTrip() {
         startDate: form.startDate,
         endDate: form.endDate,
         numberOfTravelers: travelers,
+        currency: form.currency,
         // Ignored by the backend until the trips table has these columns
         timingPreference: form.timing,
         tradeOffs: form.tradeOffs,
@@ -366,7 +419,7 @@ function CreateTrip() {
       });
 
       // Land on the new trip's budget summary
-      navigate(`/budget/${trip.id}`);
+      navigate(`/budget-planner/${trip.id}`);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -707,7 +760,8 @@ function CreateTrip() {
                   id="totalBudget"
                   type="number"
                   min="0"
-                  inputMode="decimal"
+                  step={decimalPlaces === 0 ? "1" : "0.01"}
+                  inputMode={decimalPlaces === 0 ? "numeric" : "decimal"}
                   placeholder="4,200"
                   value={form.totalBudget}
                   onChange={(e) => setTotal(e.target.value, false)}
@@ -717,11 +771,23 @@ function CreateTrip() {
                   value={form.currency}
                   onChange={(e) => update("currency", e.target.value)}
                 >
-                  {CURRENCIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                  {currencies.length === 0 && (
+                    <option value="USD">USD</option>
+                  )}
+                  {currencies.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.code}
+                    </option>
                   ))}
                 </select>
               </div>
+
+              {currencyError && (
+                <p className="wizard-error" role="alert">
+                  {currencyError}
+                </p>
+              )}
+
               <p className="wizard-hint">This is your ceiling, not a spending target.</p>
               <div className="wizard-presets">
                 {presets.map((amount, i) => (
@@ -802,6 +868,7 @@ function CreateTrip() {
                           <input
                             type="number"
                             min="0"
+                            step={decimalPlaces === 0 ? "1" : "0.01"}
                             placeholder="0"
                             aria-label={`${category} cap`}
                             value={caps[category] ?? ""}

@@ -12,6 +12,7 @@ import {
   TrendingUp,
   Users,
   Wallet,
+  Landmark,
 } from "lucide-react";
 import { clearSession } from "../api/client";
 import TripbudgetMark from "./TripbudgetMark";
@@ -21,9 +22,9 @@ const menuItems = [
   { name: "Home", path: "/dashboard", Icon: House },
   { name: "My Trips", path: "/trips", Icon: Plane },
   { name: "Itinerary", path: "/itineraries", Icon: CalendarDays },
-  { name: "Savings Planner (Old)", path: "/savings", Icon: PiggyBank },
   { name: "Budget", path: "/budget-planner", Icon: Wallet },
   { name: "Savings", path: "/savings-planner", Icon: TrendingUp },
+  { name: "Bank Connection", path: "/bank-connection", Icon: Landmark },
   { name: "Shared Trips", path: "/shared-trips", Icon: Users },
 ];
 

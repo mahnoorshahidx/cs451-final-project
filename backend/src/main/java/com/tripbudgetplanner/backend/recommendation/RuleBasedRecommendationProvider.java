@@ -7,6 +7,9 @@ import com.tripbudgetplanner.backend.recommendation.dto.BudgetRecommendationRequ
 import com.tripbudgetplanner.backend.recommendation.dto.TimingRecommendation;
 import com.tripbudgetplanner.backend.recommendation.dto.TimingRecommendationRequest;
 import org.springframework.stereotype.Service;
+import com.tripbudgetplanner.backend.currency.CurrencyService;
+import com.tripbudgetplanner.backend.currency.SupportedCurrency;
+import com.tripbudgetplanner.backend.currency.ExchangeRates;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -28,6 +31,12 @@ public class RuleBasedRecommendationProvider implements RecommendationProvider {
 
     private static final String SOURCE = "rules";
 
+    private final CurrencyService currencyService;
+
+    public RuleBasedRecommendationProvider(CurrencyService currencyService) {
+        this.currencyService = currencyService;
+    }
+
     // Rough daily costs in USD for one traveler (room is per room, shared by up to 2)
     private record DailyCosts(int roomPerNight, int foodPerPerson, int transportPerPerson, int activitiesPerPerson) {}
 
@@ -37,13 +46,15 @@ public class RuleBasedRecommendationProvider implements RecommendationProvider {
         CostLevel.HIGH, new DailyCosts(220, 85, 25, 45)
     );
 
-    // Fixed demo exchange rates (1 USD = x). Replace with a rates API if you need accuracy.
+    // Old fixed exchange rates — temporarily disabled
+    /*
     private static final Map<String, BigDecimal> USD_RATES = Map.of(
         "USD", new BigDecimal("1.00"),
         "EUR", new BigDecimal("0.92"),
         "GBP", new BigDecimal("0.79"),
         "MAD", new BigDecimal("10.00")
     );
+    */
 
     private static final BigDecimal BUFFER = new BigDecimal("1.10");   // 10% left unallocated
     private static final BigDecimal LOW_FACTOR = new BigDecimal("0.85");
@@ -149,7 +160,15 @@ public class RuleBasedRecommendationProvider implements RecommendationProvider {
         usd.put("Activities", (double) daily.activitiesPerPerson() * travelers * days * activitiesFactor);
 
         String currency = request.currency();
-        BigDecimal rate = USD_RATES.getOrDefault(currency, BigDecimal.ONE);
+        SupportedCurrency targetCurrency = SupportedCurrency.fromCode(currency);
+
+        ExchangeRates rates = targetCurrency == SupportedCurrency.USD
+            ? null
+            : currencyService.currentRates();
+
+        BigDecimal rate = targetCurrency == SupportedCurrency.USD
+            ? BigDecimal.ONE
+            : rates.rateFor(targetCurrency);
 
         Map<String, BigDecimal> allocations = new LinkedHashMap<>();
         BigDecimal subtotal = BigDecimal.ZERO;
@@ -172,11 +191,13 @@ public class RuleBasedRecommendationProvider implements RecommendationProvider {
         if (!DestinationProfiles.isKnown(profile)) {
             assumptions.add("We don't have specific data for this destination yet, so this uses average costs.");
         }
-        if (!USD_RATES.containsKey(currency)) {
-            assumptions.add("No exchange rate for " + currency + ", so amounts are shown at USD value.");
-        } else if (!"USD".equals(currency)) {
+        if (rates != null) {
+        if (rates.isLive()) {
+            assumptions.add("Converted from USD using exchange rates from the live provider.");
+        } else {
             assumptions.add("Converted from USD at a fixed demo rate.");
         }
+    }
         assumptions.add("About 10% is left unallocated as a buffer.");
 
         return new BudgetRecommendation(recommended, low, high, currency, allocations, assumptions, SOURCE);

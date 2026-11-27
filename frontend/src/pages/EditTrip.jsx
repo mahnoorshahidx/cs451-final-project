@@ -7,11 +7,13 @@ import "../styles/EditTrip.css";
 import {
   deleteTrip,
   getBudget,
+  getCurrencies,
   getTrip,
   listTrips,
   recommendBudget,
   saveBudget,
   updateTrip,
+  convertCurrency,
 } from "../api/api";
 import { BUDGET_CATEGORIES, scaleAllocations } from "../lib/budgetSuggestions";
 
@@ -30,7 +32,7 @@ const CATEGORY_INFO = {
   Activities: { icon: "◇", description: "Tours, attractions and experiences" },
 };
 
-const CURRENCIES = ["USD", "EUR", "GBP", "MAD"];
+
 
 // ---------- helpers (dates stay "YYYY-MM-DD" strings) ----------
 
@@ -69,6 +71,7 @@ function budgetFromSaved(budget, fallbackCurrency) {
   return {
     totalBudget: String(budget.totalBudget),
     currency: budget.currency,
+    version: budget.version,
     allocations: Object.fromEntries(
       Object.entries(budget.allocations || {}).map(([k, v]) => [k, String(v)])
     ),
@@ -106,6 +109,9 @@ function EditTrip() {
 
   const [trips, setTrips] = useState([]);
   const [trip, setTrip] = useState(null);
+  const [currencies, setCurrencies] = useState([]);
+  const [currencyError, setCurrencyError] = useState("");
+  const [convertingCurrency, setConvertingCurrency] = useState(false);
 
   const [details, setDetails] = useState(null);
   const [savedDetails, setSavedDetails] = useState("");
@@ -126,6 +132,14 @@ function EditTrip() {
       .then(setTrips)
       .catch(() => {}); // the switcher is optional
   }, []);
+
+  useEffect(() => {
+  getCurrencies()
+    .then(setCurrencies)
+    .catch(() => {
+      setCurrencyError("Could not load supported currencies.");
+    });
+}, []);
 
   // The page remounts for each trip (see EditTripPage below), so state starts fresh
   useEffect(() => {
@@ -207,15 +221,67 @@ function EditTrip() {
   const allocated = categories.reduce((sum, c) => sum + (Number(budget.allocations[c]) || 0), 0);
   const remaining = total - allocated;
   const percent = total > 0 ? (allocated / total) * 100 : 0;
-
+  const decimalPlaces =
+  currencies.find((c) => c.code === budget.currency)?.decimalPlaces ?? 2;
   const money = (n) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency: budget.currency, maximumFractionDigits: 0 }).format(n);
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: budget.currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: decimalPlaces,
+  }).format(n);
 
   function updateBudget(field, value) {
     setBudget((b) => ({ ...b, [field]: value }));
     setError("");
     setNotice("");
   }
+
+async function changeCurrency(newCurrency) {
+  if (newCurrency === budget.currency || convertingCurrency) return;
+
+  setConvertingCurrency(true);
+  setError("");
+  setNotice("");
+
+  try {
+    const convert = async (amount) => {
+      if (!amount) return amount;
+
+      const result = await convertCurrency(
+        budget.currency,
+        newCurrency,
+        Number(amount)
+      );
+
+      return result.convertedAmount;
+    };
+
+    const totalBudget = await convert(budget.totalBudget);
+
+    const allocations = Object.fromEntries(
+      await Promise.all(
+        Object.entries(budget.allocations).map(
+          async ([category, amount]) => [
+            category,
+            await convert(amount),
+          ]
+        )
+      )
+    );
+
+    setBudget((b) => ({
+      ...b,
+      currency: newCurrency,
+      totalBudget,
+      allocations,
+    }));
+  } catch (err) {
+    setError(err.message || "Could not convert currency.");
+  } finally {
+    setConvertingCurrency(false);
+  }
+}
 
   function updateAllocation(category, value) {
     setBudget((b) => ({ ...b, allocations: { ...b.allocations, [category]: value } }));
@@ -257,6 +323,22 @@ function EditTrip() {
 
   async function handleSaveBudget(e) {
     e.preventDefault();
+    if (convertingCurrency) return;
+    const amounts = [budget.totalBudget, ...Object.values(budget.allocations)];
+
+    const invalidAmount = amounts.some((amount) => {
+      const n = Number(amount);
+      return !Number.isFinite(n) || n < 0 ||
+        Number(n.toFixed(decimalPlaces)) !== n;
+    });
+
+    if (invalidAmount) {
+      return setError(
+        decimalPlaces === 0
+          ? `${budget.currency} only accepts whole numbers.`
+          : "Amounts can have at most 2 decimal places."
+      );
+    }
     if (total <= 0) return setError("Enter a total budget greater than 0.");
     if (allocated > total) return setError("Your category caps add up to more than your total budget.");
 
@@ -269,7 +351,12 @@ function EditTrip() {
           .filter(([, v]) => Number(v) > 0)
           .map(([k, v]) => [k, Number(v)])
       );
-      const saved = await saveBudget(tripId, { totalBudget: total, currency: budget.currency, allocations });
+      const saved = await saveBudget(tripId, {
+        totalBudget: total,
+        currency: budget.currency,
+        allocations,
+        version: budget.version,
+      });
       const bf = budgetFromSaved(saved, budget.currency);
       setBudget(bf);
       setSavedBudget(snapshot(bf));
@@ -405,7 +492,12 @@ function EditTrip() {
                     {hasBudget ? "Adjust your total and category caps." : "This trip has no budget yet. Set one below."}
                   </p>
                 </div>
-                <button type="button" className="et-ghost" onClick={suggestCaps} disabled={busy !== ""}>
+                <button
+                  type="button"
+                  className="et-ghost"
+                  onClick={suggestCaps}
+                  disabled={busy !== "" || convertingCurrency}
+                >
                   <Sparkles size={16} aria-hidden="true" />
                   {busy === "suggest" ? "Suggesting…" : "Suggest caps"}
                 </button>
@@ -418,23 +510,34 @@ function EditTrip() {
                     id="totalBudget"
                     type="number"
                     min="0"
-                    inputMode="decimal"
+                    step={decimalPlaces === 0 ? "1" : "0.01"}
+                    inputMode={decimalPlaces === 0 ? "numeric" : "decimal"}
                     placeholder="0"
                     value={budget.totalBudget}
                     onChange={(e) => updateBudget("totalBudget", e.target.value)}
+                    disabled={convertingCurrency}
                   />
                 </div>
                 <div className="et-field">
                   <label htmlFor="currency">Currency</label>
-                  <select
-                    id="currency"
-                    value={budget.currency}
-                    onChange={(e) => updateBudget("currency", e.target.value)}
-                  >
-                    {CURRENCIES.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                <select
+                  id="currency"
+                  value={budget.currency}
+                  onChange={(e) => changeCurrency(e.target.value)}
+                  disabled={convertingCurrency || Boolean(busy)}
+                >
+                    {!currencies.some((c) => c.code === budget.currency) && (
+                      <option value={budget.currency}>{budget.currency}</option>
+                    )}
+                    {currencies.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.code}
+                      </option>
                     ))}
                   </select>
+                  {currencyError && (
+                    <p className="et-error" role="alert">{currencyError}</p>
+                  )}
                 </div>
               </div>
 
@@ -461,8 +564,10 @@ function EditTrip() {
                         min="0"
                         placeholder="0"
                         aria-label={`${c} cap`}
+                        step={decimalPlaces === 0 ? "1" : "0.01"}
                         value={budget.allocations[c] ?? ""}
                         onChange={(e) => updateAllocation(c, e.target.value)}
+                        disabled={convertingCurrency}
                       />
                     </li>
                   );
@@ -496,15 +601,23 @@ function EditTrip() {
 
               {error && <p className="et-error" role="alert">{error}</p>}
               {notice && <p className="et-notice" role="status">{notice}</p>}
-
-              <button type="submit" className="et-primary" disabled={busy !== "" || !budgetDirty}>
-                {busy === "budget" ? "Saving…" : budgetDirty ? "Save budget" : <><Check size={17} aria-hidden="true" /> Saved</>}
+              <button
+                type="submit"
+                className="et-primary"
+                disabled={busy !== "" || !budgetDirty || convertingCurrency}
+              >
+                {busy === "budget"
+                  ? "Saving…"
+                  : budgetDirty
+                    ? "Save budget"
+                    : <><Check size={17} aria-hidden="true" /> Saved</>}
               </button>
               {budgetDirty && (
                 <button
                   type="button"
                   className="et-link"
                   onClick={() => setBudget(budgetFromSavedSnapshot(savedBudget, budget.currency))}
+                  disabled={convertingCurrency}
                 >
                   Discard changes
                 </button>
@@ -596,6 +709,7 @@ function budgetFromSavedSnapshot(snap, currency) {
   return {
     totalBudget: s.totalBudget ? String(s.totalBudget) : "",
     currency: s.currency || currency,
+    version: s.version,
     allocations: Object.fromEntries(Object.entries(s.allocations || {}).map(([k, v]) => [k, String(v)])),
   };
 }

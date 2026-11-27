@@ -16,6 +16,11 @@ export const resendLoginCode = (challengeId) =>
 export const register = (data) =>
   apiFetch("/api/auth/register", { method: "POST", body: data });
 
+// ---- Currencies ----
+export const getCurrencies = () => apiFetch("/api/currencies");
+export const convertCurrency = (from, to, amount) =>
+  apiFetch(`/api/currencies/convert?${new URLSearchParams({ from, to, amount })}`);
+
 // ---- Trips ----
 export const listTrips = () => apiFetch("/api/trips");
 export const getTrip = (id) => apiFetch(`/api/trips/${id}`);

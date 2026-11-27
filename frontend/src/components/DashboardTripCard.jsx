@@ -89,7 +89,7 @@ export default function DashboardTripCard({ trip }) {
         </div>
 
         <div className="home-trip-actions">
-          <Link to={`/budget/${trip.id}`}>View budget</Link>
+          <Link to={`/budget-planner/${trip.id}`}>View budget</Link>
           <Link to={`/trips/${trip.id}/edit?tab=details`}>Edit details</Link>
         </div>
       </div>
