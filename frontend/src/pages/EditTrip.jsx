@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { ArrowLeft, BedDouble, Check, Plane, Sparkles, Ticket, TramFront, UtensilsCrossed, Wallet } from "lucide-react";
+import Sidebar from "../components/Sidebar";
+import "../styles/Dashboard.css";
 import "../styles/EditTrip.css";
 import {
   deleteTrip,
@@ -86,6 +89,15 @@ function snapshot(value) {
   return JSON.stringify(value);
 }
 
+// Category icons, matching the colours from data-category
+const CATEGORY_ICONS = {
+  Flights: Plane,
+  Accommodation: BedDouble,
+  Food: UtensilsCrossed,
+  "Local transport": TramFront,
+  Activities: Ticket,
+};
+
 function EditTrip() {
   const navigate = useNavigate();
   const { tripId } = useParams();
@@ -115,11 +127,8 @@ function EditTrip() {
       .catch(() => {}); // the switcher is optional
   }, []);
 
+  // The page remounts for each trip (see EditTripPage below), so state starts fresh
   useEffect(() => {
-    setLoading(true);
-    setLoadError("");
-    setError("");
-    setNotice("");
     Promise.all([getTrip(tripId), getBudget(tripId)])
       .then(([t, b]) => {
         const d = detailsFromTrip(t);
@@ -162,9 +171,17 @@ function EditTrip() {
     setSearchParams({ tab: key }, { replace: true });
   }
 
+  // Switching trips replaces this page in history, so Back still returns to where you came from
   function switchTrip(id) {
     if (String(id) === String(tripId) || !confirmLeave()) return;
-    navigate(`/trips/${id}/edit?tab=${tab}`);
+    navigate(`/trips/${id}/edit?tab=${tab}`, { replace: true });
+  }
+
+  // Back to the previous page (Budget, My Trips...); My Trips if this page was opened directly
+  function goBack() {
+    if (!confirmLeave()) return;
+    if ((window.history.state?.idx ?? 0) > 0) navigate(-1);
+    else navigate("/trips");
   }
 
   if (loading) return <p className="et-message">Loading trip...</p>;
@@ -321,21 +338,22 @@ function EditTrip() {
   const nights = nightsBetween(trip.startDate, trip.endDate);
 
   return (
-    <div className="et-page">
-      <header className="et-topbar">
-        <div className="et-brand">
-        </div>
-        <Link to="/trips" className="et-back" onClick={(e) => !confirmLeave() && e.preventDefault()}>
-          ← My trips
-        </Link>
-      </header>
+    <div className="dashboard-page et-page">
+      <aside className="dashboard-sidebar">
+        <Sidebar />
+      </aside>
+
+      <div className="dashboard-main et-shell">
+      <button type="button" className="et-back" onClick={goBack}>
+        <ArrowLeft size={17} aria-hidden="true" /> Back
+      </button>
 
       <section className="et-head">
         <div className="et-head-inner">
           <div className="et-head-row">
             <div>
               <p className="et-eyebrow">Edit trip</p>
-              <h1>{trip.name}</h1>
+              <h1 className="tb-wide">{trip.name}</h1>
               <p className="et-meta">
                 {trip.destination} · {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
                 {nights > 0 && ` · ${nights} night${nights === 1 ? "" : "s"}`} · {travelers} traveler
@@ -388,7 +406,8 @@ function EditTrip() {
                   </p>
                 </div>
                 <button type="button" className="et-ghost" onClick={suggestCaps} disabled={busy !== ""}>
-                  {busy === "suggest" ? "Suggesting…" : "✦ Suggest caps"}
+                  <Sparkles size={16} aria-hidden="true" />
+                  {busy === "suggest" ? "Suggesting…" : "Suggest caps"}
                 </button>
               </div>
 
@@ -425,8 +444,13 @@ function EditTrip() {
                   const info = CATEGORY_INFO[c] ?? { icon: "•", description: "Custom category" };
                   const amount = Number(budget.allocations[c]) || 0;
                   return (
-                    <li key={c} className="et-category">
-                      <span className="et-cat-icon" aria-hidden="true">{info.icon}</span>
+                    <li key={c} className="et-category" data-category={c}>
+                      <span className="et-cat-icon" aria-hidden="true">
+                        {(() => {
+                          const Icon = CATEGORY_ICONS[c] ?? Wallet;
+                          return <Icon size={19} />;
+                        })()}
+                      </span>
                       <div className="et-cat-text">
                         <strong>{c}</strong>
                         <span>{info.description}</span>
@@ -447,15 +471,19 @@ function EditTrip() {
             </section>
 
             <aside className="et-panel et-summary">
-              <h2>Breakdown</h2>
+              <span className="tb-kicker">Total budget</span>
               <p className="et-summary-total">{money(total)}</p>
               {travelers > 1 && total > 0 && <p className="et-sub">{money(total / travelers)} per traveler</p>}
 
-              <div className="et-progress" aria-hidden="true">
-                <div
-                  className={`et-progress-fill ${remaining < 0 ? "is-over" : ""}`}
-                  style={{ width: `${Math.min(percent, 100)}%` }}
-                />
+              {/* One coloured piece per category, like the envelopes on the Budget page */}
+              <div className={`et-progress ${remaining < 0 ? "is-over" : ""}`} aria-hidden="true">
+                {categories.map((c) => {
+                  const amount = Number(budget.allocations[c]) || 0;
+                  const base = Math.max(total, allocated);
+                  return amount > 0 && base > 0 ? (
+                    <span key={c} data-category={c} style={{ width: `${(amount / base) * 100}%` }} />
+                  ) : null;
+                })}
               </div>
               <p className="et-progress-label">
                 {money(allocated)} of {money(total)} planned ({percent.toFixed(0)}%)
@@ -470,7 +498,7 @@ function EditTrip() {
               {notice && <p className="et-notice" role="status">{notice}</p>}
 
               <button type="submit" className="et-primary" disabled={busy !== "" || !budgetDirty}>
-                {busy === "budget" ? "Saving…" : budgetDirty ? "Save budget" : "Saved"}
+                {busy === "budget" ? "Saving…" : budgetDirty ? "Save budget" : <><Check size={17} aria-hidden="true" /> Saved</>}
               </button>
               {budgetDirty && (
                 <button
@@ -557,6 +585,7 @@ function EditTrip() {
           </form>
         )}
       </main>
+      </div>
     </div>
   );
 }
@@ -571,4 +600,10 @@ function budgetFromSavedSnapshot(snap, currency) {
   };
 }
 
-export default EditTrip;
+// A fresh editor for each trip, so switching trips never shows the last trip's numbers
+function EditTripPage() {
+  const { tripId } = useParams();
+  return <EditTrip key={tripId} />;
+}
+
+export default EditTripPage;
