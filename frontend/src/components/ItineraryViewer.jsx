@@ -20,6 +20,7 @@ import {
   preferenceSummary,
 } from "../lib/itineraryPreferences";
 import ConfirmDialog from "./ConfirmDialog";
+import { todayIso } from "../lib/formatDate";
 import "../styles/Itinerary.css";
 
 // Most days regenerated in one go (each 14 days is one AI request)
@@ -157,6 +158,8 @@ export default function ItineraryViewer({ trip, standalone = false, onGenerated,
 
   // AI preferences remembered for this trip (null if it was planned by hand or in another browser)
   const [preferences] = useState(() => (trip?.id ? loadItineraryPreferences(trip.id) : null));
+  // The AI only plans trips that haven't ended
+  const ended = Boolean(trip?.endDate) && trip.endDate < todayIso();
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState(() => new Set());
   const [dialog, setDialog] = useState(null); // { type: "days" | "all" | "delete", days?: [] }
@@ -461,6 +464,15 @@ export default function ItineraryViewer({ trip, standalone = false, onGenerated,
         )}
       </header>
 
+      {ended && (
+        <div className="itinerary-toolbar itinerary-toolbar-ended">
+          <p>This trip has ended, so AI planning is off. You can still edit or delete activities.</p>
+        </div>
+      )}
+
+      {/* Preferences + whole-itinerary actions */}
+      {!ended && (
+        <>
       {/* Preferences + whole-itinerary actions */}
       <div className="itinerary-toolbar">
         <div className="itinerary-toolbar-prefs">
@@ -543,12 +555,13 @@ export default function ItineraryViewer({ trip, standalone = false, onGenerated,
         {notice && !progress && <p className="itinerary-toolbar-notice" role="status">{notice}</p>}
         {actionError && <p className="itinerary-toolbar-error" role="alert">{actionError}</p>}
       </div>
+        </>
+      )}
 
       <div className="itinerary-viewer-intro">
         <h2 className="tb-wide">Day by day</h2>
         <p>
-          Edit a day to add, change, move or remove activities. Regenerate a day to replan it with
-          your preferences. Changes are saved as you make them.
+          Edit a day to add, change, move or remove activities. {ended ? "" : "Regenerate a day to replan it with your preferences. "}Changes are saved as you make them.
         </p>
       </div>
 
@@ -601,7 +614,7 @@ export default function ItineraryViewer({ trip, standalone = false, onGenerated,
                     </p>
                   </div>
                   <div className="itinerary-viewer-day-actions">
-                    {preferences && (
+                    {preferences && !ended && (
                       <button
                         type="button"
                         className="itinerary-viewer-edit"

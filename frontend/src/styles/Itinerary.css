@@ -3035,3 +3035,41 @@
   width: 52px;
   height: 52px;
 }
+
+/* ---------- Manual editor: plan a day with AI ---------- */
+.manual-ai-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 20px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: var(--tb-navy, #213253);
+  color: #fff;
+  flex-wrap: wrap;
+}
+.manual-ai-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--tb-marigold, #E9AB42);
+  color: #213253;
+  flex: none;
+}
+.manual-ai-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.manual-ai-text strong { font-size: 15px; }
+.manual-ai-text span { font-size: 13px; color: rgba(255, 255, 255, 0.75); }
+.manual-ai-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.manual-ai-actions .tb-btn-ghost { color: #fff; }
+.manual-ai-actions .tb-btn-ghost:hover:not(:disabled) { background: rgba(255, 255, 255, 0.12); }
+
+.itinerary-toolbar-ended p { margin: 0; color: var(--tb-text-soft); }
+.manual-itinerary-location { display: flex; align-items: center; gap: 4px; }

@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
+import { MapPin, Sparkles } from "lucide-react";
 import ItineraryCalendar from "./ItineraryCalendar";
+import ConfirmDialog from "./ConfirmDialog";
+import {
+  generationRequest,
+  loadItineraryPreferences,
+  preferenceSummary,
+} from "../lib/itineraryPreferences";
 import "../styles/Itinerary.css";
 
 import {
@@ -7,7 +14,19 @@ import {
   createItineraryActivity,
   updateItineraryActivity,
   deleteItineraryActivity,
+  generateItinerary,
 } from "../api/api";
+
+// Used for "Plan this day with AI" when the trip has no saved AI preferences yet
+const DEFAULT_AI_PREFERENCES = {
+  travelStyle: "balanced",
+  minimumRating: "any",
+  interests: [],
+  pace: "balanced",
+  diningPreferences: [],
+  specialRequests: "",
+  dailyBudget: "",
+};
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -66,7 +85,7 @@ function formatTime(value) {
 function formatTimeRange(start, end) {
   if (!start) return "Flexible time";
   return end
-    ? `${formatTime(start)} â€“ ${formatTime(end)}`
+    ? `${formatTime(start)} – ${formatTime(end)}`
     : formatTime(start);
 }
 
@@ -91,7 +110,7 @@ function toEditorActivity(activity, tripStartDate) {
   };
 }
 
-export default function ManualItineraryEditor({ trip, plan, onChange }) {
+export default function ManualItineraryEditor({ trip, plan, onChange, onGenerated, onUseAiForTrip }) {
   const current = plan ?? {
     activeDay: 1,
     activities: [],
@@ -105,6 +124,12 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
   const [loadingActivities, setLoadingActivities] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activityError, setActivityError] = useState("");
+
+  // "Plan this day with AI"
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [aiDialog, setAiDialog] = useState(false);
+  const savedPreferences = loadItineraryPreferences(trip.id);
 
   const startDate = parseTripDate(
     trip?.startDate ?? trip?.start_date ?? trip?.departureDate ?? trip?.departure_date
@@ -121,10 +146,8 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
       return;
     }
 
+    // The page remounts this editor for each trip (key={trip.id}), so loading starts out true
     let cancelled = false;
-
-    setLoadingActivities(true);
-    setActivityError("");
 
     listItineraryActivities(trip.id)
       .then((savedActivities) => {
@@ -191,6 +214,54 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
   function selectDay(day) {
     onChange({ ...current, activeDay: day });
     closeForm();
+    setAiError("");
+  }
+
+  function startAiDay() {
+    setAiError("");
+    if (dayActivities.length > 0) {
+      setAiDialog(true);
+    } else {
+      planDayWithAi(false);
+    }
+  }
+
+  // Asks the AI to plan the selected day. replace = drop the day's current activities first.
+  async function planDayWithAi(replace) {
+    setAiDialog(false);
+    setAiBusy(true);
+    setAiError("");
+    const dayIso = selectedDate.toISOString().slice(0, 10);
+
+    // Places already planned (on other days, and on this day when adding), so the AI doesn't repeat them
+    const avoidTitles = [...new Set(
+      activities
+        .filter((activity) => !(replace && activity.day === activeDay))
+        .map((activity) => activity.title)
+    )].slice(0, 300);
+
+    try {
+      const created = await generateItinerary(
+        trip.id,
+        generationRequest(
+          { ...DEFAULT_AI_PREFERENCES, ...savedPreferences, currency: trip.currency },
+          { startDate: dayIso, endDate: dayIso, replaceExisting: replace, avoidTitles }
+        )
+      );
+      const converted = created.map((activity) => toEditorActivity(activity, startDate));
+
+      onChange((previous) => {
+        const kept = (previous.activities ?? []).filter(
+          (activity) => !(replace && activity.day === activeDay)
+        );
+        return { ...previous, activities: [...kept, ...converted] };
+      });
+      onGenerated?.(created);
+    } catch (error) {
+      setAiError(error.message || "The AI couldn't plan this day. Please try again.");
+    } finally {
+      setAiBusy(false);
+    }
   }
 
   function openAddForm() {
@@ -318,6 +389,42 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
         <h1>Build Your Itinerary</h1>
         <p>{trip?.name} · Day {activeDay} of {totalDays}</p>
       </div>
+
+      <div className="manual-ai-bar" role="region" aria-label="Plan with AI">
+        <span className="manual-ai-icon" aria-hidden="true">
+          <Sparkles size={20} />
+        </span>
+        <div className="manual-ai-text">
+          <strong>Stuck on Day {activeDay}? Let the AI plan it.</strong>
+          <span>
+            {savedPreferences
+              ? `Uses your preferences: ${preferenceSummary(savedPreferences)}`
+              : "Uses balanced defaults. Set your preferences for picks that fit you better."}
+          </span>
+        </div>
+        <div className="manual-ai-actions">
+          {onUseAiForTrip && (
+            <button type="button" className="tb-btn tb-btn-ghost" onClick={onUseAiForTrip} disabled={aiBusy}>
+              {savedPreferences ? "Plan whole trip with AI" : "Set preferences"}
+            </button>
+          )}
+          <button
+            type="button"
+            className="tb-btn tb-btn-accent"
+            onClick={startAiDay}
+            disabled={aiBusy || loadingActivities || !!activityError}
+          >
+            <Sparkles size={16} aria-hidden="true" />
+            {aiBusy ? "Planning this day..." : "Plan this day with AI"}
+          </button>
+        </div>
+      </div>
+
+      {aiError && (
+        <div role="alert" className="manual-itinerary-error">
+          {aiError}
+        </div>
+      )}
 
       {loadingActivities && (
         <p role="status">Loading saved activities...</p>
@@ -464,7 +571,7 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
                   <div className="manual-itinerary-activity-info">
                     <h3>{activity.title}</h3>
                     <span>{activity.category}</span>
-                    {activity.location && <p>ðŸ“ {activity.location}</p>}
+                    {activity.location && <p className="manual-itinerary-location"><MapPin size={14} aria-hidden="true" /> {activity.location}</p>}
                     {activity.notes && <p>{activity.notes}</p>}
                   </div>
                 </article>
@@ -487,6 +594,21 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
       <p className="manual-itinerary-notice">
         Activity changes are saved to your account when the request succeeds.
       </p>
+      {aiDialog && (
+        <ConfirmDialog
+          title={`Day ${activeDay} already has plans`}
+          onCancel={() => setAiDialog(false)}
+          actions={[
+            { label: "Replace them", tone: "danger", onClick: () => planDayWithAi(true) },
+            { label: "Add to them", tone: "primary", onClick: () => planDayWithAi(false) },
+          ]}
+        >
+          <p>
+            You have {dayActivities.length} {dayActivities.length === 1 ? "activity" : "activities"} on this day.
+            The AI can replace them with a fresh plan, or add more around them.
+          </p>
+        </ConfirmDialog>
+      )}
     </section>
   );
 }

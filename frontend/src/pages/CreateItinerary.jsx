@@ -370,9 +370,12 @@ function CreateItinerary() {
 
             ) : planningMethod === "manual" ? (
               <ManualItineraryEditor
+                key={selectedTrip.id}
                 trip={selectedTrip}
                 plan={manualPlans[selectedTrip.id]}
                 onChange={updateManualPlan}
+                onGenerated={trackGenerated}
+                onUseAiForTrip={() => setPlanningMethod("ai")}
               />
 
             ) : (

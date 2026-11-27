@@ -9,6 +9,7 @@ import { listTrips, listItineraryActivities, deleteItinerary } from "../api/api"
 import "../styles/Dashboard.css";
 import "../styles/Trips.css";
 import "../styles/Itinerary.css";
+import { todayIso } from "../lib/formatDate";
 
 function formatTripDate(value) {
   if (!value) return "";
@@ -146,6 +147,13 @@ export default function MyItineraries() {
     }
   }
 
+  // Same split as My Trips: upcoming soonest first, past trips most recent first
+  const today = todayIso();
+  const upcoming = itineraries.filter(({ trip }) => !trip.endDate || trip.endDate >= today);
+  const past = itineraries
+    .filter(({ trip }) => trip.endDate && trip.endDate < today)
+    .sort((a, b) => (b.trip.startDate ?? "").localeCompare(a.trip.startDate ?? ""));
+
   return (
     <div className="dashboard-page mytrips-page itinerary-list-page">
       <aside className="dashboard-sidebar">
@@ -181,12 +189,30 @@ export default function MyItineraries() {
           </section>
         )}
 
-        {!loading && itineraries.length > 0 && (
-          <div className="mytrips-grid">
-            {itineraries.map(({ trip, activities }) => (
-              <ItineraryCard key={trip.id} trip={trip} activities={activities} onDelete={setToDelete} />
-            ))}
-          </div>
+        {upcoming.length > 0 && (
+          <section className="mytrips-group" aria-labelledby="upcoming-itineraries">
+            <h2 id="upcoming-itineraries" className="mytrips-group-title">
+              Upcoming <span>{upcoming.length}</span>
+            </h2>
+            <div className="mytrips-grid">
+              {upcoming.map(({ trip, activities }) => (
+                <ItineraryCard key={trip.id} trip={trip} activities={activities} onDelete={setToDelete} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {past.length > 0 && (
+          <section className="mytrips-group" aria-labelledby="past-itineraries">
+            <h2 id="past-itineraries" className="mytrips-group-title">
+              Past trips <span>{past.length}</span>
+            </h2>
+            <div className="mytrips-grid">
+              {past.map(({ trip, activities }) => (
+                <ItineraryCard key={trip.id} trip={trip} activities={activities} onDelete={setToDelete} />
+              ))}
+            </div>
+          </section>
         )}
       </main>
 
