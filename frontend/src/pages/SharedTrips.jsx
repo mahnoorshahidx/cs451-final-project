@@ -14,7 +14,9 @@ import "../styles/SharedTrips.css";
 
 import { Link } from "react-router-dom";
 
-import { getBudgetOverview, getDestinationPhoto, getProfile, getSavings } from "../api/api";
+import { getBudgetOverview, getProfile, getSavings } from "../api/api";
+
+import useDestinationPhoto from "../lib/useDestinationPhoto";
 
 const ACTIVITY_META = {
   contribution: { label: "Contribution", Icon: Wallet },
@@ -63,18 +65,6 @@ function Progress({ trip }) {
   );
 }
 
-function RouteDecoration() {
-  return (
-    <svg className="st-route-art" aria-hidden="true" fill="none" viewBox="0 0 410 260">
-      <path d="M20 216C80 170 100 68 176 85c72 17 73 113 152 69 29-16 30-60 67-87" stroke="currentColor" strokeWidth="3" strokeDasharray="7 12" strokeLinecap="round" />
-      <circle cx="20" cy="216" r="8" fill="currentColor" />
-      <circle cx="176" cy="85" r="8" fill="currentColor" />
-      <circle cx="328" cy="154" r="8" fill="currentColor" />
-      <path d="m367 40 25 11-18 8-9 20-9-24Z" fill="currentColor" />
-    </svg>
-  );
-}
-
 function ScreenHeading({ eyebrow, title, description, onBack, action }) {
   return (
     <div className="st-screen-head">
@@ -89,73 +79,96 @@ function ScreenHeading({ eyebrow, title, description, onBack, action }) {
   );
 }
 
-function WelcomeScreen({ setView, sharedTripCount }) {
+// One shared trip as a photo card
+function SharedTripCard({ trip, onOpen }) {
+  const [photo, clearPhoto] = useDestinationPhoto(trip.destination);
+  const place = trip.destination?.split(",")[0]?.trim() || trip.title;
+  const people = trip.members.length;
+
+  return (
+    <li>
+      <button type="button" className="st-card" onClick={() => onOpen(trip)}>
+        <span className="st-card-photo">
+          {photo?.imageUrl && <img src={photo.imageUrl} alt="" loading="lazy" onError={clearPhoto} />}
+          <span className="st-card-status">{trip.status}</span>
+          <span className="tb-wide st-card-place">{place}</span>
+        </span>
+        <span className="st-card-body">
+          <strong>{trip.title}</strong>
+          <span className="st-card-meta"><CalendarDays size={14} aria-hidden="true" /> {dateRange(trip)}</span>
+          <span className="st-card-meta">
+            <Users size={14} aria-hidden="true" />
+            {people === 0 ? "Just you so far" : `${people} traveler${people === 1 ? "" : "s"}`}
+          </span>
+          {trip.budget != null ? (
+            <span className="st-card-saved">
+              <span><b>{money(contributed(trip), trip.currency)}</b> of {money(trip.budget, trip.currency)} saved</span>
+              <Progress trip={trip} />
+            </span>
+          ) : (
+            <span className="st-card-meta">Budget not set</span>
+          )}
+          <span className="st-card-open">Open trip <ArrowRight size={16} aria-hidden="true" /></span>
+        </span>
+      </button>
+    </li>
+  );
+}
+
+const STEPS = [
+  { Icon: Plane, title: "Pick a trip", text: "Choose one of your trips to share." },
+  { Icon: Link2, title: "Send the link", text: "Copy the invite link to your group chat." },
+  { Icon: MessageCircle, title: "Plan together", text: "Budget, save and plan as a crew." },
+];
+
+function WelcomeScreen({ setView, sharedTrips, onOpenTrip }) {
   return (
     <>
-      <section className="st-hero">
-        <RouteDecoration />
-
-        <div className="st-hero-content">
-          <h1>
-            Trips are better with <span>your crew</span>
-          </h1>
-          <p>
-            Bring your travel buddies into one shared space for
-            budgets, plans, comments, and every update along the way.
-          </p>
+      <header className="st-page-head">
+        <div>
+          <span className="tb-kicker">Shared trips</span>
+          <h1 className="tb-wide">Plan together</h1>
+          <p>Bring your travel buddies into one place for budgets, savings and plans.</p>
         </div>
-      </section>
-
-      <section className="st-choice-grid" aria-label="Shared trips options">
-
-        <button
-          className="st-choice st-panel"
-          type="button"
-          onClick={() => setView("share")}
-        >
-          <span className="st-choice-icon">
-            <Share2 size={26} />
-          </span>
-
-          <span className="st-choice-title">
-            Share an existing trip
-          </span>
-
-          <span className="st-choice-desc">
-            Choose a trip and preview an invitation link for your travel crew.
-          </span>
-
-          <span className="st-choice-cta">
-            Choose a trip <ArrowRight size={17} />
-          </span>
+        <button type="button" className="tb-btn tb-btn-accent" onClick={() => setView("share")}>
+          <UserPlus size={18} aria-hidden="true" /> Invite your crew
         </button>
+      </header>
 
-        {sharedTripCount > 0 && (
-          <button
-            className="st-choice st-panel"
-            type="button"
-            onClick={() => setView("trips")}
-          >
-            <span className="st-choice-icon st-choice-icon-alt">
-              <Users size={27} />
-            </span>
-
-            <span className="st-choice-title">
-              See shared trips
-            </span>
-
-            <span className="st-choice-desc">
-              Explore members, contributions, conversations,
-              and plan history in one place.
-            </span>
-
-            <span className="st-choice-cta">
-              View {sharedTripCount} shared {sharedTripCount === 1 ? "trip" : "trips"}
-              <ArrowRight size={17} />
-            </span>
+      {sharedTrips.length > 0 ? (
+        <section aria-labelledby="st-yours">
+          <div className="st-section-head">
+            <h2 id="st-yours" className="tb-wide">Your shared trips</h2>
+            <span>{sharedTrips.length}</span>
+          </div>
+          <ul className="st-cards">
+            {sharedTrips.map((trip) => (
+              <SharedTripCard key={trip.id} trip={trip} onOpen={onOpenTrip} />
+            ))}
+          </ul>
+        </section>
+      ) : (
+        <section className="st-empty">
+          <span className="st-empty-icon" aria-hidden="true"><Users size={26} /></span>
+          <h2 className="tb-wide">No shared trips yet</h2>
+          <p>Pick one of your trips and invite your travel buddies to plan it with you.</p>
+          <button type="button" className="tb-btn tb-btn-primary" onClick={() => setView("share")}>
+            <Share2 size={17} aria-hidden="true" /> Share a trip
           </button>
-        )}
+        </section>
+      )}
 
+      <section className="st-steps" aria-label="How sharing works">
+        {STEPS.map(({ Icon, title, text }, i) => (
+          <div key={title} className="st-step">
+            <span className="st-step-num" aria-hidden="true">{i + 1}</span>
+            <Icon size={18} aria-hidden="true" />
+            <div>
+              <strong>{title}</strong>
+              <span>{text}</span>
+            </div>
+          </div>
+        ))}
       </section>
     </>
   );
@@ -316,50 +329,10 @@ function ShareScreen({ trips, selectedTrip, chooseTrip, onBack, copyPreview,
   );
 }
 
-function TripsScreen({ trips, onBack, onOpenTrip, onShare }) {
-  return (
-    <section>
-      <ScreenHeading
-        title="Shared trips"
-        description="See saved trips, contributions, and planning updates in one place."
-        onBack={onBack}
-        action={<button type="button" className="st-button st-button-outline" onClick={onShare}><UserPlus size={18} /> Invite travelers</button>}
-      />
-      <div className="st-trip-list st-panel">
-        {trips.map((trip) => (
-          <button className="st-trip-row" type="button" key={trip.id} onClick={() => onOpenTrip(trip)}>
-            <div className="st-trip-row-main">
-              <div className="st-trip-name-row"><h2>{trip.title}</h2><span className={`st-status st-status-${trip.status}`}>{trip.status}</span></div>
-              <p className="st-row-sub"><MapPin size={15} /> {trip.destination}<span aria-hidden="true">·</span><CalendarDays size={15} />{dateRange(trip)}</p>
-
-              <div className="st-row-meta">
-                <AvatarStack members={trip.members} />
-
-                <span>{trip.members.length} members</span>
-                <span className="st-dot" />
-
-                {trip.budget != null ? (
-                  <span>
-                    <b>{money(contributed(trip), trip.currency)}</b>
-                    {" "}of {money(trip.budget, trip.currency)} saved
-                  </span>
-                ) : (
-                  <span>Budget not set</span>
-                )}
-              </div>
-              <Progress trip={trip} />
-            </div>
-            <span className="st-open-link">Open trip <ArrowRight size={18} /></span>
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 // Stable, readable contributor colors for the donut, legend, and activity feed.
 const CONTRIBUTOR_COLORS = [
-  "#218C83", "#527EC4", "#9269B5", "#C48A37", "#C36F81", "#5D8C55",
+  // The app palette: sage, coast blue, marigold, coral, navy, olive
+  "#6C8569", "#638FB3", "#E9AB42", "#DB6E5F", "#213253", "#C9C8A3",
 ];
 
 function ContributionDonut({ amount, budget, segments, label }) {
@@ -370,16 +343,14 @@ function ContributionDonut({ amount, budget, segments, label }) {
 
   // Each segment fills its contributor's portion of the trip budget.
   // Any remaining circumference stays unfilled.
-  let used = 0;
-  const arcs = segments.map((segment) => {
+  const arcs = segments.reduce((list, segment) => {
+    const used = list.reduce((sum, arc) => sum + arc.length, 0);
     const available = Math.max(0, 100 - used);
     const length = total > 0
       ? Math.min(available, (segment.amount / total) * 100)
       : 0;
-    const arc = { ...segment, length, offset: -used };
-    used += length;
-    return arc;
-  });
+    return [...list, { ...segment, length, offset: -used }];
+  }, []);
 
   return (
     <div
@@ -414,7 +385,7 @@ function ContributionDonut({ amount, budget, segments, label }) {
 }
 
 function DetailScreen({ trip, onBack, onShare }) {
-  const [photo, setPhoto] = useState(null);
+  const [photo, clearPhoto] = useDestinationPhoto(trip.destination);
   const [savings, setSavings] = useState(null);
   const [savingsLoading, setSavingsLoading] = useState(true);
   const [savingsError, setSavingsError] = useState("");
@@ -422,11 +393,8 @@ function DetailScreen({ trip, onBack, onShare }) {
   const [selectedContributor, setSelectedContributor] = useState("all");
 
   useEffect(() => {
+    // This screen remounts for each trip (key={trip.id}), so state starts fresh
     let active = true;
-    setSavingsLoading(true);
-    setSavingsError("");
-    setSavings(null);
-    setSelectedContributor("all");
 
     getSavings(trip.id)
       .then((data) => {
@@ -517,9 +485,6 @@ function DetailScreen({ trip, onBack, onShare }) {
   }, [savingsEntries]);
 
   const selectedPerson = contributors.find((p) => p.id === selectedContributor);
-  const filteredEntries = savingsEntries.filter((entry) =>
-    selectedContributor === "all" || entry.contributorId === selectedContributor
-  );
   const savedTotal = savings
     ? Number(savings.savedAmount ?? 0)
     : Number(trip.savedAmount ?? 0);
@@ -555,35 +520,10 @@ function DetailScreen({ trip, onBack, onShare }) {
     )
     .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 
-  useEffect(() => {
-    const destination = trip.destination?.trim();
-
-    setPhoto(null);
-
-    if (!destination) return;
-
-    let cancelled = false;
-
-    getDestinationPhoto(destination)
-      .then((result) => {
-        if (!cancelled && result?.imageUrl) {
-          setPhoto(result);
-        }
-      })
-      .catch((error) => {
-        if (!cancelled) {
-          console.warn("Destination photo unavailable:", error);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [trip.destination]);
 
   return (
     <section className="st-detail-screen">
-      <button className="st-back" type="button" onClick={onBack}><ArrowLeft size={17} /> All shared trips</button>
+      <button className="st-back" type="button" onClick={onBack}><ArrowLeft size={17} /> Back</button>
 
       <header className="st-detail-hero">
         {photo?.imageUrl && (
@@ -591,7 +531,7 @@ function DetailScreen({ trip, onBack, onShare }) {
             className="st-detail-hero-photo"
             src={photo.imageUrl}
             alt=""
-            onError={() => setPhoto(null)}
+            onError={clearPhoto}
           />
         )}
 
@@ -599,7 +539,7 @@ function DetailScreen({ trip, onBack, onShare }) {
           <div className="st-detail-labels"><span className="st-status-inverse">{trip.status}</span><span><CalendarDays size={15} /> {dateRange(trip)}</span></div>
           <h1>{trip.title}</h1>
           <p><MapPin size={17} />{trip.destination}</p>
-          <div className="st-detail-crew"><AvatarStack members={trip.members} /><span>{trip.members.length} travelers planning together</span><button type="button" onClick={onShare}><UserPlus size={17} /> Invite more</button></div>
+          <div className="st-detail-crew"><AvatarStack members={trip.members} /><span>{trip.members.length === 0 ? "Just you so far" : `${trip.members.length} traveler${trip.members.length === 1 ? "" : "s"} planning together`}</span><button type="button" onClick={onShare}><UserPlus size={17} /> Invite more</button></div>
         </div>
 
         {photo?.photographerUrl && photo?.unsplashUrl && (
@@ -920,7 +860,8 @@ export default function SharedTrips() {
         {view === "welcome" && (
           <WelcomeScreen
             setView={navigate}
-            sharedTripCount={sharedTrips.length}
+            sharedTrips={sharedTrips}
+            onOpenTrip={openTrip}
           />
         )}
 
@@ -949,20 +890,11 @@ export default function SharedTrips() {
           />
         )}
 
-        {view === "trips" && (
-          <TripsScreen
-            trips={sharedTrips}
-            onBack={() => navigate("welcome")}
-            onOpenTrip={openTrip}
-            onShare={() => navigate("share")}
-          />
-        )}
-
         {view === "detail" && selectedTrip && (
           <DetailScreen
             key={selectedTrip.id}
             trip={selectedTrip}
-            onBack={() => navigate("trips")}
+            onBack={() => navigate("welcome")}
             onShare={() => navigate("share")}
           />
         )}
