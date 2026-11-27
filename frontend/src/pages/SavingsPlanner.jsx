@@ -99,9 +99,14 @@ function GoalForm({ trip, savings, onCancel, onSave, busy, error }) {
   );
 }
 
-function LogForm({ account, onCancel, onSave, busy, error }) {
+function LogForm({ accounts, onCancel, onSave, busy, error }) {
   const today = todayIso();
-  const [form, setForm] = useState({ amount: "", date: today, description: "", fromBank: Boolean(account) });
+  const [form, setForm] = useState({
+    amount: "",
+    date: today,
+    description: "",
+    bankAccountId: "",
+  });
   const [localError, setLocalError] = useState("");
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
 
@@ -114,7 +119,7 @@ function LogForm({ account, onCancel, onSave, busy, error }) {
       amount,
       date: form.date || null,
       description: form.description.trim() || null,
-      bankAccountId: account && form.fromBank ? account.id : null,
+      bankAccountId: form.bankAccountId ? Number(form.bankAccountId) : null,
     });
   }
 
@@ -133,12 +138,24 @@ function LogForm({ account, onCancel, onSave, busy, error }) {
           <span>Note <em>(optional)</em></span>
           <input className="tb-input" type="text" maxLength={255} placeholder="e.g. November paycheck" value={form.description} onChange={set("description")} />
         </label>
-        {account && (
-          <label className="sv-check sv-span-2">
-            <input type="checkbox" checked={form.fromBank} onChange={set("fromBank")} />
-            From my connected account ••{account.accountLast4}
-          </label>
-        )}
+        <label className="tb-field sv-span-2">
+          Contribution source
+          <select
+            className="tb-input"
+            value={form.bankAccountId}
+            onChange={set("bankAccountId")}
+          >
+            <option value="">Manual contribution</option>
+
+            {accounts.map((account) => (
+              <option key={account.id} value={account.id}>
+                {bankFor(account).name}{" "}
+                {account.accountType === "SAVINGS" ? "Savings" : "Checking"}
+                {" "}••{account.accountLast4}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
       {(localError || error) && <p role="alert" className="error-text">{localError || error}</p>}
       <div className="sv-form-actions">
@@ -319,7 +336,7 @@ export default function SavingsPlanner() {
   const [overview, setOverview] = useState(null);
   const [error, setError] = useState("");
   const [savingsByTrip, setSavingsByTrip] = useState({}); // tripId -> savings detail
-  const [account, setAccount] = useState(null);
+  const [accounts, setAccounts] = useState([]);
   const [dialog, setDialog] = useState(null); // { tripId, kind: "goal" | "add" }
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
@@ -405,7 +422,16 @@ export default function SavingsPlanner() {
   const forecast = savingsForecast(chartEntries, goalTotal, lastTarget, today);
 
   let forecastNote = "";
-  if (goalTotal > 0 && savedTotal >= goalTotal) forecastNote = "Every goal is fully funded.";
+  if (
+    goalTrips.length > 0 &&
+    goalTrips.every(
+      (t) => Number(t.savedAmount || 0) >= Number(t.savingsTarget)
+    )
+  ) {
+    forecastNote = `All ${mainCurrency} savings goals are fully funded.`;
+  } else if (goalTotal > 0 && savedTotal >= goalTotal) {
+    forecastNote = "Your combined savings cover the total goal, but some trips are still underfunded.";
+  }
   else if (forecast.reachDate && forecast.reachDate <= lastTarget) forecastNote = `At your pace you'll reach ${money(goalTotal)} around ${shortDate(forecast.reachDate)}.`;
   else if (forecast.atEnd != null) forecastNote = `At your pace you'll have about ${money(forecast.atEnd)} by ${shortDate(lastTarget)}, ${money(goalTotal - forecast.atEnd)} short.`;
   else if (goalTotal > 0) forecastNote = "Add money a few times and we'll forecast when you'll be funded.";
@@ -460,7 +486,10 @@ const shownHistory = showAll ? filteredHistory : [];
           )}
         </header>
 
-        <SavingsBankCard onAccountChange={setAccount} onLogSavings={scrollToJars} />
+        <SavingsBankCard
+          onAccountsChange={setAccounts}
+          onLogSavings={scrollToJars}
+        />
 
         {error && <p role="alert" className="error-text">{error}</p>}
         {pageError && <p role="alert" className="error-text">{pageError}</p>}
@@ -564,13 +593,19 @@ const shownHistory = showAll ? filteredHistory : [];
                     {[...new Set(history
                       .filter((c) => c.bankAccountId != null)
                       .map((c) => String(c.bankAccountId))
-                    )].map((id) => (
-                      <option key={id} value={id}>
-                        {account && String(account.id) === id
-                          ? `${bankFor(account).name} ${account.accountType === "SAVINGS" ? "Savings" : "Checking"} ••${account.accountLast4}`
-                          : `Bank account #${id}`}
-                      </option>
-                    ))}
+                    )].map((id) => {
+                      const matchedAccount = accounts.find(
+                        (a) => String(a.id) === id
+                      );
+
+                      return (
+                        <option key={id} value={id}>
+                          {matchedAccount
+                            ? `${bankFor(matchedAccount).name} ${matchedAccount.accountType === "SAVINGS" ? "Savings" : "Checking"} ••${matchedAccount.accountLast4}`
+                            : `Bank account #${id}`}
+                        </option>
+                      );
+                    })}
                   </select>
                 </label>
 
@@ -637,7 +672,7 @@ const shownHistory = showAll ? filteredHistory : [];
         >
           {dialog.kind === "add" ? (
             <LogForm
-              account={account}
+              accounts={accounts}
               busy={busy}
               error={formError}
               onCancel={closeDialog}

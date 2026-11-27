@@ -17,6 +17,7 @@ import ViewItinerary from "./pages/ViewItinerary";
 import SharedTrips from "./pages/SharedTrips";
 import BudgetPlanner from "./pages/BudgetPlanner";
 import SavingsPlanner from "./pages/SavingsPlanner";
+import BankAccounts from "./pages/BankAccounts";
 
 function App() {
 
@@ -183,6 +184,15 @@ function App() {
           element={
             <ProtectedRoute>
               <ViewItinerary />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/bank-connection"
+          element={
+            <ProtectedRoute>
+              <BankAccounts />
             </ProtectedRoute>
           }
         />

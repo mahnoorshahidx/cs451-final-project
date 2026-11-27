@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { Landmark, Plus, Search, X } from "lucide-react";
-import { connectBankAccount, disconnectBankAccount, listBankAccounts } from "../api/api";
+import { connectBankAccount, listBankAccounts } from "../api/api";
 import { bankFor, DEMO_BANKS } from "../lib/demoBanks";
 
 // Bank connection for the Savings page: connect a demo bank or enter details by hand.
@@ -108,32 +109,34 @@ function BankDialog({ mode, busy, error, onClose, onConnect }) {
     </div>
   );
 }
-
-export default function SavingsBankCard({ onAccountChange, onLogSavings }) {
-  const [account, setAccount] = useState(undefined); // undefined while loading
-  const [dialog, setDialog] = useState(""); // "" | "search" | "manual"
+export default function SavingsBankCard({ onAccountsChange, onLogSavings }) {
+  const [accounts, setAccounts] = useState(undefined);
+  const [dialog, setDialog] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     listBankAccounts()
-      .then((accounts) => {
-        setAccount(accounts[0] ?? null);
-        onAccountChange?.(accounts[0] ?? null);
+      .then((data) => {
+        setAccounts(data);
+        onAccountsChange?.(data);
       })
       .catch((err) => {
-        setAccount(null);
+        setAccounts(null);
         setError(err.message);
       });
-  }, [onAccountChange]);
+  }, [onAccountsChange]);
 
   async function connect(details) {
     setBusy(true);
     setError("");
+
     try {
       const saved = await connectBankAccount(details);
-      setAccount(saved);
-      onAccountChange?.(saved);
+      const updatedAccounts = [...(accounts ?? []), saved];
+
+      setAccounts(updatedAccounts);
+      onAccountsChange?.(updatedAccounts);
       setDialog("");
     } catch (err) {
       setError(err.message);
@@ -142,71 +145,114 @@ export default function SavingsBankCard({ onAccountChange, onLogSavings }) {
     }
   }
 
-  async function disconnect() {
-    setBusy(true);
-    setError("");
-    try {
-      await disconnectBankAccount(account.id);
-      setAccount(null);
-      onAccountChange?.(null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
+  const totalBalance = (accounts ?? []).reduce(
+    (total, account) => total + (bankFor(account).balance ?? 0),
+    0
+  );
 
-  const bank = useMemo(() => (account ? bankFor(account) : null), [account]);
+  const formattedBalance = totalBalance.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+  });
+
   const closeDialog = useCallback(() => {
     setDialog("");
     setError("");
   }, []);
 
-  // A slim navy strip: who you bank with and the balance on the left, actions on the right
   return (
-    <section className="sv-bank-strip" aria-label="Bank account">
-      <span className="sv-bank-icon" aria-hidden="true"><Landmark size={20} /></span>
+    <section className="sv-bank-strip" aria-label="Bank accounts">
+      <span className="sv-bank-icon" aria-hidden="true">
+        <Landmark size={20} />
+      </span>
 
-      {account === undefined ? (
-        <p className="sv-strip-text" role="status">Loading your bank account...</p>
-      ) : account ? (
+      {accounts === undefined ? (
+        <p className="sv-strip-text" role="status">
+          Loading your bank accounts...
+        </p>
+      ) : accounts === null ? (
+        <div className="sv-strip-text">
+          <strong>Unable to load bank accounts</strong>
+          <Link to="/bank-connection" className="tb-btn sv-btn-on-navy">
+            Manage accounts
+          </Link>
+        </div>
+      ) : accounts.length > 0 ? (
         <>
           <div className="sv-strip-text">
             <strong>
-              {bank.name} {account.accountType === "SAVINGS" ? "Savings" : "Checking"} ••{account.accountLast4}
+              {accounts.length} connected{" "}
+              {accounts.length === 1 ? "bank account" : "bank accounts"}
               <span className="sv-demo-chip">Demo</span>
             </strong>
+
             <span>
-              {bank.balance != null
-                ? <><span className="tb-num">{bank.balance.toLocaleString("en-US", { style: "currency", currency: "USD" })}</span> available</>
-                : "Connected"}
+              <span className="tb-num">{formattedBalance}</span>
+              {" "}combined known demo balance
             </span>
           </div>
+
           <div className="sv-strip-actions">
-            <button type="button" className="tb-btn tb-btn-accent" onClick={onLogSavings}>Move money to a trip</button>
-            <button type="button" className="tb-btn sv-btn-on-navy" onClick={disconnect} disabled={busy}>
-              {busy ? "Disconnecting..." : "Disconnect"}
+            <button
+              type="button"
+              className="tb-btn tb-btn-accent"
+              onClick={onLogSavings}
+            >
+              Move money to a trip
             </button>
+
+            <Link
+              to="/bank-connection"
+              className="tb-btn sv-btn-on-navy"
+            >
+              Manage accounts
+            </Link>
           </div>
         </>
       ) : (
         <>
           <div className="sv-strip-text">
-            <strong id="sv-bank-heading">Connect a bank account</strong>
-            <span>See your balance and move money to your trips. Demo banks only.</span>
+            <strong id="sv-bank-heading">
+              Connect a bank account
+            </strong>
+            <span>
+              See your balance and move money to your trips.
+              Demo banks only.
+            </span>
           </div>
+
           <div className="sv-strip-actions">
-            <button type="button" className="tb-btn tb-btn-accent" onClick={() => setDialog("search")}>
+            <button
+              type="button"
+              className="tb-btn tb-btn-accent"
+              onClick={() => setDialog("search")}
+            >
               <Plus size={16} aria-hidden="true" /> Connect bank
             </button>
-            <button type="button" className="tb-btn sv-btn-on-navy" onClick={() => setDialog("manual")}>Add manually</button>
+
+            <button
+              type="button"
+              className="tb-btn sv-btn-on-navy"
+              onClick={() => setDialog("manual")}
+            >
+              Add manually
+            </button>
           </div>
         </>
       )}
-      {error && !dialog && <p role="alert" className="sv-bank-error">{error}</p>}
+
+      {error && !dialog && (
+        <p role="alert" className="sv-bank-error">{error}</p>
+      )}
 
       {dialog && (
-        <BankDialog mode={dialog} busy={busy} error={error} onClose={closeDialog} onConnect={connect} />
+        <BankDialog
+          mode={dialog}
+          busy={busy}
+          error={error}
+          onClose={closeDialog}
+          onConnect={connect}
+        />
       )}
     </section>
   );
