@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft, ArrowRight, CalendarDays, Check,
   CheckCircle2, ClipboardList, Copy, Eye, Link2, MapPin, MessageCircle,
-  Plane, Share2, Users, UserPlus, Wallet,
+  Plane, Share2, Users, UserPlus, Wallet, Plus, CircleHelp,
 } from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
@@ -17,6 +17,8 @@ import { Link } from "react-router-dom";
 import { getBudgetOverview, getProfile, getSavings } from "../api/api";
 
 import useDestinationPhoto from "../lib/useDestinationPhoto";
+
+import { getCurrentUser } from "../api/client";
 
 const ACTIVITY_META = {
   contribution: { label: "Contribution", Icon: Wallet },
@@ -56,15 +58,6 @@ function AvatarStack({ members }) {
   );
 }
 
-function Progress({ trip }) {
-  const percent = percentFunded(trip);
-  return (
-    <div className="st-progress" role="progressbar" aria-label="Group budget contributed" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
-      <span style={{ width: `${percent}%` }} />
-    </div>
-  );
-}
-
 function ScreenHeading({ eyebrow, title, description, onBack, action }) {
   return (
     <div className="st-screen-head">
@@ -79,49 +72,105 @@ function ScreenHeading({ eyebrow, title, description, onBack, action }) {
   );
 }
 
-// One shared trip as a photo card
-function SharedTripCard({ trip, onOpen }) {
-  const [photo, clearPhoto] = useDestinationPhoto(trip.destination);
-  const place = trip.destination?.split(",")[0]?.trim() || trip.title;
-  const people = trip.members.length;
+function initials(name = "") {
+  return name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "Y";
+}
+
+// One shared trip, built around the people: who's joined, open seats, and what the crew has saved
+function CrewRow({ trip, me, onOpen, onInvite }) {
+  const joined = 1 + trip.members.length; // you, plus anyone who has joined
+  const planned = Math.max(joined, Number(trip.numberOfTravelers) || 1);
+  const openSeats = Math.min(planned - joined, 4);
+  const pct = percentFunded(trip);
 
   return (
-    <li>
-      <button type="button" className="st-card" onClick={() => onOpen(trip)}>
-        <span className="st-card-photo">
-          {photo?.imageUrl && <img src={photo.imageUrl} alt="" loading="lazy" onError={clearPhoto} />}
-          <span className="st-card-status">{trip.status}</span>
-          <span className="tb-wide st-card-place">{place}</span>
+    <li className="st-crew">
+      <div className="st-crew-people" aria-label={`${joined} of ${planned} travelers joined`}>
+        <span className="st-seat is-you" title={me}>{initials(me)}</span>
+        {trip.members.slice(0, 3).map((m, i) => (
+          <span key={m.id ?? i} className="st-seat is-member">{initials(m.name)}</span>
+        ))}
+        {Array.from({ length: openSeats }, (_, i) => (
+          <button key={`open-${i}`} type="button" className="st-seat is-open" onClick={() => onInvite(trip)} aria-label={`Invite a traveler to ${trip.title}`}>
+            <Plus size={16} aria-hidden="true" />
+          </button>
+        ))}
+      </div>
+
+      <div className="st-crew-info">
+        <strong>{trip.title}</strong>
+        <span><MapPin size={14} aria-hidden="true" /> {trip.destination} · {dateRange(trip)}</span>
+        <span className="st-crew-joined">
+          {joined} of {planned} traveler{planned === 1 ? "" : "s"} joined
+          {planned > joined ? ` · ${planned - joined} seat${planned - joined === 1 ? "" : "s"} open` : ""}
         </span>
-        <span className="st-card-body">
-          <strong>{trip.title}</strong>
-          <span className="st-card-meta"><CalendarDays size={14} aria-hidden="true" /> {dateRange(trip)}</span>
-          <span className="st-card-meta">
-            <Users size={14} aria-hidden="true" />
-            {people === 0 ? "Just you so far" : `${people} traveler${people === 1 ? "" : "s"}`}
-          </span>
-          {trip.budget != null ? (
-            <span className="st-card-saved">
-              <span><b>{money(contributed(trip), trip.currency)}</b> of {money(trip.budget, trip.currency)} saved</span>
-              <Progress trip={trip} />
-            </span>
-          ) : (
-            <span className="st-card-meta">Budget not set</span>
-          )}
-          <span className="st-card-open">Open trip <ArrowRight size={16} aria-hidden="true" /></span>
-        </span>
-      </button>
+      </div>
+
+      <div className="st-crew-money">
+        {trip.budget != null ? (
+          <>
+            <span><b>{money(contributed(trip), trip.currency)}</b> saved together</span>
+            <span className="st-crew-bar" aria-hidden="true"><span style={{ width: `${pct}%` }} /></span>
+            <small>{pct}% of {money(trip.budget, trip.currency)}</small>
+          </>
+        ) : (
+          <small>Budget not set</small>
+        )}
+      </div>
+
+      <div className="st-crew-actions">
+        <button type="button" className="tb-btn tb-btn-outline" onClick={() => onInvite(trip)}>
+          <UserPlus size={16} aria-hidden="true" /> Invite
+        </button>
+        <button type="button" className="tb-btn tb-btn-primary" onClick={() => onOpen(trip)}>
+          Open <ArrowRight size={16} aria-hidden="true" />
+        </button>
+      </div>
     </li>
   );
 }
 
 const STEPS = [
-  { Icon: Plane, title: "Pick a trip", text: "Choose one of your trips to share." },
-  { Icon: Link2, title: "Send the link", text: "Copy the invite link to your group chat." },
-  { Icon: MessageCircle, title: "Plan together", text: "Budget, save and plan as a crew." },
+  { Icon: Plane, title: "Pick a trip", text: "Choose one of the trips you've already planned." },
+  { Icon: Link2, title: "Send the link", text: "Copy the invite link and drop it in your group chat." },
+  { Icon: MessageCircle, title: "Plan together", text: "Everyone sees the budget, savings and plans in one place." },
 ];
 
-function WelcomeScreen({ setView, sharedTrips, onOpenTrip }) {
+function HowItWorks({ onClose, onStart }) {
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div className="tb-dialog-backdrop" onMouseDown={onClose}>
+      <div className="tb-dialog st-how" role="dialog" aria-modal="true" aria-labelledby="st-how-title" onMouseDown={(e) => e.stopPropagation()}>
+        <h2 id="st-how-title" className="tb-wide">How sharing works</h2>
+        <ol>
+          {STEPS.map(({ Icon, title, text }) => (
+            <li key={title}>
+              <span className="st-how-icon" aria-hidden="true"><Icon size={18} /></span>
+              <div>
+                <strong>{title}</strong>
+                <span>{text}</span>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div className="tb-dialog-actions">
+          <button type="button" className="tb-btn tb-btn-ghost" onClick={onClose}>Close</button>
+          <button type="button" className="tb-btn tb-btn-accent" onClick={onStart}>Invite your crew</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WelcomeScreen({ setView, sharedTrips, onOpenTrip, onInvite }) {
+  const [showHow, setShowHow] = useState(false);
+  const me = getCurrentUser()?.name || "You";
+
   return (
     <>
       <header className="st-page-head">
@@ -130,27 +179,33 @@ function WelcomeScreen({ setView, sharedTrips, onOpenTrip }) {
           <h1 className="tb-wide">Plan together</h1>
           <p>Bring your travel buddies into one place for budgets, savings and plans.</p>
         </div>
-        <button type="button" className="tb-btn tb-btn-accent" onClick={() => setView("share")}>
-          <UserPlus size={18} aria-hidden="true" /> Invite your crew
-        </button>
+        <div className="st-page-actions">
+          <button type="button" className="st-how-link" onClick={() => setShowHow(true)}>
+            <CircleHelp size={17} aria-hidden="true" /> How it works
+          </button>
+          <button type="button" className="tb-btn tb-btn-accent" onClick={() => setView("share")}>
+            <UserPlus size={18} aria-hidden="true" /> Invite your crew
+          </button>
+        </div>
       </header>
 
       {sharedTrips.length > 0 ? (
-        <section aria-labelledby="st-yours">
-          <div className="st-section-head">
-            <h2 id="st-yours" className="tb-wide">Your shared trips</h2>
-            <span>{sharedTrips.length}</span>
-          </div>
-          <ul className="st-cards">
+        <section className="st-crews" aria-labelledby="st-yours">
+          <h2 id="st-yours" className="tb-kicker">Your crews · {sharedTrips.length}</h2>
+          <ul>
             {sharedTrips.map((trip) => (
-              <SharedTripCard key={trip.id} trip={trip} onOpen={onOpenTrip} />
+              <CrewRow key={trip.id} trip={trip} me={me} onOpen={onOpenTrip} onInvite={onInvite} />
             ))}
           </ul>
         </section>
       ) : (
         <section className="st-empty">
-          <span className="st-empty-icon" aria-hidden="true"><Users size={26} /></span>
-          <h2 className="tb-wide">No shared trips yet</h2>
+          <div className="st-empty-seats" aria-hidden="true">
+            <span className="st-seat is-you">{initials(me)}</span>
+            <span className="st-seat is-open"><Plus size={16} /></span>
+            <span className="st-seat is-open"><Plus size={16} /></span>
+          </div>
+          <h2 className="tb-wide">No crew yet</h2>
           <p>Pick one of your trips and invite your travel buddies to plan it with you.</p>
           <button type="button" className="tb-btn tb-btn-primary" onClick={() => setView("share")}>
             <Share2 size={17} aria-hidden="true" /> Share a trip
@@ -158,18 +213,15 @@ function WelcomeScreen({ setView, sharedTrips, onOpenTrip }) {
         </section>
       )}
 
-      <section className="st-steps" aria-label="How sharing works">
-        {STEPS.map(({ Icon, title, text }, i) => (
-          <div key={title} className="st-step">
-            <span className="st-step-num" aria-hidden="true">{i + 1}</span>
-            <Icon size={18} aria-hidden="true" />
-            <div>
-              <strong>{title}</strong>
-              <span>{text}</span>
-            </div>
-          </div>
-        ))}
-      </section>
+      {showHow && (
+        <HowItWorks
+          onClose={() => setShowHow(false)}
+          onStart={() => {
+            setShowHow(false);
+            setView("share");
+          }}
+        />
+      )}
     </>
   );
 }
@@ -862,6 +914,10 @@ export default function SharedTrips() {
             setView={navigate}
             sharedTrips={sharedTrips}
             onOpenTrip={openTrip}
+            onInvite={(trip) => {
+              setSelectedTripId(trip.id);
+              navigate("share");
+            }}
           />
         )}
 
