@@ -28,6 +28,10 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(a -> a
                 .requestMatchers("/api/auth/**").permitAll()
+                // Spring forwards failed requests to /error. If that path needed a login,
+                // every 500 or 503 (for example a failed AI call) would turn into a 401
+                // and the frontend would sign the user out.
+                .requestMatchers("/error").permitAll()
                 // UC9: the invitation page can show a minimal preview before the user signs in
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/invitations/preview/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()

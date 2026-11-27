@@ -132,4 +132,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleBankNotFound(BankAccountNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
     }
+
+    // Errors thrown with a status on purpose (e.g. 503 when the AI service is down)
+    // go back with that status and their message instead of through /error.
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> handleResponseStatus(
+            org.springframework.web.server.ResponseStatusException ex) {
+        String message = ex.getReason() != null ? ex.getReason() : "Request failed.";
+        return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", message));
+    }
 }
