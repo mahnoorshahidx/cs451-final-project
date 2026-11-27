@@ -148,8 +148,8 @@ Response:
 
 ## Important behavior
 
-- **Deleting an activity does NOT reduce the budget.** The amount stays in the budget, and the deleted entry's `budgetAmountAdded` is gone with it. Ask the user to adjust the budget if needed.
-- **AI "replace existing" (`POST /activities/generate` with `replaceExisting: true`) deletes all activities, including search results, and does NOT reduce the budget either.** Consider warning the user first.
+- **Deleting an activity doesn't reduce the budget unless asked.** `DELETE /api/trips/{id}/activities/{activityId}?adjustBudget=true` takes the entry's `budgetAmountAdded` back out of its budget category (never below zero; the total drops with it but never below what is still allocated). Without the flag, the amount stays in the budget as before. Ask the user when an entry has `budgetAmountAdded`.
+- **AI "replace existing" keeps search results.** `POST /activities/generate` and applying an AI option (UC5) with `replaceExisting: true` only remove AI and manual activities; flights, hotels and other search items stay, and the AI is told they're booked.
 - **Trip currency:** once an itinerary entry has an `estimatedCost`, the trip's currency can't be changed (409), like with budgets, expenses and savings. Creating a budget through `updateBudget` also locks the currency.
 - **Trip edits make old results stale:** changing the trip's travelers or dates after searching makes those results stale (400 when adding). Search again.
 

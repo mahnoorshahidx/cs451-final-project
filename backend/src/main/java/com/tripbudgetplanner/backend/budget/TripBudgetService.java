@@ -156,6 +156,46 @@ public class TripBudgetService {
             created ? BigDecimal.ZERO : totalBefore, totalAfter, created, budget.getVersion(), conversion);
     }
 
+    // UC6: takes back what a search item added, when the user deletes that item and asks for it.
+    // The category's allocation goes down by the amount (never below zero) and the total goes down
+    // with it, but never below what is still allocated. Returns the amount taken back (zero when
+    // there's no budget, no matching category, or the amount was in another currency).
+    @Transactional
+    public BigDecimal takeBackFromCategory(Long tripId, String standardCategory, BigDecimal amount, String amountCurrency) {
+        if (amount == null || amount.signum() <= 0 || standardCategory == null) {
+            return BigDecimal.ZERO;
+        }
+        budgetRepository.lockTrip(tripId);
+        TripBudget budget = budgetRepository.findByTripId(tripId).orElse(null);
+        if (budget == null || (amountCurrency != null && !amountCurrency.equals(budget.getCurrency()))) {
+            return BigDecimal.ZERO;
+        }
+
+        String category = ExpenseCategoryMapper.matchBudgetCategory(standardCategory, budget.getAllocations().keySet());
+        if (category == null) {
+            category = budget.getAllocations().keySet().stream()
+                .filter(name -> standardCategory.equals(ExpenseCategoryMapper.standardName(name)))
+                .findFirst()
+                .orElse(null);
+        }
+        if (category == null) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal before = budget.getAllocations().getOrDefault(category, BigDecimal.ZERO);
+        BigDecimal after = before.subtract(amount).max(BigDecimal.ZERO);
+        BigDecimal removed = before.subtract(after);
+        if (removed.signum() == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        budget.getAllocations().put(category, after);
+        budget.setTotalAmount(budget.getTotalAmount().subtract(removed).max(totalAllocated(budget)));
+        budget.nextVersion();
+        budgetRepository.save(budget);
+        return removed;
+    }
+
     public static BigDecimal totalAllocated(TripBudget budget) {
         return budget.getAllocations().values().stream()
             .reduce(BigDecimal.ZERO, BigDecimal::add);

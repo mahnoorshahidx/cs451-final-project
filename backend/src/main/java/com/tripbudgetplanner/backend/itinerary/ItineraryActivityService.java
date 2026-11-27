@@ -1,6 +1,10 @@
 
 package com.tripbudgetplanner.backend.itinerary;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.tripbudgetplanner.backend.budget.TripBudgetService;
+import com.tripbudgetplanner.backend.search.TripItemType;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -29,6 +33,15 @@ public class ItineraryActivityService {
 
         this.activityRepository = activityRepository;
         this.tripAccess = tripAccess;
+    }
+
+    // Used to take a search item's amount back out of the budget on delete (UC6).
+    // Set by Spring; tests that build this service by hand leave it null.
+    private TripBudgetService budgetService;
+
+    @Autowired(required = false)
+    public void setBudgetService(TripBudgetService budgetService) {
+        this.budgetService = budgetService;
     }
 
     // Retrieve all activities for a trip.
@@ -86,13 +99,24 @@ public class ItineraryActivityService {
         return toResponse(activityRepository.save(activity));
     }
 
-    // Delete an activity.
-    // Note (UC6): if this activity's cost was added to the budget, the budget is NOT reduced.
+    // Delete an activity. The budget is not changed.
     @Transactional
     public void deleteActivity(
             Long tripId,
             Long activityId,
             Long userId) {
+        deleteActivity(tripId, activityId, userId, false);
+    }
+
+    // Delete an activity. adjustBudget = true also takes back what this item added to the budget
+    // when it came from travel search with "update budget" (UC6). Returns the amount taken back
+    // (zero when nothing was).
+    @Transactional
+    public BigDecimal deleteActivity(
+            Long tripId,
+            Long activityId,
+            Long userId,
+            boolean adjustBudget) {
 
         // Owner or editor (403 for viewers)
         tripAccess.editableTrip(tripId, userId);
@@ -100,7 +124,27 @@ public class ItineraryActivityService {
         ItineraryActivity activity = findActivity(
                 activityId, tripId);
 
+        BigDecimal takenBack = BigDecimal.ZERO;
+        if (adjustBudget && budgetService != null
+                && activity.getBudgetAmountAdded() != null && activity.getSourceType() != null) {
+            String category = budgetCategoryOf(activity.getSourceType());
+            if (category != null) {
+                takenBack = budgetService.takeBackFromCategory(tripId, category,
+                        activity.getBudgetAmountAdded(), activity.getBudgetAmountCurrency());
+            }
+        }
+
         activityRepository.delete(activity);
+        return takenBack;
+    }
+
+    // The budget category a search item was added to ("HOTEL" -> "Accommodation"), or null
+    private static String budgetCategoryOf(String sourceType) {
+        try {
+            return TripItemType.valueOf(sourceType).getBudgetCategory();
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     // Delete every activity in a trip's itinerary ("Delete itinerary"). The trip itself stays.

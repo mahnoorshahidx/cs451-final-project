@@ -143,8 +143,9 @@ export const updateItineraryActivity = (tripId, activityId, activity) =>
   });
 
 // Delete an activity
-export const deleteItineraryActivity = (tripId, activityId) =>
-  apiFetch(`/api/trips/${tripId}/activities/${activityId}`, {
+// adjustBudget: also take back what a search item added to the budget (UC6)
+export const deleteItineraryActivity = (tripId, activityId, { adjustBudget = false } = {}) =>
+  apiFetch(`/api/trips/${tripId}/activities/${activityId}${adjustBudget ? "?adjustBudget=true" : ""}`, {
     method: "DELETE",
   });
 

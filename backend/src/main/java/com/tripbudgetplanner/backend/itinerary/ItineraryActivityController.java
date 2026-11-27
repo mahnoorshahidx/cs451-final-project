@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tripbudgetplanner.backend.itinerary.dto.ItineraryActivityRequest;
@@ -100,14 +101,16 @@ public class ItineraryActivityController {
     }
 
     // Delete an existing activity.
+    // ?adjustBudget=true also takes back what a search item added to the budget (UC6)
     @DeleteMapping("/{activityId}")
     public ResponseEntity<Void> deleteActivity(
             @PathVariable Long tripId,
             @PathVariable Long activityId,
+            @RequestParam(defaultValue = "false") boolean adjustBudget,
             @AuthenticationPrincipal Long userId) {
 
         activityService.deleteActivity(
-                tripId, activityId, userId);
+                tripId, activityId, userId, adjustBudget);
 
         return ResponseEntity.noContent().build();
     }
