@@ -145,6 +145,15 @@ function App() {
       />
 
       <Route
+        path="/budget-planner/:tripId"
+        element={
+          <ProtectedRoute>
+            <BudgetPlanner />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/savings-planner"
         element={
           <ProtectedRoute>
