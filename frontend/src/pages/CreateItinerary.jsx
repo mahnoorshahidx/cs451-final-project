@@ -17,6 +17,7 @@ import {
 } from "../lib/itineraryPreferences";
 import "../styles/Dashboard.css";
 import "../styles/Itinerary.css";
+import { todayIso } from "../lib/formatDate";
 import ManualItineraryEditor from "../components/ManualItineraryEditor";
 import AIItineraryQuestionnaire from "../components/AIItineraryQuestionnaire";
 
@@ -65,6 +66,11 @@ function CreateItinerary() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  // Only trips that haven't ended can be planned
+  const today = todayIso();
+  const plannableTrips = trips.filter((trip) => trip.endDate >= today);
+  const pastTripCount = trips.length - plannableTrips.length;
 
   // Find the complete record for the selected trip.
   const selectedTrip = trips.find(
@@ -248,18 +254,19 @@ function CreateItinerary() {
                 )}
 
                 {!loading && !error &&
-                  trips.length === 0 && (
+                  plannableTrips.length === 0 && (
                     <p>
-                      You haven't created any trips yet.
-                      Create a trip to get started.
+                      {pastTripCount > 0
+                        ? "All of your trips have already ended. Create a new trip to plan an itinerary."
+                        : "You haven't created any trips yet. Create a trip to get started."}
                     </p>
                   )}
 
                 {/* Selectable trip cards */}
                 {!loading && !error &&
-                  trips.length > 0 && (
+                  plannableTrips.length > 0 && (
                     <section className="itinerary-trip-list">
-                      {trips.map((trip) => (
+                      {plannableTrips.map((trip) => (
                         <button
                           key={trip.id}
                           type="button"

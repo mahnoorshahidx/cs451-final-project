@@ -6,15 +6,7 @@ import "../styles/Trips.css";
 import Sidebar from "../components/Sidebar";
 import TripCard from "../components/TripCard";
 import { deleteTrip, listTrips } from "../api/api";
-
-function todayIso() {
-  const now = new Date();
-  return [
-    now.getFullYear(),
-    String(now.getMonth() + 1).padStart(2, "0"),
-    String(now.getDate()).padStart(2, "0"),
-  ].join("-");
-}
+import { todayIso } from "../lib/formatDate";
 
 // My Trips (SCRUM-32). Lists all trips from the backend, with edit and delete on each card.
 // Upcoming trips come first (soonest first), past trips after (most recent first).

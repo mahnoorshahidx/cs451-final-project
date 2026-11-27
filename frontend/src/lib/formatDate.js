@@ -10,3 +10,13 @@ export function formatDate(iso, dateFormat = "MM/DD/YYYY") {
 
   return `${month}/${day}/${year}`;
 }
+
+// Today's date as "YYYY-MM-DD" in the user's own time zone
+export function todayIso() {
+  const now = new Date();
+  return [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0"),
+  ].join("-");
+}

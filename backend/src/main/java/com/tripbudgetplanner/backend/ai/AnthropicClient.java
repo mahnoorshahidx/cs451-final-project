@@ -117,6 +117,9 @@ public class AnthropicClient {
 
         try {
             JsonNode root = mapper.readTree(response.body());
+            if ("max_tokens".equals(root.path("stop_reason").asString())) {
+                log.warn("AI reply hit the {}-token limit and was cut off.", maxTokens);
+            }
             StringBuilder text = new StringBuilder();
             JsonNode content = root.path("content");
             for (int i = 0; i < content.size(); i++) {
@@ -148,7 +151,30 @@ public class AnthropicClient {
             }
             return node;
         } catch (JacksonException e) {
+            JsonNode repaired = repairCutOffList(text.substring(start));
+            if (repaired != null) {
+                log.warn("AI reply was cut off; kept the complete items before the cut.");
+                return repaired;
+            }
             throw new AiClientException("AI reply was not valid JSON.", e);
         }
+    }
+
+    // A reply cut off by the token limit looks like {"activities": [ {...}, {...}, {"da
+    // Keeps everything up to the last complete item and closes the list and the object.
+    // Returns null when no such cut point gives valid JSON.
+    private JsonNode repairCutOffList(String text) {
+        int tries = 0;
+        for (int end = text.lastIndexOf('}'); end > 0 && tries < 200; end = text.lastIndexOf('}', end - 1), tries++) {
+            try {
+                JsonNode node = mapper.readTree(text.substring(0, end + 1) + "]}");
+                if (node.isObject()) {
+                    return node;
+                }
+            } catch (JacksonException ignored) {
+                // Not a cut point between items; try the previous closing brace
+            }
+        }
+        return null;
     }
 }

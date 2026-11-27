@@ -60,8 +60,8 @@ public class ItineraryGenerationService {
     // Most activities kept per day for each pace (extra ones from the AI are dropped)
     static final Map<String, Integer> PACE_LIMIT = Map.of("relaxed", 3, "balanced", 4, "packed", 6);
 
-    private static final int MAX_TOKENS = 8000;
-    private static final Duration TIMEOUT = Duration.ofSeconds(60);
+    private static final int MAX_TOKENS = 16000;
+    private static final Duration TIMEOUT = Duration.ofSeconds(120);
 
     private final AnthropicClient ai;
     private final TripAccessService tripAccess;
@@ -79,6 +79,11 @@ public class ItineraryGenerationService {
     public List<ItineraryActivityResponse> generate(Long tripId, ItineraryGenerationRequest request, Long userId) {
         // Owner or editor can add AI activities (403 for viewers, 404 without access)
         Trip trip = tripAccess.editableTrip(tripId, userId);
+
+        if (trip.getEndDate().isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "This trip has already ended, so there's nothing left to plan.");
+        }
 
         if (!ai.isEnabled()) {
             throw unavailable();
