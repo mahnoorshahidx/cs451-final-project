@@ -76,45 +76,46 @@ function initials(name = "") {
   return name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "Y";
 }
 
-// One shared trip, built around the people: who's joined, open seats, and what the crew has saved
-function CrewRow({ trip, me, onOpen, onInvite }) {
+// One shared trip as a box led by its headcount: who's joined, open seats, then the trip
+function CrewCard({ trip, me, onOpen, onInvite }) {
   const joined = 1 + trip.members.length; // you, plus anyone who has joined
   const planned = Math.max(joined, Number(trip.numberOfTravelers) || 1);
-  const openSeats = Math.min(planned - joined, 4);
+  const open = planned - joined;
   const pct = percentFunded(trip);
 
   return (
     <li className="st-crew">
-      <div className="st-crew-people" aria-label={`${joined} of ${planned} travelers joined`}>
-        <span className="st-seat is-you" title={me}>{initials(me)}</span>
-        {trip.members.slice(0, 3).map((m, i) => (
-          <span key={m.id ?? i} className="st-seat is-member">{initials(m.name)}</span>
-        ))}
-        {Array.from({ length: openSeats }, (_, i) => (
-          <button key={`open-${i}`} type="button" className="st-seat is-open" onClick={() => onInvite(trip)} aria-label={`Invite a traveler to ${trip.title}`}>
-            <Plus size={16} aria-hidden="true" />
-          </button>
-        ))}
+      <div className="st-crew-top">
+        <div className="st-crew-count">
+          <span className="tb-num"><b>{joined}</b>/{planned}</span>
+          <small>{planned === 1 ? "traveler" : "travelers"} joined</small>
+        </div>
+        <div className="st-crew-people" aria-label={`${joined} of ${planned} travelers joined`}>
+          <span className="st-seat is-you" title={me}>{initials(me)}</span>
+          {trip.members.slice(0, 3).map((m, i) => (
+            <span key={m.id ?? i} className="st-seat is-member">{initials(m.name)}</span>
+          ))}
+          {Array.from({ length: Math.min(open, 3) }, (_, i) => (
+            <button key={`open-${i}`} type="button" className="st-seat is-open" onClick={() => onInvite(trip)} aria-label={`Invite a traveler to ${trip.title}`}>
+              <Plus size={15} aria-hidden="true" />
+            </button>
+          ))}
+          {open > 3 && <span className="st-seat-more">+{open - 3}</span>}
+        </div>
+        <span className="st-crew-seats">{open > 0 ? `${open} seat${open === 1 ? "" : "s"} open` : "Everyone's in"}</span>
       </div>
 
-      <div className="st-crew-info">
+      <div className="st-crew-body">
         <strong>{trip.title}</strong>
-        <span><MapPin size={14} aria-hidden="true" /> {trip.destination} · {dateRange(trip)}</span>
-        <span className="st-crew-joined">
-          {joined} of {planned} traveler{planned === 1 ? "" : "s"} joined
-          {planned > joined ? ` · ${planned - joined} seat${planned - joined === 1 ? "" : "s"} open` : ""}
-        </span>
-      </div>
-
-      <div className="st-crew-money">
+        <span><MapPin size={14} aria-hidden="true" /> {trip.destination}</span>
+        <span><CalendarDays size={14} aria-hidden="true" /> {dateRange(trip)}</span>
         {trip.budget != null ? (
-          <>
-            <span><b>{money(contributed(trip), trip.currency)}</b> saved together</span>
+          <div className="st-crew-money">
+            <span><b>{money(contributed(trip), trip.currency)}</b> saved together · {pct}%</span>
             <span className="st-crew-bar" aria-hidden="true"><span style={{ width: `${pct}%` }} /></span>
-            <small>{pct}% of {money(trip.budget, trip.currency)}</small>
-          </>
+          </div>
         ) : (
-          <small>Budget not set</small>
+          <span>Budget not set</span>
         )}
       </div>
 
@@ -194,7 +195,7 @@ function WelcomeScreen({ setView, sharedTrips, onOpenTrip, onInvite }) {
           <h2 id="st-yours" className="tb-kicker">Your crews · {sharedTrips.length}</h2>
           <ul>
             {sharedTrips.map((trip) => (
-              <CrewRow key={trip.id} trip={trip} me={me} onOpen={onOpenTrip} onInvite={onInvite} />
+              <CrewCard key={trip.id} trip={trip} me={me} onOpen={onOpenTrip} onInvite={onInvite} />
             ))}
           </ul>
         </section>

@@ -678,34 +678,64 @@
 .st-seat.is-open:hover { border-color: var(--tb-marigold); color: var(--tb-text); }
 [data-theme="dark"] .st-seat.is-you { border-color: var(--tb-surface); background: #2E4468; }
 
-/* Crews list */
+/* Crew cards: headcount first */
 .st-crews { display: flex; flex-direction: column; gap: 12px; }
 .st-crews h2 { margin: 0; }
-.st-crews ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
-.st-crew {
+.st-crews ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: 140px minmax(0, 1.3fr) minmax(170px, 1fr) auto;
-  gap: 24px;
-  align-items: center;
-  padding: 20px 24px;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 18px;
+}
+.st-crew {
+  display: flex;
+  flex-direction: column;
   border-radius: var(--tb-radius-lg);
   background: var(--tb-surface);
   border: 1px solid var(--tb-border);
-  border-left: 6px solid var(--tb-marigold);
+  overflow: hidden;
 }
-.st-crew-people { display: flex; align-items: center; }
-.st-crew-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.st-crew-info strong { font-size: 18px; color: var(--tb-text); }
-.st-crew-info > span { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--tb-text-muted); }
-.st-crew-info .st-crew-joined { font-weight: 600; color: var(--tb-success-fg); }
-[data-theme="dark"] .st-crew-info .st-crew-joined { color: #B9D3B4; }
-.st-crew-money { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--tb-text-muted); }
-.st-crew-money b { color: var(--tb-text); font-size: 16px; }
-.st-crew-money small { font-size: 12px; }
+.st-crew-top {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: end;
+  gap: 14px 16px;
+  padding: 22px 22px 18px;
+  background: var(--tb-panel);
+  color: var(--tb-panel-text);
+}
+.st-crew-count { display: flex; flex-direction: column; gap: 2px; }
+.st-crew-count .tb-num { font-size: 22px; line-height: 1; color: var(--tb-panel-muted); }
+.st-crew-count b { font-size: 48px; font-weight: 700; color: var(--tb-marigold); }
+.st-crew-count small { font-size: 13px; color: var(--tb-panel-muted); }
+.st-crew-people { display: flex; justify-content: flex-end; align-items: center; }
+.st-crew-top .st-seat { border-color: var(--tb-panel); }
+.st-crew-top .st-seat.is-you { background: var(--tb-marigold); color: #213253; }
+.st-crew-top .st-seat.is-open { background: transparent; border: 2px dashed rgba(255, 255, 255, 0.35); color: var(--tb-panel-muted); }
+.st-crew-top .st-seat.is-open:hover { border-color: var(--tb-marigold); color: #fff; }
+.st-seat-more { margin-left: 8px; font-size: 13px; font-weight: 700; color: var(--tb-panel-muted); }
+.st-crew-seats {
+  grid-column: 1 / -1;
+  justify-self: start;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--tb-panel-text);
+}
+
+.st-crew-body { display: flex; flex-direction: column; gap: 6px; padding: 18px 22px 4px; flex: 1; }
+.st-crew-body > strong { font-size: 18px; color: var(--tb-text); margin-bottom: 2px; }
+.st-crew-body > span { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: var(--tb-text-muted); }
+.st-crew-money { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; font-size: 13px; color: var(--tb-text-muted); }
+.st-crew-money b { color: var(--tb-text); font-size: 15px; }
 .st-crew-bar { height: 8px; border-radius: 999px; background: var(--tb-track); overflow: hidden; }
 .st-crew-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--tb-sage); }
-.st-crew-actions { display: flex; gap: 8px; }
-.st-crew-actions .tb-btn { min-height: 42px; padding: 0 16px; font-size: 14px; }
+.st-crew-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 16px 22px 22px; }
+.st-crew-actions .tb-btn { min-height: 42px; padding: 0 14px; font-size: 14px; }
 
 .st-empty-seats { display: flex; margin-bottom: 6px; }
 
@@ -728,11 +758,3 @@
 .st-how li strong { font-size: 15px; color: var(--tb-text); }
 .st-how li div span { font-size: 14px; color: var(--tb-text-muted); line-height: 1.45; }
 
-@media (max-width: 1100px) {
-  .st-crew { grid-template-columns: auto minmax(0, 1fr); }
-  .st-crew-money { grid-column: 1 / -1; }
-  .st-crew-actions { grid-column: 1 / -1; }
-}
-@media (max-width: 600px) {
-  .st-crew { grid-template-columns: 1fr; padding: 18px; }
-}
