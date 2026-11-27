@@ -19,6 +19,8 @@ import {
 import "../styles/Dashboard.css";
 import "../styles/BudgetPages.css";
 
+import { bankFor } from "../lib/demoBanks";
+
 // Savings: every upcoming trip on one page.
 // Top: total saved with a chart of savings over time (and the pace forecast), next to the bank card.
 // Middle: one "jar" per trip, a ring that fills as you save, with one main button.
@@ -324,6 +326,9 @@ export default function SavingsPlanner() {
   const [pageError, setPageError] = useState("");
   const [toRemove, setToRemove] = useState(null); // { trip, contribution }
   const [showAll, setShowAll] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [bankFilter, setBankFilter] = useState("all");
   const jarsRef = useRef(null);
 
   // Overview first, then the savings detail of every trip that has a goal
@@ -418,7 +423,17 @@ export default function SavingsPlanner() {
       return items;
     })
     .sort((a, b) => (b.date || "0000").localeCompare(a.date || "0000"));
-  const shownHistory = showAll ? history : [];
+  const filteredHistory = history.filter((c) => {
+    if (startDate && (!c.date || c.date < startDate)) return false;
+    if (endDate && (!c.date || c.date > endDate)) return false;
+    if (bankFilter === "manual" && c.bankAccountId != null) return false;
+    if (bankFilter !== "all" && bankFilter !== "manual" &&
+        String(c.bankAccountId) !== bankFilter) return false;
+
+    return true;
+  });
+
+const shownHistory = showAll ? filteredHistory : [];
 
   const dialogTrip = dialog ? tripsById[dialog.tripId] : null;
 
@@ -513,6 +528,71 @@ export default function SavingsPlanner() {
                 {showAll ? "Hide" : `Show all ${history.length}`}
               </button>
             </div>
+            {showAll && (
+              <div className="sv-history-filters">
+                <label>
+                  Start date
+                  <input
+                    className="tb-input"
+                    type="date"
+                    value={startDate}
+                    max={endDate || undefined}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </label>
+
+                <label>
+                  End date
+                  <input
+                    className="tb-input"
+                    type="date"
+                    value={endDate}
+                    min={startDate || undefined}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </label>
+
+                <label>
+                  Bank account
+                  <select
+                    className="tb-input"
+                    value={bankFilter}
+                    onChange={(e) => setBankFilter(e.target.value)}
+                  >
+                    <option value="all">All sources</option>
+                    <option value="manual">No linked bank account</option>
+                    {[...new Set(history
+                      .filter((c) => c.bankAccountId != null)
+                      .map((c) => String(c.bankAccountId))
+                    )].map((id) => (
+                      <option key={id} value={id}>
+                        {account && String(account.id) === id
+                          ? `${bankFor(account).name} ${account.accountType === "SAVINGS" ? "Savings" : "Checking"} ••${account.accountLast4}`
+                          : `Bank account #${id}`}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <button
+                  type="button"
+                  className="tb-btn tb-btn-outline"
+                  onClick={() => {
+                    setStartDate("");
+                    setEndDate("");
+                    setBankFilter("all");
+                  }}
+                >
+                  Clear filters
+                </button>
+              </div>
+          )}
+
+          {showAll && filteredHistory.length === 0 && (
+            <p className="sv-history-empty" role="status">
+              No contributions match your selected filters.
+            </p>
+          )}
             <ul hidden={!showAll}>
               {shownHistory.map((c) => {
                 const m = makeMoney(c.trip.currency);

@@ -596,3 +596,50 @@
 @media (max-width: 600px) {
   .sv-strip-actions { width: 100%; }
 }
+
+
+/* Savings activity filters */
+.sv-history-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 16px 0 20px;
+}
+
+.sv-history-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 160px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sv-history-filters .tb-input {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.sv-history-filters .tb-btn {
+  min-height: 44px;
+}
+
+.sv-history-filters select.tb-input {
+  appearance: none;
+  height: 56px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font: inherit;
+  font-weight: 400;
+}
+
+
+.sv-history-empty {
+  text-align: center;
+  padding: 24px 16px;
+  font-size: 14px;
+  opacity: 0.75;
+}
