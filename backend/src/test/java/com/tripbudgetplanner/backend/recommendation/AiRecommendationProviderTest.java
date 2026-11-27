@@ -25,6 +25,9 @@ import com.tripbudgetplanner.backend.recommendation.dto.TimingRecommendationRequ
 
 import tools.jackson.databind.ObjectMapper;
 
+import com.tripbudgetplanner.backend.currency.CurrencyService;
+import static org.mockito.Mockito.mock;
+
 // No real API calls: the AnthropicClient is mocked, except parseJsonObject which runs for real.
 class AiRecommendationProviderTest {
 
@@ -37,7 +40,7 @@ class AiRecommendationProviderTest {
     @BeforeEach
     void setUp() {
         ai = spy(new AnthropicClient(new ObjectMapper(), "test-key", "test-model", "https://example.invalid", 5, 512));
-        provider = new AiRecommendationProvider(ai, new RuleBasedRecommendationProvider());
+        provider = new AiRecommendationProvider(ai, new RuleBasedRecommendationProvider(mock(CurrencyService.class)));
     }
 
     private TimingRecommendationRequest timingRequest() {
@@ -149,7 +152,7 @@ class AiRecommendationProviderTest {
     @Test
     void usesRulesWithoutCallingAiWhenNoKey() {
         AnthropicClient noKey = spy(new AnthropicClient(new ObjectMapper(), "", "test-model", "https://example.invalid", 5, 512));
-        AiRecommendationProvider noKeyProvider = new AiRecommendationProvider(noKey, new RuleBasedRecommendationProvider());
+        AiRecommendationProvider noKeyProvider = new AiRecommendationProvider(noKey, new RuleBasedRecommendationProvider(mock(CurrencyService.class)));
 
         assertEquals("rules", noKeyProvider.recommendTiming(timingRequest()).source());
         assertEquals("rules", noKeyProvider.recommendBudget(budgetRequest()).source());

@@ -21,7 +21,6 @@ const menuItems = [
   { name: "Home", path: "/dashboard", Icon: House },
   { name: "My Trips", path: "/trips", Icon: Plane },
   { name: "Itinerary", path: "/itineraries", Icon: CalendarDays },
-  { name: "Savings Planner (Old)", path: "/savings", Icon: PiggyBank },
   { name: "Budget", path: "/budget-planner", Icon: Wallet },
   { name: "Savings", path: "/savings-planner", Icon: TrendingUp },
   { name: "Shared Trips", path: "/shared-trips", Icon: Users },

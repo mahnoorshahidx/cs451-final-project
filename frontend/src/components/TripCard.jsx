@@ -86,7 +86,7 @@ function TripCard({ trip, onDelete }) {
         </div>
 
         <div className="mytrip-actions">
-          <Link to={`/budget/${trip.id}`} className="mytrip-link is-main">Budget</Link>
+          <Link to={`/budget-planner/${trip.id}`} className="mytrip-link is-main">Budget</Link>
           <Link to={`/trips/${trip.id}/edit?tab=details`} className="mytrip-link">Edit details</Link>
 
           {onDelete && (
