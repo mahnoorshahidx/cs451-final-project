@@ -65,11 +65,13 @@ export default function AIItineraryQuestionnaire({
 }) {
   const [page, setPage] = useState(0);
   const headingRef = useRef(null);
-  const [currency, setCurrency] = useState(null);
+  // The budget is in the trip's currency, so AI costs line up with the trip budget.
+  // Older trips without one fall back to the currency under Settings > Preferences.
+  const [currency, setCurrency] = useState(trip?.currency || null);
   const [currencyError, setCurrencyError] = useState("");
 
-  // Match the currency saved under Settings > Preferences.
   useEffect(() => {
+    if (trip?.currency) return undefined;
     let cancelled = false;
 
     getProfile()
@@ -83,7 +85,7 @@ export default function AIItineraryQuestionnaire({
       });
 
     return () => { cancelled = true; };
-  }, []);
+  }, [trip?.currency]);
   const [preferences, setPreferences] = useState(() => ({
     ...DEFAULT_PREFERENCES,
     ...initialPreferences,
@@ -213,7 +215,7 @@ export default function AIItineraryQuestionnaire({
             <p>Choose a daily budget and your preferred travel style.</p>
 
             <label>
-              Daily budget for food and activities ({currency || "Loading currency..."}) *
+              Daily budget per person for food and activities ({currency || "Loading currency..."}) *
               <input
                 type="number"
                 min="1"

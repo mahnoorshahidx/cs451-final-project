@@ -60,6 +60,7 @@ public class ItineraryActivityController {
     }
 
     // Generate AI-suggested activities from the user's preferences and save them.
+    // Optional startDate/endDate plan only those days (replaceExisting then only clears those days).
     // Returns only the new activities. 503 if the AI isn't available.
     @PostMapping("/generate")
     public ResponseEntity<List<ItineraryActivityResponse>> generateActivities(
@@ -85,6 +86,17 @@ public class ItineraryActivityController {
 
         return activityService.updateActivity(
                 tripId, activityId, request, userId);
+    }
+
+    // Delete the whole itinerary (every activity in the trip). The trip itself is kept.
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAllActivities(
+            @PathVariable Long tripId,
+            @AuthenticationPrincipal Long userId) {
+
+        activityService.deleteAllActivities(tripId, userId);
+
+        return ResponseEntity.noContent().build();
     }
 
     // Delete an existing activity.

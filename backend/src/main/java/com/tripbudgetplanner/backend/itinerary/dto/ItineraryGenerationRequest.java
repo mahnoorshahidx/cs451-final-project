@@ -1,6 +1,7 @@
 package com.tripbudgetplanner.backend.itinerary.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.validation.constraints.DecimalMax;
@@ -12,11 +13,12 @@ import jakarta.validation.constraints.Size;
 // Answers from the AI itinerary questionnaire. The destination and dates come from the saved trip.
 public record ItineraryGenerationRequest(
 
-    // Page 1: daily budget for food and activities, per person, in the user's currency (optional)
+    // Page 1: daily budget for food and activities, per person, in the trip's currency (optional)
     @DecimalMin(value = "1", message = "Daily budget must be at least 1")
     @DecimalMax(value = "1000000", message = "Daily budget is too large")
     BigDecimal dailyBudget,
 
+    // Ignored for costs: AI costs are always in the trip's currency. Kept for older clients.
     @Pattern(regexp = "^[A-Z]{3}$", message = "Currency must be a 3-letter code like USD")
     String currency,
 
@@ -43,6 +45,26 @@ public record ItineraryGenerationRequest(
     @Size(max = 1000, message = "Special requests can be at most 1000 characters")
     String specialRequests,
 
-    // true: delete the trip's existing activities first. false or null: add to them.
-    Boolean replaceExisting
-) {}
+    // true: delete existing activities first (only inside startDate..endDate when a range is given).
+    // false or null: add to them.
+    Boolean replaceExisting,
+
+    // Optional: only plan these days (for regenerating part of an itinerary). Both must be within
+    // the trip. Null means from the trip's first day. At most MAX_DAYS days are planned per request.
+    LocalDate startDate,
+    LocalDate endDate,
+
+    // Optional: places already planned on other days, so the AI doesn't repeat them
+    @Size(max = 300)
+    List<@Size(max = 255) String> avoidTitles
+) {
+
+    // The original 9-field form (no date range, nothing to avoid)
+    public ItineraryGenerationRequest(BigDecimal dailyBudget, String currency, String travelStyle,
+                                      String minimumRating, List<String> interests, String pace,
+                                      List<String> foodPreferences, String specialRequests,
+                                      Boolean replaceExisting) {
+        this(dailyBudget, currency, travelStyle, minimumRating, interests, pace, foodPreferences,
+            specialRequests, replaceExisting, null, null, null);
+    }
+}

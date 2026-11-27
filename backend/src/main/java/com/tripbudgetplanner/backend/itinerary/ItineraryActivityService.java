@@ -103,6 +103,20 @@ public class ItineraryActivityService {
         activityRepository.delete(activity);
     }
 
+    // Delete every activity in a trip's itinerary ("Delete itinerary"). The trip itself stays.
+    // Like deleteActivity, budget amounts added from search results are not taken back.
+    @Transactional
+    public int deleteAllActivities(Long tripId, Long userId) {
+
+        // Owner or editor (403 for viewers)
+        tripAccess.editableTrip(tripId, userId);
+
+        List<ItineraryActivity> activities =
+                activityRepository.findByTripIdOrderByActivityDateAscStartTimeAsc(tripId);
+        activityRepository.deleteAll(activities);
+        return activities.size();
+    }
+
     // Find an activity belonging to a specific trip.
     private ItineraryActivity findActivity(
             Long activityId, Long tripId) {

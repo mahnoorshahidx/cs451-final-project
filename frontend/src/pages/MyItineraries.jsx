@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { CalendarDays, ListChecks, Plus, Trash2 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
-import { listTrips, listItineraryActivities } from "../api/api";
+import ConfirmDialog from "../components/ConfirmDialog";
+import useDestinationPhoto from "../lib/useDestinationPhoto";
+import { clearItineraryPreferences } from "../lib/itineraryPreferences";
+import { listTrips, listItineraryActivities, deleteItinerary } from "../api/api";
 import "../styles/Dashboard.css";
 import "../styles/Trips.css";
 import "../styles/Itinerary.css";
@@ -19,10 +23,77 @@ function formatTripDate(value) {
   }).format(date);
 }
 
+function daysBetween(start, end) {
+  if (!start || !end) return 0;
+  const toUtc = (iso) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    return Date.UTC(y, m - 1, d);
+  };
+  return Math.round((toUtc(end) - toUtc(start)) / 86400000) + 1;
+}
+
+// Photo card for one saved itinerary
+function ItineraryCard({ trip, activities, onDelete }) {
+  const [photo, clearPhoto] = useDestinationPhoto(trip.destination);
+  const place = trip.destination?.split(",")[0]?.trim() || trip.name;
+  const totalDays = daysBetween(trip.startDate, trip.endDate);
+  const plannedDays = new Set(activities.map((a) => a.activityDate)).size;
+
+  return (
+    <article className="mytrip">
+      <Link to={`/itineraries/${trip.id}`} className="mytrip-photo" aria-label={`Open the ${trip.name} itinerary`}>
+        {photo?.imageUrl && <img src={photo.imageUrl} alt="" loading="lazy" onError={clearPhoto} />}
+        <span className="mytrip-status is-later">
+          {activities.length} {activities.length === 1 ? "activity" : "activities"}
+        </span>
+        <span className="tb-wide mytrip-place">{place}</span>
+      </Link>
+
+      <div className="mytrip-body">
+        <div>
+          <h3>{trip.name}</h3>
+          <p className="mytrip-destination">{trip.destination || "Destination not specified"}</p>
+        </div>
+
+        <div className="mytrip-details">
+          {(trip.startDate || trip.endDate) && (
+            <span>
+              <CalendarDays size={15} aria-hidden="true" />
+              {formatTripDate(trip.startDate)}
+              {trip.endDate ? ` – ${formatTripDate(trip.endDate)}` : ""}
+            </span>
+          )}
+          {totalDays > 0 && (
+            <span>
+              <ListChecks size={15} aria-hidden="true" />
+              {plannedDays} of {totalDays} {totalDays === 1 ? "day" : "days"} planned
+            </span>
+          )}
+        </div>
+
+        <div className="mytrip-actions">
+          <Link to={`/itineraries/${trip.id}`} className="mytrip-link is-main">View itinerary</Link>
+          <button
+            type="button"
+            className="mytrip-delete"
+            onClick={() => onDelete(trip)}
+            aria-label={`Delete the ${trip.name} itinerary`}
+            title="Delete itinerary"
+          >
+            <Trash2 size={17} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export default function MyItineraries() {
   const [itineraries, setItineraries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [toDelete, setToDelete] = useState(null); // trip whose itinerary is being deleted
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,73 +131,76 @@ export default function MyItineraries() {
     return () => { cancelled = true; };
   }, []);
 
+  async function confirmDelete() {
+    setDeleting(true);
+    try {
+      await deleteItinerary(toDelete.id);
+      clearItineraryPreferences(toDelete.id);
+      setItineraries((current) => current.filter(({ trip }) => trip.id !== toDelete.id));
+      setToDelete(null);
+    } catch (err) {
+      setError(err.message || "Could not delete the itinerary.");
+      setToDelete(null);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
-    <div className="dashboard-page itinerary-list-page">
+    <div className="dashboard-page mytrips-page itinerary-list-page">
       <aside className="dashboard-sidebar">
         <Sidebar />
       </aside>
 
-      <main className="dashboard-main">
-        <header className="dashboard-header" />
-
-        <section className="dashboard-banner">
-          <div>
-            <h1>Itinerary</h1>
-            <p>Your saved trip itineraries, all in one place.</p>
-          </div>
-        </section>
-
-        <section className="my-trips">
-          <div className="trips-section-header">
-            <h2>
-              {loading ? "Saved itineraries" : `${itineraries.length} ${itineraries.length === 1 ? "itinerary" : "itineraries"}`}
-            </h2>
-            <Link to="/create-itinerary" className="trips-new-btn">
-              + New Itinerary
-            </Link>
+      <main className="dashboard-main mytrips-main">
+        <header className="mytrips-header">
+          <div className="mytrips-title">
+            <span className="tb-kicker">
+              {loading ? "Itineraries" : `${itineraries.length} saved`}
+            </span>
+            <h1 className="tb-wide">Itineraries</h1>
+            <p>Your day-by-day plans for each trip, all in one place.</p>
           </div>
 
-          {loading && <p role="status" className="trips-message">Loading your itineraries...</p>}
-          {!loading && error && (
-            <p role="alert" className="error-text">Unable to load itineraries: {error}</p>
-          )}
-          {!loading && !error && itineraries.length === 0 && (
-            <p className="trips-message">
-              You don't have any saved itineraries yet. Choose <strong>New Itinerary</strong> to start planning.
-            </p>
-          )}
+          <Link to="/create-itinerary" className="tb-btn tb-btn-primary">
+            <Plus size={18} aria-hidden="true" />
+            New itinerary
+          </Link>
+        </header>
 
-          {!loading && !error && (
-            <div className="trip-list">
-              {itineraries.map(({ trip, activities }) => (
-                <article className="trip-card itinerary-list-card" key={trip.id}>
-                  <div className="trip-card-top">
-                    <h3>{trip.name}</h3>
-                    <span className="trip-card-badge">Saved</span>
-                  </div>
-                  <p className="trip-card-destination">
-                    📍 {trip.destination || "Destination not specified"}
-                  </p>
-                  {(trip.startDate || trip.endDate) && (
-                    <p className="trip-card-meta">
-                      📅 {formatTripDate(trip.startDate)}
-                      {trip.endDate ? ` – ${formatTripDate(trip.endDate)}` : ""}
-                    </p>
-                  )}
-                  <p className="trip-card-meta">
-                    {activities.length} saved {activities.length === 1 ? "activity" : "activities"}
-                  </p>
-                  <div className="trip-card-actions">
-                    <Link to={`/itineraries/${trip.id}`} className="trip-card-link">
-                      View Itinerary →
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
+        {loading && <p role="status" className="trips-message">Loading your itineraries...</p>}
+        {!loading && error && (
+          <p role="alert" className="error-text">Unable to load itineraries: {error}</p>
+        )}
+
+        {!loading && !error && itineraries.length === 0 && (
+          <section className="mytrips-empty">
+            <h2 className="tb-wide">No plans yet</h2>
+            <p>Pick a trip and plan each day yourself, or let the AI plan it from your preferences.</p>
+            <Link to="/create-itinerary" className="tb-btn tb-btn-accent">Plan an itinerary</Link>
+          </section>
+        )}
+
+        {!loading && itineraries.length > 0 && (
+          <div className="mytrips-grid">
+            {itineraries.map(({ trip, activities }) => (
+              <ItineraryCard key={trip.id} trip={trip} activities={activities} onDelete={setToDelete} />
+            ))}
+          </div>
+        )}
       </main>
+
+      {toDelete && (
+        <ConfirmDialog
+          title="Delete this itinerary?"
+          onCancel={() => setToDelete(null)}
+          busy={deleting}
+          actions={[{ label: deleting ? "Deleting..." : "Delete itinerary", tone: "danger", onClick: confirmDelete }]}
+        >
+          <p>Every activity planned for {toDelete.name} is deleted. The trip and its budget stay.</p>
+          <p>This can't be undone.</p>
+        </ConfirmDialog>
+      )}
     </div>
   );
 }

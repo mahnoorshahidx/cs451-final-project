@@ -1,6 +1,7 @@
 
 package com.tripbudgetplanner.backend.itinerary;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,10 @@ public interface ItineraryActivityRepository
         findByTripIdOrderByActivityDateAscStartTimeAsc(
             Long tripId
         );
+
+    // Activities on the days from..to (inclusive), used when regenerating part of an itinerary
+    List<ItineraryActivity> findByTripIdAndActivityDateBetween(
+            Long tripId, LocalDate from, LocalDate to);
 
     // UC6: has this search result already been added to the trip?
     boolean existsByTripIdAndSourceProviderAndSourceItemId(Long tripId, String sourceProvider, String sourceItemId);

@@ -316,7 +316,7 @@ export default function ManualItineraryEditor({ trip, plan, onChange }) {
       <div className="manual-itinerary-heading">
         <p className="manual-itinerary-kicker">MANUAL PLANNING</p>
         <h1>Build Your Itinerary</h1>
-        <p>{trip?.name} Â· Day {activeDay} of {totalDays}</p>
+        <p>{trip?.name} · Day {activeDay} of {totalDays}</p>
       </div>
 
       {loadingActivities && (

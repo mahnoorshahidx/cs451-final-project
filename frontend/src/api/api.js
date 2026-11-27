@@ -140,7 +140,13 @@ export const deleteItineraryActivity = (tripId, activityId) =>
     method: "DELETE",
   });
 
+// Delete the whole itinerary (every activity in the trip). The trip itself is kept.
+export const deleteItinerary = (tripId) =>
+  apiFetch(`/api/trips/${tripId}/activities`, { method: "DELETE" });
+
 // AI: generate and save suggested activities from the questionnaire answers.
+// Optional startDate / endDate ("YYYY-MM-DD", at most 14 days) plan only those days;
+// with replaceExisting: true only those days are cleared first. avoidTitles: places not to repeat.
 // preferences: { pace: "relaxed" | "balanced" | "packed", foodPreferences: [], interests: [],
 //                specialRequests: "", replaceExisting: false }
 // Returns the new activities. Throws ApiError with status 503 if the AI isn't available.

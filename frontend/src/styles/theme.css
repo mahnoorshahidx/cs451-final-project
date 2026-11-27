@@ -49,6 +49,7 @@
   --tb-text-muted: #56657A;
   --tb-track: #E4EBF2;
   --tb-accent-text: #638FB3;   /* italic accent words */
+  --tb-accent-strong: #213253; /* links, borders and highlights that must read on both themes */
   --tb-panel: #213253;         /* navy cards */
   --tb-panel-text: #FFFFFF;
   --tb-panel-muted: #BFCBDB;
@@ -81,6 +82,7 @@
   --tb-text-muted: #9FAEC3;
   --tb-track: #2A3A57;
   --tb-accent-text: #93B4D2;
+  --tb-accent-strong: #93B4D2;
   --tb-panel: #22345A;
   --tb-panel-muted: #B4C2D6;
   --tb-primary-bg: #E9AB42;
@@ -287,4 +289,66 @@ body {
   outline: none;
   border-color: var(--tb-blue);
   box-shadow: 0 0 0 4px rgba(99, 143, 179, 0.2);
+}
+
+/* ---------- Danger button ---------- */
+
+.tb-btn-danger {
+  background: var(--tb-red);
+  color: #FFFFFF;
+}
+
+.tb-btn-danger:hover {
+  background: #9A1010;
+}
+
+/* ---------- Dialog (ConfirmDialog.jsx) ---------- */
+
+.tb-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(18, 28, 48, 0.5);
+}
+
+.tb-dialog {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px;
+  border-radius: var(--tb-radius-xl);
+  background: var(--tb-surface);
+  color: var(--tb-text);
+  box-shadow: var(--tb-shadow-pop);
+  font-family: var(--tb-font-body);
+}
+
+.tb-dialog h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.tb-dialog-body {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--tb-text-soft);
+}
+
+.tb-dialog-body p {
+  margin: 0 0 8px;
+}
+
+.tb-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
 }

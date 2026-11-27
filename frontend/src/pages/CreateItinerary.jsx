@@ -1,14 +1,33 @@
 import ItineraryViewer from "../components/ItineraryViewer";
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Check, PenLine, Sparkles, X } from "lucide-react";
 import Sidebar from "../components/Sidebar";
-import { listTrips, listItineraryActivities, generateItinerary } from "../api/api";
+import ConfirmDialog from "../components/ConfirmDialog";
+import {
+  listTrips,
+  listItineraryActivities,
+  generateItinerary,
+  deleteItineraryActivity,
+} from "../api/api";
+import {
+  generationRequest,
+  loadItineraryPreferences,
+  saveItineraryPreferences,
+} from "../lib/itineraryPreferences";
 import "../styles/Dashboard.css";
 import "../styles/Itinerary.css";
 import ManualItineraryEditor from "../components/ManualItineraryEditor";
 import AIItineraryQuestionnaire from "../components/AIItineraryQuestionnaire";
 
 function CreateItinerary() {
+  const navigate = useNavigate();
+
+  // /create-itinerary?trip=12&method=ai opens the AI questions for that trip
+  // (used by "Change preferences" on a saved itinerary)
+  const [searchParams] = useSearchParams();
+  const startTripId = Number(searchParams.get("trip")) || null;
+  const startMethod = ["ai", "manual"].includes(searchParams.get("method")) ? searchParams.get("method") : null;
 
   // Temporary manual itinerary drafts, organized by trip ID.
   const [manualPlans, setManualPlans] = useState({});
@@ -18,18 +37,26 @@ function CreateItinerary() {
   const [error, setError] = useState("");
 
   // NEW: Store which trip the user selected.
-  const [selectedTripId, setSelectedTripId] = useState(null);
+  const [selectedTripId, setSelectedTripId] = useState(startTripId);
 
   // NEW: Track the current questionnaire step.
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(startTripId ? (startMethod ? 3 : 2) : 1);
 
   // Stores the selected itinerary planning method
-  const [planningMethod, setPlanningMethod] = useState(null);
+  const [planningMethod, setPlanningMethod] = useState(startMethod);
   const [aiPreferences, setAiPreferences] = useState({});
 
   // AI itinerary generation
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState("");
+
+  // Asked when the trip already has activities: { preferences, count }
+  const [pendingGenerate, setPendingGenerate] = useState(null);
+  // Activities the AI added in this visit, so "Discard" can remove them
+  const [sessionActivityIds, setSessionActivityIds] = useState([]);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [discarding, setDiscarding] = useState(false);
+  const [finishError, setFinishError] = useState("");
 
   // Retrieve saved trips.
   useEffect(() => {
@@ -67,41 +94,34 @@ function CreateItinerary() {
   }, [selectedTripId]);
 
   // Sends the questionnaire answers to the AI, which saves the suggested activities on the trip.
-  // On success, opens the itinerary view (step 4) so the user can see and edit them.
+  // If the trip already has activities, first asks whether to replace them or add to them.
   async function handleGenerate(preferences) {
     const tripId = selectedTrip.id;
     setAiPreferences((previous) => ({ ...previous, [tripId]: preferences }));
+    saveItineraryPreferences(tripId, preferences);
     setGenerateError("");
 
-    // If the trip already has activities, ask whether to replace them or add to them
-    let replaceExisting = false;
     try {
       const existing = await listItineraryActivities(tripId);
       if (existing.length > 0) {
-        replaceExisting = window.confirm(
-          `${selectedTrip.name} already has ${existing.length} ` +
-          `${existing.length === 1 ? "activity" : "activities"}.\n\n` +
-          "OK: replace them with the AI itinerary\n" +
-          "Cancel: keep them and add the AI suggestions"
-        );
+        setPendingGenerate({ preferences, count: existing.length });
+        return;
       }
     } catch {
       // Couldn't check; just add to whatever is there
     }
+    runGenerate(preferences, false);
+  }
 
+  async function runGenerate(preferences, replaceExisting) {
+    setPendingGenerate(null);
     setGenerating(true);
     try {
-      await generateItinerary(tripId, {
-        dailyBudget: Number(preferences.dailyBudget) || null,
-        currency: preferences.currency,
-        travelStyle: preferences.travelStyle,
-        minimumRating: preferences.minimumRating,
-        interests: preferences.interests,
-        pace: preferences.pace,
-        foodPreferences: preferences.diningPreferences,
-        specialRequests: preferences.specialRequests,
-        replaceExisting,
-      });
+      const created = await generateItinerary(
+        selectedTrip.id,
+        generationRequest(preferences, { replaceExisting })
+      );
+      setSessionActivityIds((ids) => [...ids, ...created.map((a) => a.id)]);
       setStep(4);
     } catch (err) {
       setGenerateError(
@@ -109,6 +129,32 @@ function CreateItinerary() {
       );
     } finally {
       setGenerating(false);
+    }
+  }
+
+  const trackGenerated = useCallback((created) => {
+    setSessionActivityIds((ids) => [...ids, ...created.map((a) => a.id)]);
+  }, []);
+
+  // Removes what the AI added during this visit, then leaves
+  async function discardItinerary() {
+    setDiscarding(true);
+    setFinishError("");
+    try {
+      for (const id of sessionActivityIds) {
+        try {
+          await deleteItineraryActivity(selectedTrip.id, id);
+        } catch (err) {
+          // Already gone (replaced by a later regenerate, or edited away) is fine
+          if (err.status !== 404) throw err;
+        }
+      }
+      navigate("/itineraries");
+    } catch (err) {
+      setFinishError(`Couldn't discard everything: ${err.message}. Some activities may still be saved.`);
+      setConfirmDiscard(false);
+    } finally {
+      setDiscarding(false);
     }
   }
 
@@ -130,7 +176,7 @@ function CreateItinerary() {
         {/* Top bar */}
         <header className="itinerary-topbar">
           <Link to="/itineraries" className="itinerary-exit">
-            × &nbsp; Exit
+            <X size={16} aria-hidden="true" /> Exit
           </Link>
         </header>
 
@@ -166,8 +212,21 @@ function CreateItinerary() {
               }`}
           >
 
-            {step === 4 ? (
-              <ItineraryViewer trip={selectedTrip} />
+            {step > 1 && !selectedTrip ? (
+              // Opened with ?trip= before the trips have loaded (or the trip is gone)
+              loading ? (
+                <p role="status">Loading your trip...</p>
+              ) : (
+                <p role="alert" className="error-text">
+                  {error || "That trip couldn't be found."} <Link to="/create-itinerary">Pick another trip</Link>
+                </p>
+              )
+            ) : step === 4 ? (
+              <ItineraryViewer
+                trip={selectedTrip}
+                onGenerated={trackGenerated}
+                onDeleted={() => navigate("/itineraries")}
+              />
             ) : step === 1 ? (
               <>
                 <div className="itinerary-heading">
@@ -267,7 +326,7 @@ function CreateItinerary() {
                     onClick={() => setPlanningMethod("manual")}
                   >
                     <span className="itinerary-method-icon" aria-hidden="true">
-                      ▦
+                      <PenLine size={24} />
                     </span>
 
                     <span className="itinerary-method-info">
@@ -288,7 +347,7 @@ function CreateItinerary() {
                     onClick={() => setPlanningMethod("ai")}
                   >
                     <span className="itinerary-method-icon" aria-hidden="true">
-                      ✧
+                      <Sparkles size={24} />
                     </span>
 
                     <span className="itinerary-method-info">
@@ -313,7 +372,9 @@ function CreateItinerary() {
               <AIItineraryQuestionnaire
                 key={selectedTrip.id}
                 trip={selectedTrip}
-                initialPreferences={aiPreferences[selectedTrip.id]}
+                initialPreferences={
+                  aiPreferences[selectedTrip.id] ?? loadItineraryPreferences(selectedTrip.id) ?? undefined
+                }
                 onBack={() => setStep(2)}
                 onSave={handleGenerate}
                 generating={generating}
@@ -322,12 +383,47 @@ function CreateItinerary() {
             )}
 
 
+            {/* Last step: save or throw away */}
+            {step === 4 && selectedTrip && (
+              <div className="itinerary-finish" role="region" aria-label="Finish itinerary">
+                <div className="itinerary-finish-text">
+                  <strong>Happy with this plan?</strong>
+                  <span>
+                    {sessionActivityIds.length > 0
+                      ? "Save it to keep it in your itineraries, or discard what the AI added."
+                      : "Save it to keep it in your itineraries."}
+                  </span>
+                  {finishError && <span className="itinerary-finish-error" role="alert">{finishError}</span>}
+                </div>
+                <div className="itinerary-finish-actions">
+                  {sessionActivityIds.length > 0 && (
+                    <button
+                      type="button"
+                      className="tb-btn itinerary-delete-btn"
+                      onClick={() => setConfirmDiscard(true)}
+                      disabled={discarding}
+                    >
+                      <X size={16} aria-hidden="true" /> Discard
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="tb-btn tb-btn-primary"
+                    onClick={() => navigate(`/itineraries/${selectedTrip.id}`, { state: { saved: true } })}
+                    disabled={discarding}
+                  >
+                    <Check size={16} aria-hidden="true" /> Save itinerary
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Bottom navigation */}
 
             <footer
               className="itinerary-footer"
               style={
-                step === 3 && planningMethod === "ai"
+                (step === 3 && planningMethod === "ai") || step === 4
                   ? { display: "none" }
                   : undefined
               }
@@ -371,6 +467,37 @@ function CreateItinerary() {
         </div>
 
       </main>
+
+      {pendingGenerate && (
+        <ConfirmDialog
+          title="This trip already has a plan"
+          onCancel={() => setPendingGenerate(null)}
+          actions={[
+            { label: "Keep them and add", tone: "plain", onClick: () => runGenerate(pendingGenerate.preferences, false) },
+            { label: "Replace them", tone: "primary", onClick: () => runGenerate(pendingGenerate.preferences, true) },
+          ]}
+        >
+          <p>
+            {selectedTrip?.name} already has {pendingGenerate.count}{" "}
+            {pendingGenerate.count === 1 ? "activity" : "activities"}.
+          </p>
+          <p>Replace them with the AI plan, or keep them and add the AI suggestions around them?</p>
+        </ConfirmDialog>
+      )}
+
+      {confirmDiscard && (
+        <ConfirmDialog
+          title="Discard this AI plan?"
+          onCancel={() => setConfirmDiscard(false)}
+          busy={discarding}
+          actions={[{ label: discarding ? "Discarding..." : "Discard", tone: "danger", onClick: discardItinerary }]}
+        >
+          <p>
+            The {sessionActivityIds.length} {sessionActivityIds.length === 1 ? "activity" : "activities"} the AI
+            added are deleted. Anything you had before and chose to replace can't be brought back.
+          </p>
+        </ConfirmDialog>
+      )}
     </div>
   );
 }
