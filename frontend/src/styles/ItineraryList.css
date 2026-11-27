@@ -1,0 +1,233 @@
+/* Itineraries list: built around days, in blue and sage (My Trips leans navy and marigold) */
+
+/* ---------- Day strip ---------- */
+.itl-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.itl-pill {
+  width: 14px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid var(--tb-border-strong);
+  background: transparent;
+}
+.itl-strip.is-lg .itl-pill { width: 18px; height: 30px; }
+.itl-pill.is-planned {
+  background: var(--tb-sage);
+  border-color: var(--tb-sage);
+}
+.itl-pill.is-today { box-shadow: 0 0 0 2px var(--tb-surface), 0 0 0 4px var(--tb-blue); }
+.itl-more { font-size: 12px; font-weight: 700; color: var(--tb-text-soft); margin-left: 2px; }
+
+.itl-dates {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--tb-text-soft);
+}
+
+.itl-delete {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--tb-border);
+  border-radius: 12px;
+  background: var(--tb-surface);
+  color: var(--tb-text-soft);
+  cursor: pointer;
+}
+.itl-delete:hover { color: var(--tb-danger); border-color: var(--tb-danger); }
+.itl-delete.is-small { width: 34px; height: 34px; border-color: transparent; background: none; }
+
+/* ---------- Next trip ---------- */
+.itl-next {
+  display: grid;
+  grid-template-columns: minmax(240px, 38%) 1fr;
+  margin: 8px 0 36px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--tb-surface);
+  border: 1px solid var(--tb-border);
+  box-shadow: 0 18px 40px -28px rgba(33, 50, 83, 0.45);
+}
+.itl-next-photo {
+  position: relative;
+  min-height: 320px;
+  background: linear-gradient(160deg, var(--tb-blue), var(--tb-sage));
+}
+.itl-next-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.itl-next-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 30px 34px;
+  min-width: 0;
+}
+.itl-next-kicker { color: var(--tb-blue); }
+.itl-next-body h2 { margin: -6px 0 0; font-size: clamp(24px, 3vw, 34px); color: var(--tb-text); }
+
+.itl-progress {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+.itl-progress > span,
+.itl-row-plan > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tb-success-fg);
+}
+
+.itl-agenda {
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: var(--tb-blue-tint);
+}
+.itl-agenda-title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tb-accent-strong);
+}
+.itl-agenda ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.itl-agenda li { display: flex; gap: 14px; align-items: baseline; font-size: 15px; color: var(--tb-text); }
+.itl-time { flex: none; width: 76px; font-size: 13px; font-weight: 700; color: var(--tb-blue); }
+.itl-what { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.itl-agenda-more { padding-left: 90px; font-size: 13px; color: var(--tb-text-soft) !important; }
+.itl-agenda-empty { margin: 0; font-size: 14px; color: var(--tb-text-soft); }
+
+.itl-next-actions { display: flex; align-items: center; gap: 10px; margin-top: auto; }
+
+/* ---------- Later trips ---------- */
+.itl-group { margin-bottom: 32px; }
+.itl-group-title {
+  margin: 0 0 16px;
+  line-height: 1.4;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tb-text-soft);
+}
+.itl-rows { display: grid; gap: 12px; }
+.itl-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) minmax(180px, auto) auto;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 18px 14px 14px;
+  border-radius: 18px;
+  background: var(--tb-surface);
+  border: 1px solid var(--tb-border);
+  border-left: 5px solid var(--tb-blue);
+}
+.itl-thumb {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--tb-blue), var(--tb-sage));
+}
+.itl-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.itl-row-main { display: grid; gap: 4px; min-width: 0; }
+.itl-row-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--tb-text);
+  text-decoration: none;
+}
+.itl-row-name:hover { text-decoration: underline; }
+.itl-nextup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--tb-text-soft);
+  min-width: 0;
+}
+.itl-nextup span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.itl-nextup strong { color: var(--tb-text); font-weight: 600; }
+.itl-row-plan { display: grid; gap: 6px; justify-items: start; }
+.itl-row-actions { display: flex; align-items: center; gap: 8px; }
+
+/* ---------- Past trips ---------- */
+.itl-past-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 2px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tb-text-soft);
+  cursor: pointer;
+}
+.itl-past-toggle > span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--tb-olive);
+  color: var(--tb-navy);
+  font-size: 12px;
+  letter-spacing: 0;
+}
+.itl-past-toggle svg { transition: transform 0.2s; }
+.itl-past-toggle svg.is-open { transform: rotate(180deg); }
+
+.itl-past-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--tb-border);
+}
+.itl-past-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto 34px;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--tb-border);
+}
+.itl-past-name { color: var(--tb-text-soft); font-weight: 600; text-decoration: none; }
+.itl-past-name:hover { color: var(--tb-text); text-decoration: underline; }
+.itl-past-meta { font-size: 13px; color: var(--tb-text-soft); }
+
+/* ---------- Smaller screens ---------- */
+@media (max-width: 960px) {
+  .itl-next { grid-template-columns: 1fr; }
+  .itl-next-photo { min-height: 180px; }
+  .itl-row { grid-template-columns: 64px minmax(0, 1fr) auto; }
+  .itl-thumb { width: 64px; height: 64px; }
+  .itl-row-plan { grid-column: 2 / -1; grid-row: 2; }
+  .itl-row-actions { grid-column: 3; grid-row: 1; }
+}
+@media (max-width: 600px) {
+  .itl-next-body { padding: 22px 20px; }
+  .itl-past-row { grid-template-columns: minmax(0, 1fr) 34px; gap: 4px 12px; }
+  .itl-past-row .itl-past-meta { grid-column: 1; }
+  .itl-past-row .itl-delete { grid-column: 2; grid-row: 1; }
+}
