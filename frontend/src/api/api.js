@@ -169,3 +169,19 @@ export const getDestinationPhoto = (destination) =>
   apiFetch(
     `/api/destination-photo?destination=${encodeURIComponent(destination)}`
   );
+
+// ---- UC5: AI itinerary options to compare ----
+// Makes a budget, balanced and luxury option as drafts (replaces older drafts)
+export const generateItineraryOptions = (tripId, preferences) =>
+  apiFetch(`/api/trips/${tripId}/itinerary-options`, { method: "POST", body: preferences });
+
+export const listItineraryOptions = (tripId) => apiFetch(`/api/trips/${tripId}/itinerary-options`);
+
+// Copies the chosen option into the itinerary; returns the new activities
+export const applyItineraryOption = (tripId, optionId, replaceExisting) =>
+  apiFetch(`/api/trips/${tripId}/itinerary-options/${optionId}/apply?replaceExisting=${replaceExisting ? "true" : "false"}`, {
+    method: "POST",
+  });
+
+export const discardItineraryOptions = (tripId) =>
+  apiFetch(`/api/trips/${tripId}/itinerary-options`, { method: "DELETE" });

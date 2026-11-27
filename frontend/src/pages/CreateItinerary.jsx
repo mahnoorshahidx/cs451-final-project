@@ -7,8 +7,10 @@ import ConfirmDialog from "../components/ConfirmDialog";
 import {
   listTrips,
   listItineraryActivities,
-  generateItinerary,
   deleteItineraryActivity,
+  generateItineraryOptions,
+  applyItineraryOption,
+  discardItineraryOptions,
 } from "../api/api";
 import {
   generationRequest,
@@ -20,6 +22,7 @@ import "../styles/Itinerary.css";
 import { todayIso } from "../lib/formatDate";
 import ManualItineraryEditor from "../components/ManualItineraryEditor";
 import AIItineraryQuestionnaire from "../components/AIItineraryQuestionnaire";
+import ItineraryOptionsCompare from "../components/ItineraryOptionsCompare";
 
 function CreateItinerary() {
   const navigate = useNavigate();
@@ -53,6 +56,10 @@ function CreateItinerary() {
 
   // Asked when the trip already has activities: { preferences, count }
   const [pendingGenerate, setPendingGenerate] = useState(null);
+  // UC5: AI options to compare before one is added ({ list, preferences, replaceExisting })
+  const [options, setOptions] = useState(null);
+  const [choosing, setChoosing] = useState(null); // id of the option being added
+  const [optionsError, setOptionsError] = useState("");
   // Activities the AI added in this visit, so "Discard" can remove them
   const [sessionActivityIds, setSessionActivityIds] = useState([]);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
@@ -119,23 +126,44 @@ function CreateItinerary() {
     runGenerate(preferences, false);
   }
 
+  // Asks the AI for a few options to compare (UC5). Nothing is added until one is chosen.
   async function runGenerate(preferences, replaceExisting) {
     setPendingGenerate(null);
     setGenerating(true);
+    setOptionsError("");
     try {
-      const created = await generateItinerary(
-        selectedTrip.id,
-        generationRequest(preferences, { replaceExisting })
-      );
-      setSessionActivityIds((ids) => [...ids, ...created.map((a) => a.id)]);
+      const list = await generateItineraryOptions(selectedTrip.id, generationRequest(preferences));
+      setOptions({ list, preferences, replaceExisting });
       setStep(4);
     } catch (err) {
-      setGenerateError(
-        err.message || "We couldn't generate your itinerary. Please try again."
-      );
+      const message = err.message || "We couldn't generate your itinerary. Please try again.";
+      if (options) setOptionsError(message);
+      else setGenerateError(message);
     } finally {
       setGenerating(false);
     }
+  }
+
+  async function chooseOption(option) {
+    setChoosing(option.id);
+    setOptionsError("");
+    try {
+      const created = await applyItineraryOption(selectedTrip.id, option.id, options.replaceExisting);
+      setSessionActivityIds((ids) => [...ids, ...created.map((a) => a.id)]);
+      setOptions(null);
+    } catch (err) {
+      setOptionsError(err.message || "Couldn't add that plan. Please try again.");
+    } finally {
+      setChoosing(null);
+    }
+  }
+
+  // Back to the questions: the drafts are thrown away
+  function leaveOptions() {
+    if (selectedTrip) discardItineraryOptions(selectedTrip.id).catch(() => {});
+    setOptions(null);
+    setOptionsError("");
+    setStep(3);
   }
 
   const trackGenerated = useCallback((created) => {
@@ -227,6 +255,17 @@ function CreateItinerary() {
                   {error || "That trip couldn't be found."} <Link to="/create-itinerary">Pick another trip</Link>
                 </p>
               )
+            ) : step === 4 && options ? (
+              <ItineraryOptionsCompare
+                trip={selectedTrip}
+                options={options.list}
+                choosing={choosing}
+                error={optionsError}
+                regenerating={generating}
+                onChoose={chooseOption}
+                onRegenerate={() => runGenerate(options.preferences, options.replaceExisting)}
+                onBack={leaveOptions}
+              />
             ) : step === 4 ? (
               <ItineraryViewer
                 trip={selectedTrip}
@@ -394,7 +433,7 @@ function CreateItinerary() {
 
 
             {/* Last step: save or throw away */}
-            {step === 4 && selectedTrip && (
+            {step === 4 && selectedTrip && !options && (
               <div className="itinerary-finish" role="region" aria-label="Finish itinerary">
                 <div className="itinerary-finish-text">
                   <strong>Happy with this plan?</strong>

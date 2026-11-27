@@ -1,5 +1,6 @@
 package com.tripbudgetplanner.backend.trip;
 
+import com.tripbudgetplanner.backend.itinerary.options.ItineraryOptionRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -99,6 +100,14 @@ public class TripService {
                        TripInvitationRepository invitationRepository) {
         this(tripRepository, userRepository, savingsGoalRepository, savingsContributionRepository,
             tripBudgetRepository, expenseRepository, tripAccess, memberRepository, invitationRepository, null);
+    }
+
+    // UC5 draft itinerary options; set by Spring (tests that build TripService by hand leave it null)
+    private ItineraryOptionRepository itineraryOptionRepository;
+
+    @Autowired(required = false)
+    public void setItineraryOptionRepository(ItineraryOptionRepository itineraryOptionRepository) {
+        this.itineraryOptionRepository = itineraryOptionRepository;
     }
 
     // Validates the trip information and saves a new trip
@@ -282,6 +291,10 @@ public class TripService {
         }
         if (notificationRepository != null) {
             notificationRepository.deleteByTripId(tripId);
+        }
+        // Draft AI itinerary options (UC5) and their activities
+        if (itineraryOptionRepository != null) {
+            itineraryOptionRepository.deleteAll(itineraryOptionRepository.findByTripIdOrderByIdAsc(tripId));
         }
         // Itinerary activities, including UC6 search results and their cost estimates
         if (activityRepository != null) {

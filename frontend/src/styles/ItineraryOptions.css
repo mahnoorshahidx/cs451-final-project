@@ -1,0 +1,98 @@
+/* UC5: AI itinerary options side by side */
+
+.io-compare { display: flex; flex-direction: column; gap: 22px; width: 100%; }
+.io-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; flex-wrap: wrap; }
+.io-head > div:first-child { display: flex; flex-direction: column; gap: 8px; max-width: 640px; }
+.io-head .tb-kicker { display: inline-flex; align-items: center; gap: 6px; margin: 0; }
+.io-head h1 { margin: 0; font-size: clamp(24px, 3vw, 32px); color: var(--tb-text); }
+.io-head p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--tb-text-soft); }
+.io-head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.io-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.io-card {
+  --io-accent: var(--tb-blue);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+  border-radius: var(--tb-radius-lg);
+  background: var(--tb-surface);
+  border: 1px solid var(--tb-border);
+  border-top: 6px solid var(--io-accent);
+}
+.io-card.is-sage { --io-accent: var(--tb-sage); }
+.io-card.is-blue { --io-accent: var(--tb-blue); }
+.io-card.is-marigold { --io-accent: var(--tb-marigold); }
+
+.io-card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.io-style {
+  font-family: var(--tb-font-display);
+  font-stretch: 125%;
+  font-weight: 800;
+  font-size: 17px;
+  text-transform: uppercase;
+  color: var(--tb-text);
+}
+.io-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--tb-success-bg);
+  color: var(--tb-success-fg);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.io-total { display: flex; flex-direction: column; gap: 3px; }
+.io-total .tb-num { font-size: 36px; line-height: 1.05; color: var(--tb-text); }
+.io-total small { font-size: 13px; color: var(--tb-text-muted); }
+.io-total .io-extra { color: var(--tb-text-soft); font-weight: 600; }
+
+.io-summary { margin: 0; font-size: 14px; line-height: 1.5; color: var(--tb-text-soft); }
+
+.io-split { display: flex; flex-direction: column; gap: 10px; }
+.io-split-bar { display: flex; gap: 2px; height: 10px; border-radius: 999px; overflow: hidden; background: var(--tb-track); }
+.io-split ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+.io-split li { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--tb-text-muted); }
+.io-split li b { margin-left: auto; color: var(--tb-text); font-weight: 600; }
+.io-split i { flex: none; width: 10px; height: 10px; border-radius: 3px; }
+.io-cat { display: block; background: var(--tb-border-strong); }
+.io-cat-food { background: var(--tb-marigold); }
+.io-cat-sightseeing { background: var(--tb-blue); }
+.io-cat-activity { background: var(--tb-coral); }
+.io-cat-shopping { background: var(--tb-olive); }
+.io-cat-transport { background: var(--tb-sage); }
+.io-cat-rest { background: var(--tb-border-strong); }
+
+.io-preview-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 10px 0;
+  border: 0;
+  border-top: 1px solid var(--tb-border);
+  background: none;
+  font: 600 14px var(--tb-font-body);
+  color: var(--tb-text);
+  cursor: pointer;
+}
+.io-preview-toggle svg { transition: transform 0.2s; }
+.io-preview-toggle svg.is-open { transform: rotate(180deg); }
+
+.io-days { list-style: none; margin: -6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; max-height: 360px; overflow-y: auto; }
+.io-days > li > strong { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tb-accent-strong); }
+.io-days ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.io-days ul li { display: flex; gap: 10px; font-size: 13px; color: var(--tb-text); }
+.io-time { flex: none; width: 62px; color: var(--tb-text-muted); }
+
+.io-choose { width: 100%; margin-top: auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  .io-preview-toggle svg { transition: none; }
+}
