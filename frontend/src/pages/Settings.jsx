@@ -13,12 +13,7 @@ import { updateCurrentUser } from "../api/client";
 import "../styles/Dashboard.css";
 import "../styles/Settings.css";
 
-import {
-  UserRound,
-  LockKeyhole,
-  Bell,
-  SlidersHorizontal
-} from "lucide-react";
+import { Bell, Check, LockKeyhole, Moon, SlidersHorizontal, Sun } from "lucide-react";
 
 // Settings page component
 function Settings() {
@@ -177,247 +172,170 @@ function Settings() {
     }
   }
 
-  return (
-    <div className="dashboard-page">
+  const initials = name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
 
-      {/* Sidebar navigation */}
+  return (
+    <div className="dashboard-page set-page">
       <aside className="dashboard-sidebar">
         <Sidebar />
       </aside>
 
-      {/* Main settings content */}
-      <main className="dashboard-main">
-        <div className="settings-content">
+      <main className="dashboard-main set-main">
+        <header className="set-header">
+          <span className="tb-kicker">Settings</span>
+          <h1 className="tb-wide">Your account</h1>
+          <p>Profile, password, reminders and how the app looks.</p>
+        </header>
 
-          {/* Page heading */}
-          <section className="settings-header">
-            <h1>Settings</h1>
-            <p>Manage your account settings and preferences.</p>
-          </section>
+        <div className="set-grid">
+          {/* Profile */}
+          <section className="set-card set-profile" aria-labelledby="set-profile-title">
+            <div className="set-profile-head">
+              <span className="set-avatar" aria-hidden="true">{loading ? "" : initials}</span>
+              <div>
+                <h2 id="set-profile-title" className="tb-wide">Profile</h2>
+                <p>{loading ? "Loading..." : email}</p>
+              </div>
+            </div>
 
-          {/* Two-column settings grid */}
-          <div className="settings-grid">
-
-          {/* Profile information */}
-          <section className="settings-card">
-            <h2><UserRound size={22} /> Profile Information</h2>
-
-            {loading ? (
-              <p>Loading profile...</p>
-            ) : (
-              <form onSubmit={handleSave} className="settings-form">
-
-                {/* Name */}
-                <label htmlFor="profile-name">Name</label>
-                <input
-                  id="profile-name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-
-                {/* Email */}
-                <label htmlFor="profile-email">Email</label>
-                <input
-                  id="profile-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-
-                {/* Save profile */}
-                <button type="submit" disabled={saving}>
-                  {saving ? "Saving..." : "Save Changes"}
-                </button>
+            {!loading && (
+              <form onSubmit={handleSave} className="set-form">
+                <label className="tb-field">
+                  Name
+                  <input id="profile-name" className="tb-input" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+                </label>
+                <label className="tb-field">
+                  Email
+                  <input id="profile-email" className="tb-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </label>
+                <div className="set-actions">
+                  <button type="submit" className="tb-btn tb-btn-primary" disabled={saving}>
+                    {saving ? "Saving..." : "Save profile"}
+                  </button>
+                  {error && <p role="alert" className="set-msg is-error">{error}</p>}
+                  {success && <p role="status" className="set-msg is-ok"><Check size={16} aria-hidden="true" /> {success}</p>}
+                </div>
               </form>
             )}
+          </section>
 
-            {error && (
-              <p role="alert" className="error-text">{error}</p>
-            )}
+          {/* Appearance and preferences */}
+          <section className="set-card" aria-labelledby="set-prefs-title">
+            <h2 id="set-prefs-title" className="tb-wide"><SlidersHorizontal size={18} aria-hidden="true" /> Preferences</h2>
 
-            {success && (
-              <p role="status" className="settings-success">
-                {success}
-              </p>
+            {loading ? (
+              <p className="set-muted">Loading preferences...</p>
+            ) : (
+              <form onSubmit={handleSavePreferences} className="set-form">
+                <fieldset className="set-appearance">
+                  <legend>Appearance</legend>
+                  {[
+                    { value: "light", label: "Light", Icon: Sun },
+                    { value: "dark", label: "Dark", Icon: Moon },
+                  ].map(({ value, label, Icon }) => (
+                    <label key={value} className={`set-theme-option is-${value}${appearance === value ? " is-selected" : ""}`}>
+                      <input
+                        type="radio"
+                        name="appearance"
+                        value={value}
+                        checked={appearance === value}
+                        onChange={() => setAppearance(value)}
+                      />
+                      <span className="set-theme-preview" aria-hidden="true">
+                        <span /><span /><span />
+                      </span>
+                      <span className="set-theme-label"><Icon size={15} aria-hidden="true" /> {label}</span>
+                    </label>
+                  ))}
+                </fieldset>
+
+                <div className="set-two">
+                  <label className="tb-field">
+                    Currency
+                    <select id="currency" className="tb-input" value={currency} onChange={(e) => setCurrency(e.target.value)}>
+                      <option value="USD">USD · US Dollar</option>
+                      <option value="EUR">EUR · Euro</option>
+                      <option value="GBP">GBP · British Pound</option>
+                      <option value="MAD">MAD · Moroccan Dirham</option>
+                    </select>
+                  </label>
+                  <label className="tb-field">
+                    Date format
+                    <select id="date-format" className="tb-input" value={dateFormat} onChange={(e) => setDateFormat(e.target.value)}>
+                      <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                      <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div className="set-actions">
+                  <button type="submit" className="tb-btn tb-btn-accent" disabled={savingPreferences}>
+                    {savingPreferences ? "Saving..." : "Save preferences"}
+                  </button>
+                  {preferencesError && <p role="alert" className="set-msg is-error">{preferencesError}</p>}
+                  {preferencesSuccess && <p role="status" className="set-msg is-ok"><Check size={16} aria-hidden="true" /> {preferencesSuccess}</p>}
+                </div>
+              </form>
             )}
           </section>
 
-          {/* Account security */}
-          <section className="settings-card">
-            <h2><LockKeyhole size={22} /> Account Security</h2>
-            <p>Change your account password.</p>
-
-            <form onSubmit={handlePasswordChange} className="settings-form">
-
-              {/* Current password */}
-              <label htmlFor="current-password">Current Password</label>
-              <input
-                id="current-password"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                autoComplete="off"
-                required
-              />
-
-              {/* New password */}
-              <label htmlFor="new-password">New Password</label>
-              <input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                autoComplete="new-password"
-                minLength={8}
-                required
-              />
-
-              {/* Confirm new password */}
-              <label htmlFor="confirm-password">Confirm New Password</label>
-              <input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                autoComplete="new-password"
-                minLength={8}
-                required
-              />
-
-              {/* Change password button */}
-              <button type="submit" disabled={changingPassword}>
-                {changingPassword ? "Changing..." : "Change Password"}
-              </button>
-            </form>
-
-            {passwordError && (
-              <p role="alert" className="error-text">
-                {passwordError}
-              </p>
-            )}
-
-            {passwordSuccess && (
-              <p role="status" className="settings-success">
-                {passwordSuccess}
-              </p>
-            )}
-          </section>
-
-          {/* Notification preferences */}
-          <section className="settings-card">
-            <h2><Bell size={22} /> Notification Preferences</h2>
-            <p>Manage your trip reminders.</p>
-
-            <div className="notification-preference">
-              <div>
-                <h3>Trip Reminders</h3>
-                <p>Receive notifications 7 days before your trip.</p>
+          {/* Password */}
+          <section className="set-card" aria-labelledby="set-password-title">
+            <h2 id="set-password-title" className="tb-wide"><LockKeyhole size={18} aria-hidden="true" /> Password</h2>
+            <form onSubmit={handlePasswordChange} className="set-form">
+              <label className="tb-field">
+                Current password
+                <input id="current-password" className="tb-input" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="off" required />
+              </label>
+              <div className="set-two">
+                <label className="tb-field">
+                  New password
+                  <input id="new-password" className="tb-input" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" minLength={8} required />
+                </label>
+                <label className="tb-field">
+                  Confirm new password
+                  <input id="confirm-password" className="tb-input" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" minLength={8} required />
+                </label>
               </div>
+              <p className="set-muted">At least 8 characters.</p>
+              <div className="set-actions">
+                <button type="submit" className="tb-btn tb-btn-outline" disabled={changingPassword}>
+                  {changingPassword ? "Changing..." : "Change password"}
+                </button>
+                {passwordError && <p role="alert" className="set-msg is-error">{passwordError}</p>}
+                {passwordSuccess && <p role="status" className="set-msg is-ok"><Check size={16} aria-hidden="true" /> {passwordSuccess}</p>}
+              </div>
+            </form>
+          </section>
 
-              {/* Enable or disable trip reminders */}
-              <label className="settings-switch">
+          {/* Notifications */}
+          <section className="set-card" aria-labelledby="set-notify-title">
+            <h2 id="set-notify-title" className="tb-wide"><Bell size={18} aria-hidden="true" /> Notifications</h2>
+            <div className="set-toggle-row">
+              <div>
+                <strong>Trip reminders</strong>
+                <span>A heads-up 7 days before each trip.</span>
+              </div>
+              <label className="set-switch">
                 <input
                   type="checkbox"
+                  role="switch"
                   checked={tripRemindersEnabled}
                   onChange={handleNotificationToggle}
                   disabled={loading || savingNotifications || !!error}
-                  aria-label="Enable trip reminders"
+                  aria-label="Trip reminders"
                 />
-                <span className="settings-switch-slider"></span>
+                <span aria-hidden="true" />
               </label>
             </div>
-
-            {savingNotifications && (
-              <p>Saving preference...</p>
-            )}
-
-            {notificationError && (
-              <p role="alert" className="error-text">
-                {notificationError}
-              </p>
-            )}
-
-            {notificationSuccess && (
-              <p role="status" className="settings-success">
-                {notificationSuccess}
-              </p>
-            )}
+            {savingNotifications && <p className="set-muted">Saving...</p>}
+            {notificationError && <p role="alert" className="set-msg is-error">{notificationError}</p>}
+            {notificationSuccess && <p role="status" className="set-msg is-ok"><Check size={16} aria-hidden="true" /> {notificationSuccess}</p>}
           </section>
-
-          {/* User preferences */}
-          <section className="settings-card">
-            <h2><SlidersHorizontal size={22} /> Preferences</h2>
-            <p>Customize your trip planning experience.</p>
-
-            {loading ? (
-              <p>Loading preferences...</p>
-            ) : (
-              <form onSubmit={handleSavePreferences} className="settings-form">
-
-                {/* Currency */}
-                <label htmlFor="currency">Currency</label>
-                <select
-                  id="currency"
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                >
-                  <option value="USD">USD - US Dollar</option>
-                  <option value="EUR">EUR - Euro</option>
-                  <option value="GBP">GBP - British Pound</option>
-                  <option value="MAD">MAD - Moroccan Dirham</option>
-                </select>
-
-                {/* Date format */}
-                <label htmlFor="date-format">Date Format</label>
-                <select
-                  id="date-format"
-                  value={dateFormat}
-                  onChange={(e) => setDateFormat(e.target.value)}
-                >
-                  <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                  <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                </select>
-
-                {/* Appearance */}
-                <label htmlFor="appearance">Appearance</label>
-                <select
-                  id="appearance"
-                  value={appearance}
-                  onChange={(e) => setAppearance(e.target.value)}
-                >
-                  <option value="light">Light Mode</option>
-                  <option value="dark">Dark Mode</option>
-                </select>
-
-                {/* Save preferences */}
-                <button type="submit" disabled={savingPreferences}>
-                  {savingPreferences ? "Saving..." : "Save Preferences"}
-                </button>
-              </form>
-            )}
-
-            {preferencesError && (
-              <p role="alert" className="error-text">
-                {preferencesError}
-              </p>
-            )}
-
-            {preferencesSuccess && (
-              <p role="status" className="settings-success">
-                {preferencesSuccess}
-              </p>
-            )}
-          </section>
-
-        </div> {/* End settings-grid */}
-
-      </div> {/* End settings-content */}
-    </main>
-  </div>
-);
+        </div>
+      </main>
+    </div>
+  );
 }
 
 export default Settings;
