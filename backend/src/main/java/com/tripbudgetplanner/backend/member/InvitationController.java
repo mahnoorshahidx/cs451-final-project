@@ -38,26 +38,38 @@ public class InvitationController {
     // Accept from a shareable link: { "token": "..." }
     @PostMapping("/accept")
     public JoinedTripResponse acceptByToken(@Valid @RequestBody AcceptInvitationRequest request,
-                                            @AuthenticationPrincipal Long userId) {
+            @AuthenticationPrincipal Long userId) {
         return memberService.acceptByToken(request.token(), userId);
     }
 
     // Accept from the in-app list
     @PostMapping("/{invitationId}/accept")
     public JoinedTripResponse accept(@PathVariable Long invitationId,
-                                     @AuthenticationPrincipal Long userId) {
+            @AuthenticationPrincipal Long userId) {
         return memberService.acceptById(invitationId, userId);
     }
 
     // Decline from the in-app list
     @PostMapping("/{invitationId}/decline")
     public ResponseEntity<Void> decline(@PathVariable Long invitationId,
-                                        @AuthenticationPrincipal Long userId) {
+            @AuthenticationPrincipal Long userId) {
         memberService.decline(invitationId, userId);
         return ResponseEntity.noContent().build();
     }
 
-    // PUBLIC (no login, see SecurityConfig): minimal preview for the invitation page
+    // UC9: Decline an invitation from a shareable link
+    @PostMapping("/decline")
+    public ResponseEntity<Void> declineByToken(
+            @Valid @RequestBody AcceptInvitationRequest request,
+            @AuthenticationPrincipal Long userId) {
+
+        memberService.declineByToken(request.token(), userId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    // PUBLIC (no login, see SecurityConfig): minimal preview for the invitation
+    // page
     @GetMapping("/preview/{token}")
     public InvitationPreviewResponse preview(@PathVariable String token) {
         return memberService.preview(token);

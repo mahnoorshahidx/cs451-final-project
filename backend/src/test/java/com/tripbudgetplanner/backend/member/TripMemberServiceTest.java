@@ -75,9 +75,10 @@ class TripMemberServiceTest {
             when(users.findByEmail(u.getEmail())).thenReturn(Optional.of(u));
         }
         when(f.memberRepository.findByTripIdOrderByJoinedAtAsc(TRIP_ID))
-            .thenReturn(List.of(f.editorMember, f.viewerMember));
+                .thenReturn(List.of(f.editorMember, f.viewerMember));
 
-        // Null-safe because a test that re-stubs with when(...saveAndFlush(any())) calls this with null
+        // Null-safe because a test that re-stubs with when(...saveAndFlush(any()))
+        // calls this with null
         when(invitations.saveAndFlush(any())).thenAnswer(call -> {
             TripInvitation invitation = call.getArgument(0);
             if (invitation == null) {
@@ -142,28 +143,28 @@ class TripMemberServiceTest {
     @Test
     void ownersRoleCannotBeChanged() {
         assertThrows(SharingConflictException.class,
-            () -> service.changeRole(TRIP_ID, OWNER_ID, "VIEWER", OWNER_ID));
+                () -> service.changeRole(TRIP_ID, OWNER_ID, "VIEWER", OWNER_ID));
     }
 
     @Test
     void onlyTheOwnerCanChangeRoles() {
         assertThrows(TripAccessDeniedException.class,
-            () -> service.changeRole(TRIP_ID, VIEWER_ID, "EDITOR", EDITOR_ID));
+                () -> service.changeRole(TRIP_ID, VIEWER_ID, "EDITOR", EDITOR_ID));
         assertThrows(TripAccessDeniedException.class,
-            () -> service.changeRole(TRIP_ID, EDITOR_ID, "VIEWER", VIEWER_ID));
+                () -> service.changeRole(TRIP_ID, EDITOR_ID, "VIEWER", VIEWER_ID));
         assertEquals(TripRole.EDITOR, f.editorMember.getRole());
     }
 
     @Test
     void changingAnUnknownMemberIs404() {
         assertThrows(SharingNotFoundException.class,
-            () -> service.changeRole(TRIP_ID, STRANGER_ID, "EDITOR", OWNER_ID));
+                () -> service.changeRole(TRIP_ID, STRANGER_ID, "EDITOR", OWNER_ID));
     }
 
     @Test
     void roleMustBeEditorOrViewer() {
         assertThrows(IllegalArgumentException.class,
-            () -> service.changeRole(TRIP_ID, EDITOR_ID, "OWNER", OWNER_ID));
+                () -> service.changeRole(TRIP_ID, EDITOR_ID, "OWNER", OWNER_ID));
     }
 
     @Test
@@ -202,7 +203,8 @@ class TripMemberServiceTest {
 
     @Test
     void ownerInvitesByEmail() {
-        InvitationResponse result = service.invite(TRIP_ID, new InviteRequest("  New.Person@Example.COM ", "EDITOR"), OWNER_ID);
+        InvitationResponse result = service.invite(TRIP_ID, new InviteRequest("  New.Person@Example.COM ", "EDITOR"),
+                OWNER_ID);
 
         assertEquals("EMAIL", result.type());
         assertEquals("new.person@example.com", result.email(), "normalized like AuthService");
@@ -234,38 +236,39 @@ class TripMemberServiceTest {
         service.invite(TRIP_ID, new InviteRequest("new@example.com", "VIEWER"), OWNER_ID);
 
         verify(invitations).expireOldForEmail(TRIP_ID, "new@example.com", NOW,
-            InvitationStatus.PENDING, InvitationStatus.EXPIRED);
+                InvitationStatus.PENDING, InvitationStatus.EXPIRED);
         assertEquals(1, savedInvitations.size());
     }
 
     @Test
     void duplicatePendingInvitationIs409() {
         when(invitations.existsByTripIdAndInvitedEmailAndStatus(TRIP_ID, "new@example.com", InvitationStatus.PENDING))
-            .thenReturn(true);
+                .thenReturn(true);
 
         assertThrows(SharingConflictException.class,
-            () -> service.invite(TRIP_ID, new InviteRequest("NEW@example.com", "VIEWER"), OWNER_ID));
+                () -> service.invite(TRIP_ID, new InviteRequest("NEW@example.com", "VIEWER"), OWNER_ID));
         assertTrue(savedInvitations.isEmpty());
     }
 
     @Test
     void databaseDuplicateBecomes409NotARawError() {
-        when(invitations.saveAndFlush(any())).thenThrow(new DataIntegrityViolationException("uq_trip_invitations_pending_email"));
+        when(invitations.saveAndFlush(any()))
+                .thenThrow(new DataIntegrityViolationException("uq_trip_invitations_pending_email"));
 
         assertThrows(SharingConflictException.class,
-            () -> service.invite(TRIP_ID, new InviteRequest("new@example.com", "VIEWER"), OWNER_ID));
+                () -> service.invite(TRIP_ID, new InviteRequest("new@example.com", "VIEWER"), OWNER_ID));
     }
 
     @Test
     void cannotInviteAnExistingMember() {
         assertThrows(SharingConflictException.class,
-            () -> service.invite(TRIP_ID, new InviteRequest("Editor@Example.com", "VIEWER"), OWNER_ID));
+                () -> service.invite(TRIP_ID, new InviteRequest("Editor@Example.com", "VIEWER"), OWNER_ID));
     }
 
     @Test
     void ownerCannotInviteThemselves() {
         assertThrows(SharingConflictException.class,
-            () -> service.invite(TRIP_ID, new InviteRequest("owner@example.com", "EDITOR"), OWNER_ID));
+                () -> service.invite(TRIP_ID, new InviteRequest("owner@example.com", "EDITOR"), OWNER_ID));
     }
 
     @Test
@@ -276,7 +279,7 @@ class TripMemberServiceTest {
         assertThrows(TripAccessDeniedException.class, () -> service.invite(TRIP_ID, request, VIEWER_ID));
         assertThrows(TripNotFoundException.class, () -> service.invite(TRIP_ID, request, STRANGER_ID));
         ResponseStatusException e = assertThrows(ResponseStatusException.class,
-            () -> service.invite(TRIP_ID, request, null));
+                () -> service.invite(TRIP_ID, request, null));
         assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
         assertTrue(savedInvitations.isEmpty());
     }
@@ -287,7 +290,7 @@ class TripMemberServiceTest {
     void ownerListsPendingInvitationsWithoutTokens() {
         TripInvitation pending = pendingInvitation("a@example.com", NOW);
         when(invitations.findByTripIdAndStatusOrderByCreatedAtDesc(TRIP_ID, InvitationStatus.PENDING))
-            .thenReturn(List.of(pending));
+                .thenReturn(List.of(pending));
 
         List<InvitationResponse> list = service.listTripInvitations(TRIP_ID, OWNER_ID);
 
@@ -302,7 +305,7 @@ class TripMemberServiceTest {
         TripInvitation invitation = pendingInvitation("a@example.com", NOW.minus(Duration.ofMinutes(4)));
 
         InvitationCooldownException e = assertThrows(InvitationCooldownException.class,
-            () -> service.resend(TRIP_ID, invitation.getId(), OWNER_ID));
+                () -> service.resend(TRIP_ID, invitation.getId(), OWNER_ID));
 
         assertEquals(360L, e.getRetryAfterSeconds());
         assertTrue(savedInvitations.isEmpty());
@@ -337,7 +340,7 @@ class TripMemberServiceTest {
         TripInvitation invitation = pendingInvitation("a@example.com", NOW.minus(Duration.ofDays(8)));
         invitation.setStatus(InvitationStatus.EXPIRED);
         when(invitations.existsByTripIdAndInvitedEmailAndStatus(TRIP_ID, "a@example.com", InvitationStatus.PENDING))
-            .thenReturn(true);
+                .thenReturn(true);
 
         assertThrows(SharingConflictException.class, () -> service.resend(TRIP_ID, invitation.getId(), OWNER_ID));
         assertEquals(InvitationStatus.EXPIRED, invitation.getStatus());
@@ -402,7 +405,7 @@ class TripMemberServiceTest {
     @Test
     void emailInvitationIsAcceptedByTheMatchingUser() {
         TripInvitation invitation = pendingInvitation("sam@example.com", NOW);
-        f.stranger.setEmail("Sam@Example.com");   // compared after normalizing
+        f.stranger.setEmail("Sam@Example.com"); // compared after normalizing
 
         JoinedTripResponse joined = service.acceptById(invitation.getId(), STRANGER_ID);
 
@@ -432,7 +435,7 @@ class TripMemberServiceTest {
 
     @Test
     void expiredInvitationIs410AndTheStatusIsSaved() {
-        String token = linkInvitation(TripRole.VIEWER, NOW.minus(Duration.ofDays(7)));   // expires exactly now
+        String token = linkInvitation(TripRole.VIEWER, NOW.minus(Duration.ofDays(7))); // expires exactly now
         TripInvitation invitation = lastLink;
 
         assertThrows(InvitationGoneException.class, () -> service.acceptByToken(token, STRANGER_ID));
@@ -444,12 +447,13 @@ class TripMemberServiceTest {
 
     @Test
     void the410ForExpiredInvitationsDoesNotRollBackTheStatusChange() throws Exception {
-        // These methods save EXPIRED and then answer 410, so that exception must not roll back
+        // These methods save EXPIRED and then answer 410, so that exception must not
+        // roll back
         for (String method : List.of("acceptById", "acceptByToken", "decline", "preview")) {
             Transactional tx = java.util.Arrays.stream(TripMemberService.class.getMethods())
-                .filter(m -> m.getName().equals(method))
-                .findFirst().orElseThrow()
-                .getAnnotation(Transactional.class);
+                    .filter(m -> m.getName().equals(method))
+                    .findFirst().orElseThrow()
+                    .getAnnotation(Transactional.class);
             assertNotNull(tx, method + " is transactional");
             assertArrayEquals(new Class<?>[] { InvitationGoneException.class }, tx.noRollbackFor(), method);
         }
@@ -495,7 +499,8 @@ class TripMemberServiceTest {
     @Test
     void membershipRaceBecomes409NotARawError() {
         String token = linkInvitation(TripRole.VIEWER, NOW);
-        when(f.memberRepository.saveAndFlush(any())).thenThrow(new DataIntegrityViolationException("uq_trip_members_trip_user"));
+        when(f.memberRepository.saveAndFlush(any()))
+                .thenThrow(new DataIntegrityViolationException("uq_trip_members_trip_user"));
 
         assertThrows(SharingConflictException.class, () -> service.acceptByToken(token, STRANGER_ID));
     }
@@ -510,7 +515,8 @@ class TripMemberServiceTest {
     void acceptingRequiresSignIn() {
         String token = linkInvitation(TripRole.VIEWER, NOW);
 
-        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.acceptByToken(token, null));
+        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+                () -> service.acceptByToken(token, null));
         assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
     }
 
@@ -520,11 +526,21 @@ class TripMemberServiceTest {
     void invitedUserDeclines() {
         TripInvitation invitation = pendingInvitation("sam@example.com", NOW);
 
+        when(invitations.markDeclinedIfPending(
+                invitation.getId(),
+                NOW,
+                InvitationStatus.PENDING,
+                InvitationStatus.DECLINED)).thenReturn(1);
+
         service.decline(invitation.getId(), STRANGER_ID);
 
-        assertEquals(InvitationStatus.DECLINED, invitation.getStatus());
-        assertEquals(NOW, invitation.getRespondedAt());
-        verify(invitations).save(invitation);
+        verify(invitations).markDeclinedIfPending(
+                invitation.getId(),
+                NOW,
+                InvitationStatus.PENDING,
+                InvitationStatus.DECLINED);
+
+        verify(invitations, never()).save(invitation);
     }
 
     @Test
@@ -541,12 +557,12 @@ class TripMemberServiceTest {
         f.stranger.setEmail("Sam@Example.com");
         TripInvitation invitation = pendingInvitation("sam@example.com", NOW);
         when(invitations.findByInvitedEmailAndStatusOrderByCreatedAtDesc("sam@example.com", InvitationStatus.PENDING))
-            .thenReturn(List.of(invitation));
+                .thenReturn(List.of(invitation));
 
         List<ReceivedInvitationResponse> list = service.myInvitations(STRANGER_ID);
 
         verify(invitations).expireOldForRecipient("sam@example.com", NOW,
-            InvitationStatus.PENDING, InvitationStatus.EXPIRED);
+                InvitationStatus.PENDING, InvitationStatus.EXPIRED);
         assertEquals(1, list.size());
         assertEquals("Tokyo Trip", list.get(0).tripName());
         assertEquals("Olivia Owner", list.get(0).invitedBy());

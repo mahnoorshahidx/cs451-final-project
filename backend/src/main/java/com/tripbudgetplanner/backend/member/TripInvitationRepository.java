@@ -48,9 +48,19 @@ public interface TripInvitationRepository extends JpaRepository<TripInvitation, 
     // only one of them change the row, and the other gets 0 (so it can't be used twice).
     @Modifying(flushAutomatically = true)
     @Query("update TripInvitation i set i.status = :accepted, i.acceptedByUserId = :userId, i.respondedAt = :now"
-        + " where i.id = :id and i.status = :pending and i.expiresAt > :now")
+            + " where i.id = :id and i.status = :pending and i.expiresAt > :now")
     int markAcceptedIfPending(@Param("id") Long id, @Param("userId") Long userId, @Param("now") Instant now,
-                              @Param("pending") InvitationStatus pending, @Param("accepted") InvitationStatus accepted);
+            @Param("pending") InvitationStatus pending, @Param("accepted") InvitationStatus accepted);
+
+    // Decline only if the invitation is still pending and has not expired.
+    @Modifying(flushAutomatically = true)
+    @Query("update TripInvitation i set i.status = :declined, i.respondedAt = :now"
+            + " where i.id = :id and i.status = :pending and i.expiresAt > :now")
+    int markDeclinedIfPending(
+            @Param("id") Long id,
+            @Param("now") Instant now,
+            @Param("pending") InvitationStatus pending,
+            @Param("declined") InvitationStatus declined);
 
     // Used when a trip is deleted
     void deleteByTripId(Long tripId);

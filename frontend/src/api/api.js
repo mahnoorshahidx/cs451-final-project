@@ -191,3 +191,33 @@ export const applyItineraryOption = (tripId, optionId, replaceExisting) =>
 
 export const discardItineraryOptions = (tripId) =>
   apiFetch(`/api/trips/${tripId}/itinerary-options`, { method: "DELETE" });
+
+ // ---- UC9: Trip invitation acceptance ----
+
+ // Retrieve invitation details without requiring login
+ export const previewInvitation = (token) =>
+   apiFetch(`/api/invitations/preview/${encodeURIComponent(token)}`);
+
+ // Accept a trip invitation using its token
+ export const acceptInvitation = (token) =>
+   apiFetch("/api/invitations/accept", {
+     method: "POST",
+     body: { token },
+   });
+
+ // Retrieve pending email invitations for the logged-in user
+ export const listReceivedInvitations = () =>
+   apiFetch("/api/invitations");
+
+ // Decline an email invitation using its ID
+ export const declineInvitation = (invitationId) =>
+   apiFetch(`/api/invitations/${invitationId}/decline`, {
+     method: "POST",
+   });
+
+// Decline an invitation using its link token
+export const declineInvitationByToken = (token) =>
+  apiFetch("/api/invitations/decline", {
+    method: "POST",
+    body: { token },
+  });

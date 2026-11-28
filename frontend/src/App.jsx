@@ -18,6 +18,7 @@ import SharedTrips from "./pages/SharedTrips";
 import BudgetPlanner from "./pages/BudgetPlanner";
 import SavingsPlanner from "./pages/SavingsPlanner";
 import BankAccounts from "./pages/BankAccounts";
+import Invite from "./pages/Invite";
 
 function App() {
 
@@ -42,6 +43,9 @@ function App() {
 
         {/* Landing page (public) */}
         <Route path="/" element={<Landing />} />
+
+        {/* UC9: Public invitation acceptance page */}
+        <Route path="/invite/:token" element={<Invite />} />
 
         {/* Login */}
         <Route path="/login" element={<Login />} />

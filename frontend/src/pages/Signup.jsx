@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { register } from "../api/api";
 import "../styles/SignUp.css";
 
@@ -10,7 +10,8 @@ import PasswordInput from "../components/PasswordInput";
 
 function Signup() {
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const returnTo = location.state?.returnTo;
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -70,7 +71,12 @@ function Signup() {
 
       await register(body);
 
-      navigate("/login", { state: { registered: true } });
+      navigate("/login", {
+        state: {
+          registered: true,
+          returnTo,
+        },
+      });
     } catch (err) {
       setFieldErrors(err.fieldErrors || {});
       setError(err.message || "Registration failed.");
@@ -279,7 +285,9 @@ function Signup() {
 
           <p className="signup-login-text">
             Already have an account?{" "}
-            <Link to="/login">Sign in</Link>
+            <Link to="/login" state={{ returnTo }}>
+              Sign in
+            </Link>
           </p>
 
         </div>
