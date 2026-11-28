@@ -21,7 +21,7 @@ export function saveSession({ token, name, email }) {
 }
 
 // Updates the stored user information after editing the profile
- export function updateCurrentUser({ name, email }) {
+export function updateCurrentUser({ name, email }) {
   localStorage.setItem("user", JSON.stringify({ name, email }));
 }
 
@@ -70,12 +70,25 @@ export async function apiFetch(path, { method = "GET", body } = {}) {
     throw new ApiError(0, { message: "Can't reach the server. Is the backend running?" });
   }
 
-  // Expired or invalid token: log out and go back to the login page
+
+  // Expired or invalid token: preserve invitation links
   if (res.status === 401 && token) {
+    const currentPath = window.location.pathname;
+
     clearSession();
-    window.location.href = "/login";
-    throw new ApiError(401, { message: "Your session expired. Please sign in again." });
+
+    if (/^\/invite\/[A-Za-z0-9_-]+$/.test(currentPath)) {
+      window.location.href =
+        `/login?returnTo=${encodeURIComponent(currentPath)}`;
+    } else {
+      window.location.href = "/login";
+    }
+
+    throw new ApiError(401, {
+      message: "Your session expired. Please sign in again.",
+    });
   }
+
 
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;

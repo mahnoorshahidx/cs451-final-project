@@ -1,0 +1,254 @@
+
+/* ==================================
+   INVITATION ACCEPTANCE PAGE
+   UC9 - Shared Trips
+================================== */
+
+/* Page layout */
+.invite-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  gap: 28px;
+  box-sizing: border-box;
+  background: var(--tb-bg);
+  font-family: var(--tb-font-body);
+  color: var(--tb-text);
+}
+
+/* Tripbudget branding */
+.invite-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--tb-text);
+  text-decoration: none;
+  font-size: 23px;
+}
+
+.invite-brand svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* Main invitation card */
+.invite-card {
+  width: 100%;
+  max-width: 480px;
+  overflow: hidden;
+  box-shadow: var(--tb-shadow-pop);
+}
+
+/* Navy invitation header */
+.invite-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 36px 24px;
+  background: var(--tb-panel);
+  color: var(--tb-panel-text);
+  text-align: center;
+}
+
+.invite-header > svg {
+  color: var(--tb-marigold);
+}
+
+.invite-header .tb-kicker {
+  color: var(--tb-panel-muted);
+}
+
+.invite-header h1 {
+  margin: 0;
+  font-size: clamp(26px, 6vw, 36px);
+  line-height: 1.1;
+}
+
+/* Main card content */
+.invite-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px;
+}
+
+.invite-intro {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* Trip information */
+.invite-trip {
+  padding: 22px;
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-md);
+  background: var(--tb-bg);
+}
+
+.invite-trip h2 {
+  margin: 8px 0;
+  font-size: 24px;
+  overflow-wrap: anywhere;
+}
+
+.invite-trip p {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: var(--tb-text-soft);
+  font-size: 14px;
+}
+
+.invite-trip svg {
+  flex-shrink: 0;
+  color: var(--tb-accent-strong);
+}
+
+/* Permission and expiration details */
+.invite-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.invite-detail > svg {
+  flex-shrink: 0;
+  color: var(--tb-accent-strong);
+  margin-top: 3px;
+}
+
+.invite-detail strong {
+  font-size: 14px;
+}
+
+.invite-detail p {
+  margin: 5px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--tb-text-muted);
+}
+
+/* Signed-in account information */
+.invite-account {
+  margin: 0;
+  padding: 12px;
+  border-radius: var(--tb-radius-sm);
+  background: var(--tb-blue-tint);
+  color: var(--tb-text);
+  font-size: 13px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* Action buttons */
+.invite-content > .tb-btn {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.invite-content .tb-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Sign-up and account switching */
+.invite-signup,
+.invite-switch-account {
+  margin: 0;
+  font-size: 13px;
+  text-align: center;
+  color: var(--tb-text-muted);
+}
+
+.invite-signup a,
+.invite-switch-account {
+  color: var(--tb-accent-strong);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Invalid or unavailable invitation */
+.invite-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.invite-error > svg {
+  color: var(--tb-danger);
+}
+
+.invite-error h2 {
+  margin: 0;
+  font-family: var(--tb-font-display);
+  font-size: 22px;
+}
+
+.invite-error p {
+  margin: 0;
+  color: var(--tb-text-soft);
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.invite-error-message {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--tb-warning-bg);
+  color: var(--tb-warning-fg);
+  border-radius: var(--tb-radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .invite-page {
+    padding: 24px 16px;
+    gap: 20px;
+  }
+
+  .invite-header {
+    padding: 28px 20px;
+  }
+
+  .invite-content {
+    padding: 22px 18px;
+  }
+
+  .invite-trip {
+    padding: 18px;
+  }
+
+  .invite-trip h2 {
+    font-size: 21px;
+  }
+}
+
+/* Secondary decline invitation button */
+.invite-decline-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px solid currentColor;
+  color: var(--navy, #213253);
+  transition: background-color 0.2s ease;
+}
+
+.invite-decline-btn:hover:not(:disabled) {
+  background-color: rgba(33, 50, 83, 0.06);
+}
+
+.invite-decline-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

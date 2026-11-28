@@ -130,6 +130,39 @@ For the invitation page before sign-in. Intentionally minimal (no dates, emails,
   "expiresAt": "2026-12-01T18:00:00Z", "emailInvite": false }
 ```
 
+### Decline invitation by token
+
+`POST /api/invitations/decline`
+
+Authentication required.
+
+Request body:
+
+```json
+{
+  "token": "invitation-token"
+}
+```
+
+Success: `204 No Content`
+
+Marks a valid pending invitation as DECLINED without
+creating a trip membership.
+
+Email invitations may only be declined by the intended
+recipient. Declining a shareable invitation consumes
+the invitation link.
+
+Possible errors:
+
+- 400: Invalid request body
+- 401: Authentication required
+- 403: Incorrect recipient account
+- 404: Invalid invitation token
+- 409: Trip owner cannot decline their own invitation
+- 410: Invitation is no longer available
+
+
 ### Invitation errors
 | Code | When | Example message |
 |---|---|---|

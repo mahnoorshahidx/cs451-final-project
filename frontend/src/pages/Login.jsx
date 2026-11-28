@@ -14,6 +14,17 @@ function Login() {
     const location = useLocation();
     const justRegistered = location.state?.registered;
 
+    // Return to the invitation after successful authentication
+    const requestedPath =
+    location.state?.returnTo ??
+    new URLSearchParams(location.search).get("returnTo");
+
+    const returnTo =
+        typeof requestedPath === "string" &&
+            /^\/invite\/[A-Za-z0-9_-]+$/.test(requestedPath)
+            ? requestedPath
+            : "/dashboard";
+
     // Inputs are now controlled so we can read what the user typed
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -70,7 +81,7 @@ function Login() {
                 startChallenge(data);
             } else {
                 saveSession(data); // { token, name, email }
-                navigate("/dashboard");
+                navigate(returnTo, { replace: true });
             }
         } catch (err) {
             setError(err.message);
@@ -91,7 +102,7 @@ function Login() {
         try {
             const data = await verifyLoginCode(challenge.challengeId, code);
             saveSession(data);
-            navigate("/dashboard");
+            navigate(returnTo, { replace: true });
         } catch (err) {
             if (err.status === 410) {
                 backToPassword(err.message);
@@ -231,11 +242,16 @@ function Login() {
                                 {loading ? "Signing in..." : "Sign in"}
                             </button>
 
-                        </form>
+                            </form>
 
-                        <p className="signup-text">
-                            New to Tripbudget? <Link to="/signup">Create an account</Link>
-                        </p>
+                            <p className="signup-text">
+                                New to Tripbudget? <Link
+                                    to="/signup"
+                                    state={{ returnTo }}
+                                >
+                                    Create an account
+                                </Link>
+                            </p>
 
                         </>
                     )}
